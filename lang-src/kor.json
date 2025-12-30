@@ -1,0 +1,40 @@
+{
+    "nav-pose": "자세",
+    "nav-track": "추적",
+
+    "btn-download-processed-data": "처리된 데이터 다운로드",
+    "btn-open-process": "분석",
+    "btn-open-guide": "도움말",
+    "btn-add-tool": "도구 추가",
+
+    "label-process-new-video": "새로운 동영상 처리",
+    "label-model": "모델",
+    "label-process-ready": "준비 중",
+    "label-before-process": "처리 전",
+    "label-on-process": "처리 중",
+    "label-after-process": "처리 완료",
+    "btn-start-process": "처리 시작",
+    "btn-close": "닫기",
+
+    "label-guide": "도움말",
+
+    "label-add-tool": "분석 도구",
+
+    "btn-add-video": "동영상 추가",
+    "btn-add-3d-video": "3d 동영상 추가",
+    "btn-add-graph": "그래프 추가",
+    "btn-add-table": "표 추가",
+
+    "label-video": "동영상",
+    "label-3d-video": "3d 동영상",
+    "label-graph": "그래프",
+    "label-table": "표",
+
+    "label-select-tool": "분석 도구",
+    "opt-angle": "관절 각도",
+    "opt-velocity": "관절 이동 속도",
+    "opt-angle-velocity": "관절 회전 속도",
+    "opt-height": "관절 높이"
+
+    
+}

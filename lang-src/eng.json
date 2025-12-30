@@ -1,0 +1,40 @@
+{
+    "nav-pose": "Pose",
+    "nav-track": "Track",
+
+    "btn-download-processed-data": "Download processed data",
+    "btn-open-process": "Process",
+    "btn-open-guide": "Guide",
+    "btn-add-tool": "Tool",
+
+    "label-process-new-video": "Process new video",
+    "label-model": "Model",
+    "label-process-ready": "Ready",
+    "label-before-process": "Ready",
+    "label-on-process": "On Process",
+    "label-after-process": "Process Complete",
+    "btn-start-process": "Process",
+    "btn-close": "Close",
+
+    "label-guide": "Guide",
+
+    "label-add-tool": "Add tool",
+
+    "btn-add-video": "Add Video",
+    "btn-add-3d-video": "Add 3D Video",
+    "btn-add-graph": "Add Graph",
+    "btn-add-table": "Add Table",
+
+    "label-video": "Video",
+    "label-3d-video": "3D Video",
+    "label-graph": "Graph",
+    "label-table": "Table",
+
+    "label-select-tool": "Select Tool",
+    "opt-angle": "Joint Angle",
+    "opt-velocity": "Joint Velocity",
+    "opt-angle-velocity": "Joint Angular Velocity",
+    "opt-height": "Joint Height"
+
+    
+}

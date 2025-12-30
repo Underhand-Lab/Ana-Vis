@@ -9,8 +9,12 @@
     <link rel="stylesheet" href="./style/style.css">
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="./src/easy-h/lang/component.js" type="module"></script>
     <script src="./src/common.js" type="module"></script>
     <script src="./src/markdown.js"></script>
+
+    <e-text-set key="en" src="./lang-src/eng.json"></e-text-set>
+    <e-text-set key="ko ko-kr ko-Kr" src="./lang-src/kor.json"></e-text-set>
 </head>
 
 <body>
@@ -22,10 +26,14 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="flex-grow: 1">
                 <ul>
                     <li>
-                        <a href="./pose">자세 분석</a>
+                        <a href="./pose">
+                            <e-text key="nav-pose"></e-text>
+                        </a>
                     </li>
                     <li>
-                        <a href="./track">추적</a>
+                        <a href="./track">
+                            <e-text key="nav-track"></e-text>
+                        </a>
                     </li>
                 </ul>
             </div>

@@ -1,4 +1,4 @@
-import { loadFile } from "./load-file.js"
+import { loadFile } from "../load-file.js"
 
 class ImportHTML extends HTMLElement {
     constructor() {

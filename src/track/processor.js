@@ -16,7 +16,7 @@ export class TrackProcessor {
     async processVideo(videoList) {
 
         if (this.onProgressCallback) {
-            this.onProgressCallback.onState("준비 중");
+            this.onProgressCallback.onState("process-ready");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
 
@@ -30,7 +30,7 @@ export class TrackProcessor {
         console.log(imageList.length);
 
         if (this.onProgressCallback) {
-            this.onProgressCallback.onState("처리 중");
+            this.onProgressCallback.onState("on-process");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
 
@@ -47,8 +47,6 @@ export class TrackProcessor {
             ballDataList.push(ballData);
 
             if (this.onProgressCallback) {
-                this.onProgressCallback.onState(
-                    `처리 중: ${frameIndex + 1} / ${imageList.length}`);
                 this.onProgressCallback.onProgress
                     (frameIndex + 1, imageList.length);
             }
@@ -58,7 +56,7 @@ export class TrackProcessor {
         }
 
         if (this.onProgressCallback) {
-            this.onProgressCallback.onState("처리 완료");
+            this.onProgressCallback.onState("after-process");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
         

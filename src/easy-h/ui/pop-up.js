@@ -1,8 +1,6 @@
 class PopUp extends HTMLElement {
     constructor() {
         super();
-        this.closeAction();
-        this.window = document.createElement('div');
     }
 
     static get observedAttributes() {
@@ -11,6 +9,7 @@ class PopUp extends HTMLElement {
     }
 
     connectedCallback() {
+        this.window = document.createElement('div');
 
         this.window.innerHTML = this.innerHTML;
         this.innerHTML = '';
@@ -22,10 +21,9 @@ class PopUp extends HTMLElement {
 
         const closeBtn = this.
             getElementsByClassName('close-btn')[0];
-
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
-                this.setAttribute("open", "close");
+                this.closeAction();
             });
         }
     }

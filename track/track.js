@@ -23,6 +23,7 @@ const detectors = {
 
 const processButton = document.getElementById('process-button');
 const statusMessage = document.getElementById('status-message');
+const progressText = document.getElementById('progress-text');
 const progressBar = document.getElementById('progress-bar');
 
 const processPopUp = document.getElementById('process-pop-up');
@@ -32,6 +33,7 @@ processButton.addEventListener('click', async () => {
 
     // 버튼을 비활성화하여 중복 클릭 방지
     processButton.disabled = true;
+    progressText.textContent = "";  
     progressBar.style.width = `0%`;
 
     // 프로세서 및 탐지기 초기화
@@ -42,16 +44,20 @@ processButton.addEventListener('click', async () => {
     try {
         processor.setting(detector, {
             onState: (state) => {
-                statusMessage.textContent = state;
+                statusMessage.setAttribute('key', `label-${state}`);
             },
             onProgress: (current, total) => {
                 const percentage = (current / total) * 100;
+                progressText.textContent = `: ${current} / ${total}`;
                 progressBar.style.width = `${percentage}%`;
             }
         });
 
         // data 변수에 모든 처리된 데이터를 저장
         const ret = await processor.processVideo(fileInput.files);
+
+        statusMessage.setAttribute('key', `label-after-process`);
+        progressText.textContent = "";
 
         AnalysisBox.setData(ret);
         processPopUp.closeAction();

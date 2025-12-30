@@ -1,11 +1,14 @@
 <div class="viewer_container">
-    <label>분석 도구: </label>
-    <select>
-        <option value="angle">관절 각도</option>
-        <option value="velocity">관절 이동 속도</option>
-        <option value="angle-velocity">관절 회전 속도</option>
-        <option value="height">관절 높이</option>
-    </select>
+    <label>
+        <e-text key="label-select-tool">
+        </e-text>:
+    </label>
+    <e-text-select>
+        <option data-lang-key="opt-angle" value="angle">관절 각도</option>
+        <option data-lang-key="opt-velocity" value="velocity">관절 이동 속도</option>
+        <option data-lang-key="opt-angle-velocity" value="angle-velocity">관절 회전 속도</option>
+        <option data-lang-key="opt-height" value="height">관절 높이</option>
+    </e-text-select>
     <hr>
     <div class="table"></div>
 

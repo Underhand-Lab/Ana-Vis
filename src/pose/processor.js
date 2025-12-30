@@ -20,7 +20,7 @@ export class PoseProcessor {
         const data = new ProcessedData();
 
         if (this.onProgressCallback) {
-            this.onProgressCallback.onState("준비 중");
+            this.onProgressCallback.onState("process-ready");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
 
@@ -38,7 +38,7 @@ export class PoseProcessor {
         console.log(imageList.length);
 
         if (this.onProgressCallback) {
-            this.onProgressCallback.onState("처리 중");
+            this.onProgressCallback.onState("on-process");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
         
@@ -54,8 +54,6 @@ export class PoseProcessor {
             data.addDataAt([image], landmarks3d, landmarks2dList, visibilityScoreList);
 
             if (this.onProgressCallback) {
-                this.onProgressCallback.onState(
-                    `처리 중: ${frameIndex + 1} / ${imageList.length}`);
                 this.onProgressCallback.onProgress
                     (frameIndex + 1, imageList.length);
             }
@@ -65,7 +63,7 @@ export class PoseProcessor {
         }
 
         if (this.onProgressCallback) {
-            this.onProgressCallback.onState("처리 완료");
+            this.onProgressCallback.onState("after-process");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
         
