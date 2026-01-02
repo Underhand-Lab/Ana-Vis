@@ -3,11 +3,11 @@ import * as BallDetector from '../../src/cv-val/track/ball-detector/index.js';
 import * as Calc from "../../src/cv-val/track/calc/velocity.js";
 
 const detectors = {
-    "yolo11x": new BallDetector.YOLOLiveBallDetector("../external/models/yolo11/yolo11x_web_model/model.json"),
-    "yolo11l": new BallDetector.YOLOLiveBallDetector("../external/models/yolo11/yolo11l_web_model/model.json"),
-    "yolo11m": new BallDetector.YOLOLiveBallDetector("../external/models/yolo11/yolo11m_web_model/model.json"),
-    "yolo11s": new BallDetector.YOLOLiveBallDetector("../external/models/yolo11/yolo11s_web_model/model.json"),
-    "yolo11n": new BallDetector.YOLOLiveBallDetector("../external/models/yolo11/yolo11n_web_model/model.json")
+    "yolo11x": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11x_web_model/model.json"),
+    "yolo11l": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11l_web_model/model.json"),
+    "yolo11m": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11m_web_model/model.json"),
+    "yolo11s": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11s_web_model/model.json"),
+    "yolo11n": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11n_web_model/model.json")
 }
 
 const detectorSelect = document.getElementById("model");
@@ -182,6 +182,9 @@ frameSlider.addEventListener('input', updateFrameBySlider);
 retCanvas.addEventListener('click', async () => {
     if (isLive) {
         isLive = false;
+        document.querySelector('nav').classList.remove("hidden");
+        const slider = document.querySelector('.slider');
+        if (slider) slider.style.display = "block";
         webcam.stopCamera();
         if (frameQueue.length > 0) {
             frameSlider.max = frameQueue.length - 1;
@@ -199,6 +202,9 @@ retCanvas.addEventListener('click', async () => {
         detector = detectors[detectorSelect.value];
         await detector.initialize();
         isLive = true;
+        document.querySelector('nav').classList.add("hidden");
+        const slider = document.querySelector('.slider');
+        if (slider) slider.style.display = "none";
         await webcam.startCamera();
         liveLoop();
     }
