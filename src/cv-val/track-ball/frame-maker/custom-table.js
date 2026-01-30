@@ -5,7 +5,6 @@ class CustomTableFrameMaker {
     constructor() {
         this.table = null;
         this.analysisTool = null;
-        this.conf = 1;
     }
 
     setInstance(canvas) {
@@ -17,16 +16,11 @@ class CustomTableFrameMaker {
         this.setData(this.data);
     }
 
-    setConf(conf) {
-        this.conf = conf;
-    }
-
     setData(data) {
         
         if (data == null) return;
 
-        if (this.analysisTool == null) this.data = data;
-        else this.data = this.analysisTool.calc(data);
+        this.data = data;
 
     }
 
@@ -35,13 +29,11 @@ class CustomTableFrameMaker {
         
         let d = {}
 
-        for (let key of Object.keys(this.data)) {
-            if (key == "confidence") continue;
-            if (this.data["confidence"][idx] < this.conf) {
-                d[key] = null;
-                continue;
-            }
-            d[key] = this.data[key][idx] ? this.data[key][idx].toFixed(2) : "?";
+        if (this.analysisTool == null) {
+            d = this.data[idx];
+        }
+        else {
+            d = this.analysisTool.calc(this.data, idx);
         }
 
         this.table.setData(d);

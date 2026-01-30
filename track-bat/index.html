@@ -69,10 +69,10 @@
                     <label for="confInput">CONF: </label>
                     <input type="number" pattern="\d*" inputmode="decimal" id="confInput" value="0.55" min="0" max="1"
                         step="0.01">
-                    <label for="confInput">Trail: </label>
-                    <input type="number" pattern="\d*" inputmode="decimal" id="trailInput" value="3" min="0" max="15"
-                        step="1">
-                    <select id="candidateSelect"></select>
+                    <label for="candidateSelect">후보 선택: </label>
+                    <select id="candidateSelect">
+                        <option>none</option>
+                    </select>
                 </div>
                 <div style="text-align: right;white-space: nowrap;">
                     <button id="add-box-button">
@@ -163,7 +163,7 @@
                 <e-text key="btn-add-video"></e-text>
             </button>
             <br>
-            <button id="add-table-box-button">
+            <button id="add-table-box-button" style="display:none;">
                 <e-text key="btn-add-table"></e-text>
             </button>
             <hr>

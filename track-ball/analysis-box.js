@@ -7,6 +7,8 @@ let processedData = null;
 
 const confInput = document.getElementById('confInput');
 confInput.addEventListener('change', () => {
+    if (processedData == null) return;
+    processedData.setConf(parseFloat(confInput.value));
     updateImage();
 });
 
@@ -17,15 +19,52 @@ function nowIdx() {
     return parseInt(slider.value, 10);
 }
 
-// 슬라이더를 움직일 때마다 이미지를 업데이트하는 함수
-function updateImage() {
+// --- candidateSelect 이벤트 리스너 ---
+const candidateSelect = document.getElementById('candidateSelect');
 
+candidateSelect.addEventListener('change', () => {
+    if (!processedData) return;
+    const idx = nowIdx();
+
+    // 사용자가 '선택 안 함'을 고르면 -1이 전달됩니다.
+    const selectedValue = parseInt(candidateSelect.value, 10);
+    processedData.setSelectedIdx(idx, selectedValue);
+
+    updateImage();
+});
+
+function updateImage() {
     if (!processedData) return;
 
     const frameIdx = nowIdx();
 
+    // --- 후보군 Select 박스 갱신 로직 (선택 안 함 추가) ---
+    const candidates = processedData.getCandidatesAt(frameIdx);
+    const frameData = processedData.getBallList()[frameIdx];
+    const currentSelected = frameData ? frameData.selectedIdx : -1;
+
+    candidateSelect.innerHTML = ''; // 초기화
+
+    // 1. 항상 '선택 안 함' 옵션을 맨 위에 추가
+    const noneOpt = document.createElement('option');
+    noneOpt.value = "-1";
+    noneOpt.text = "none";
+
+    if (currentSelected === -1) noneOpt.selected = true;
+    candidateSelect.appendChild(noneOpt);
+
+    // 2. 검출된 후보들이 있다면 리스트업
+    if (candidates && candidates.length > 0) {
+        candidates.forEach((cand, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.text = `${i + 1} (${(cand.confidence * 100).toFixed(0)}%)`;
+            if (i === currentSelected) opt.selected = true;
+            candidateSelect.appendChild(opt);
+        });
+    }
+
     for (let i = 0; i < frameMakers.length; i++) {
-        frameMakers[i].setConf(confInput.value);
         frameMakers[i].drawImageAt(frameIdx);
     }
 
@@ -38,6 +77,7 @@ function setData(data) {
     if (data == null) return;
 
     processedData = data;
+    processedData.setConf(parseFloat(confInput.value));
 
     for (let i = 0; i < frameMakers.length; i++) {
         frameMakers[i].setData(data);
@@ -45,6 +85,8 @@ function setData(data) {
 
     const frameCount = processedData.getFrameCnt();
     slider.max = frameCount > 0 ? frameCount - 1 : 0;
+    
+    console.log(processedData);
 
     updateImage();
 

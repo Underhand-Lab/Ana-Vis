@@ -2,7 +2,6 @@ import { CanvasRenderer } from "../../canvas-renderer.js";
 
 export class TrackFrameMaker {
     constructor() {
-        this.conf = 0.01;
         this.trackData = null;
         this.offscreenCanvas = document.createElement('canvas');
         this.offscreenCtx = this.offscreenCanvas.getContext('2d');
@@ -21,14 +20,12 @@ export class TrackFrameMaker {
             this.offscreenCanvas.height = image.height;
         }
     }
-    setConf(conf) { this.conf = conf; }
 
     getBall(idx) {
         if (!this.trackData || idx < 0) return null;
-        const ballData = this.trackData.getBallList();
-        if (!ballData || !ballData[idx]) return null;
-        if (ballData[idx]["confidence"] < this.conf) return null;
-        return ballData[idx];
+        const ballData = this.trackData.getSelectedBallAt(idx);
+        if (ballData == null) return null;
+        return ballData;
     }
 
     /**

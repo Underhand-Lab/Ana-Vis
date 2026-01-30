@@ -4,7 +4,16 @@
         </e-text>
     </label>
     <hr>
-    <button class="save"><e-text key="btn-save"></e-text></button>
-    <hr>
     <canvas class="outputImage" style="background-color: black;"></canvas>
+    <hr>
+    <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
+        <div style="flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap;">
+            <label>Trail: </label>
+            <input type="number" pattern="\d*" inputmode="decimal" class="trailInput" value="3" min="0" max="15"
+                step="1">
+        </div>
+        <div style="text-align: right;white-space: nowrap;">
+            <button class="save"><e-text key="btn-save"></e-text></button>
+        </div>
+    </div>
 </div>

@@ -3,27 +3,44 @@ import { CanvasRenderer } from "../../canvas-renderer.js";
 export class TrackFrameMaker {
     constructor() {
         this.conf = 0.5;
-        this.trail = 15;
+        this.trail = null;
         this.trackData = null;
         this.offscreenCanvas = document.createElement('canvas');
         this.offscreenCtx = this.offscreenCanvas.getContext('2d');
         this.renderer = new CanvasRenderer();
         this.cachedImageData = null;
+        this.lastIdx = 0;
     }
 
     setInstance(instance) { this.renderer.setCanvas(instance); }
     setConf(conf) { this.conf = conf; }
-    setTrail(trail) { this.trail = trail; }
+    setTrail(trail) {
+        this.trail = trail;
+        if (this.trackData != null) {
+            const frameCount = trackData.getFrameCnt();
+            const maxValue = frameCount > 0 ? frameCount - 1 : 0;
+            this.trail.max = maxValue;
+        }
+        this.trail.addEventListener('change', () => {
+            this.drawImageAt(this.lastIdx);
+        });
+    }
     
     setData(trackData) {
         this.trackData = trackData;
         if (trackData == null) return;
+        if (this.trail != null) {
+            const frameCount = trackData.getFrameCnt();
+            const maxValue = frameCount > 0 ? frameCount - 1 : 0;
+            this.trail.max = maxValue;
+        }
         const image = this.trackData.getRawImgList(0)[0];
         if (image) this.renderer.updateLayout(image.width, image.height);
     }
 
     drawImageAt(idx) {
         if (!this.trackData || idx < 0) return;
+        this.lastIdx = idx;
         const image = this.trackData.getRawImgList(0)[idx];
         if (!image) return;
 
@@ -57,7 +74,7 @@ export class TrackFrameMaker {
 
         this.cachedImageData.data.fill(0);
         const pixelBuffer = this.cachedImageData.data;
-        const startIdx = Math.max(1, idx - this.trail + 1);
+        const startIdx = Math.max(1, idx - parseInt(this.trail.value) + 1);
 
         for (let i = startIdx; i <= idx; i++) {
             const prev = this.trackData.getSelectedBatAt(i - 1);
