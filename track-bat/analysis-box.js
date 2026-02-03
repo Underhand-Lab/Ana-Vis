@@ -95,12 +95,12 @@ function addToolDefault(src, frameMaker, func, toBottom = true) {
     return new Promise((resolve, reject) => {
         boxList.addBoxTemplate(src, () => {
             frameMakers = frameMakers.filter(fm => fm !== frameMaker);
-    
+
         }, (box) => {
             box.className = 'container neumorphism';
             func(box);
             frameMaker.setData(processedData);
-    
+
             frameMakers.push(frameMaker);
             frameMaker.drawImageAt(nowIdx());
             resolve();
@@ -118,6 +118,10 @@ function addTool(src, frameMaker, func) {
     });
 }
 
+const saveCanvas = document.createElement('canvas');
+saveCanvas.style.display = 'none';
+document.body.appendChild(saveCanvas);
+
 addVideoBoxBtn.addEventListener('click', () => {
 
     const newFrameMaker = new TrackFrameMaker();
@@ -128,9 +132,20 @@ addVideoBoxBtn.addEventListener('click', () => {
         const trailInput = box.querySelectorAll(".trailInput")[0];
 
         const exporter = new SaveFrameMaker(newFrameMaker);
-        saveBtn.addEventListener('click', () => {
+        saveBtn.addEventListener('click', async () => {
             if (processedData == null) return;
-            exporter.export(processedData);
+            const metadata = processedData.getVideoMetadata(0);
+            const defaultDPR = window.devicePixelRatio;
+            window.devicePixelRatio = 1;
+
+            saveCanvas.width = metadata.width;
+            saveCanvas.height = metadata.height;
+            newFrameMaker.setInstance(saveCanvas);
+
+            await exporter.export(processedData);
+            window.devicePixelRatio = defaultDPR;
+            newFrameMaker.setInstance(newCanvas);
+
         });
 
         newFrameMaker.setTrail(trailInput);
@@ -146,9 +161,18 @@ addToolDefault("../template/video-with-save.html", newFrameMaker, (box) => {
     const trailInput = box.querySelectorAll(".trailInput")[0];
 
     const exporter = new SaveFrameMaker(newFrameMaker);
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener('click', async () => {
         if (processedData == null) return;
-        exporter.export(processedData);
+        const metadata = processedData.getVideoMetadata(0);
+
+        saveCanvas.width = metadata.width;
+        saveCanvas.height = metadata.height;
+        newFrameMaker.setInstance(saveCanvas);
+
+        await exporter.export(processedData);
+        
+        newFrameMaker.setInstance(newCanvas);
+
     });
 
     newFrameMaker.setTrail(trailInput);

@@ -12,8 +12,20 @@ export class TrackFrameMaker {
         this.lastIdx = 0;
     }
 
-    setInstance(instance) { this.renderer.setCanvas(instance); }
-    setConf(conf) { this.conf = conf; }
+    setInstance(instance) {
+        this.renderer.setCanvas(instance);
+
+        if (this.trackData == null) return;
+        const metadata = this.trackData.getVideoMetadata(0);
+
+        if (metadata == null) return;
+        this.renderer.updateLayout(metadata.width, metadata.height);
+
+    }
+    setConf(conf) {
+        this.conf = conf;
+    }
+    
     setTrail(trail) {
         this.trail = trail;
         if (this.trackData != null) {
@@ -34,8 +46,10 @@ export class TrackFrameMaker {
             const maxValue = frameCount > 0 ? frameCount - 1 : 0;
             this.trail.max = maxValue;
         }
-        const image = this.trackData.getRawImgList(0)[0];
-        if (image) this.renderer.updateLayout(image.width, image.height);
+        const metadata = this.trackData.getVideoMetadata(0);
+        
+        if (metadata == null) return;
+        this.renderer.updateLayout(metadata.width, metadata.height);
     }
 
     drawImageAt(idx) {

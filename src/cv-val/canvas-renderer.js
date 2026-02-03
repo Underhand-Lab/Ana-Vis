@@ -3,7 +3,7 @@ class CanvasRenderer {
         this.canvas = null;
         this.ctx = null;
         this.layout = null;
-        this.sourceW = 0; // 레이아웃 재계산을 위해 원본 크기 저장
+        this.sourceW = 0;
         this.sourceH = 0;
     }
 
@@ -36,49 +36,74 @@ class CanvasRenderer {
             y = 0;
         }
 
-        // 정수 좌표로 변환하여 선명도 향상
         this.layout = { 
             x: Math.floor(x), 
             y: Math.floor(y), 
             width: Math.floor(drawW), 
             height: Math.floor(drawH) 
         };
+
     }
 
     drawImage(source) {
         if (!this.canvas || !source) return;
 
-        // 1. 화면 표시 크기(style)와 내부 해상도 동기화 체크
+        // --- 해상도 맞춤(DPR 반영) 코드 시작 ---
+        const dpr = 1;
         const currentRatio = this.canvas.height / this.canvas.width;
-        const newW = this.canvas.clientWidth;
-        const newH = Math.floor(newW * (isNaN(currentRatio) ? 0.5 : currentRatio));
+        
+        // CSS 상의 실제 노출 크기
+        const displayW = this.canvas.clientWidth;
+        const displayH = this.canvas.clientHeight || Math.floor(displayW * (isNaN(currentRatio) ? 0.5 : currentRatio));
 
-        if (this.canvas.width !== newW || this.canvas.height !== newH) {
-            this.canvas.width = newW;
-            this.canvas.height = newH;
-            // 캔버스 크기가 바뀌었으므로 레이아웃 강제 업데이트
+        // 캔버스의 내부 해상도를 (디스플레이 크기 * DPR)로 설정
+        if (displayW > 0 && (this.canvas.width !== Math.floor(displayW * dpr) || this.canvas.height !== Math.floor(displayH * dpr))) {
+            this.canvas.width = Math.floor(displayW * dpr);
+            this.canvas.height = Math.floor(displayH * dpr);
+            
+            // 컨텍스트의 스케일을 조정하여 그리기 명령이 자동으로 DPR에 맞춰지게 함
+            this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
             if (this.sourceW && this.sourceH) {
                 this.updateLayout(this.sourceW, this.sourceH);
             }
         }
+        // --- 해상도 맞춤 코드 끝 ---
 
-        // 2. 렌더링 설정 (Canvas 크기 변경 시 초기화될 수 있으므로 다시 설정)
         this.ctx.imageSmoothingEnabled = true;
         this.ctx.imageSmoothingQuality = 'high';
 
+        // 배경색 채우기 (내부 해상도가 dpr배 되었으므로 좌표/크기 계산 주의)
+        // setTransform을 썼으므로 소스 코드 상의 수치(displayW, displayH)를 그대로 사용
         this.ctx.fillStyle = 'black';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillRect(0, 0, displayW, displayH);
 
         if (this.layout) {
-            this.ctx.drawImage(source, this.layout.x, this.layout.y, this.layout.width, this.layout.height);
+            // layout 수치는 이미 dpr이 곱해진 canvas.width 기준이므로 
+            // setTransform 영향을 받지 않도록 일시적으로 리셋하거나 계산을 맞춰야 합니다.
+            // 여기서는 가장 간단하게 원본 크기로 레이아웃을 다시 잡아 그립니다.
+            const drawX = this.layout.x / dpr;
+            const drawY = this.layout.y / dpr;
+            const drawW = this.layout.width / dpr;
+            const drawH = this.layout.height / dpr;
+
+            this.ctx.drawImage(source, drawX, drawY, drawW, drawH);
         }
     }
 
     drawLayer(source) {
         if (!this.ctx || !source || !this.layout) return;
-        // 레이어 그릴 때도 스무딩 설정을 유지하는 것이 좋습니다.
+        const dpr = 1;
         this.ctx.imageSmoothingEnabled = true;
-        this.ctx.drawImage(source, this.layout.x, this.layout.y, this.layout.width, this.layout.height);
+        
+        // drawImage와 동일하게 스케일링 보정
+        this.ctx.drawImage(
+            source, 
+            this.layout.x / dpr, 
+            this.layout.y / dpr, 
+            this.layout.width / dpr, 
+            this.layout.height / dpr
+        );
     }
 }
 
