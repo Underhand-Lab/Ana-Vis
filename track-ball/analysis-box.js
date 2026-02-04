@@ -106,7 +106,7 @@ function addToolDefault(src, frameMaker, func, toBottom = true) {
     
         }, (box) => {
             box.className = 'container neumorphism';
-            func(box);
+            func(frameMaker, box);
             frameMaker.setData(processedData);
     
             frameMakers.push(frameMaker);
@@ -126,15 +126,26 @@ function addTool(src, frameMaker, func) {
     });
 }
 
+const frameMakerInitializer = {
+    "video": function(frameMaker, box) {
+            const newCanvas = box.querySelectorAll("canvas")[0];
+            frameMaker.setInstance(newCanvas);
+    },
+    "table": function(frameMaker, box) {
+            const newDiv = box.getElementsByClassName("table")[0];
+            frameMaker.setInstance(newDiv);
+
+            frameMaker.changeAnalysisTool(
+                new Analysis.BallAnalysisTool());
+        }
+
+}
+
 addVideoBoxBtn.addEventListener('click', () => {
     const newPoseFrameMaker = new FrameMaker.TrackFrameMaker();
     console.log("add");
-    addTool("../template/video.html", newPoseFrameMaker,
-        (box) => {
-            const newCanvas = box.querySelectorAll("canvas")[0];
-            newPoseFrameMaker.setInstance(newCanvas);
-
-        });
+    addTool("../template/video.html",
+        newPoseFrameMaker, frameMakerInitializer["video"]);
 
 });
 
@@ -142,36 +153,19 @@ addTableBoxBtn.addEventListener('click', () => {
     const newTableFrameMaker = new FrameMaker.CustomTableFrameMaker();
 
     console.log("add");
-    addTool("../template/table-track.html", newTableFrameMaker,
-        (box) => {
-            const newDiv = box.getElementsByClassName("table")[0];
-            newTableFrameMaker.setInstance(newDiv);
-
-            newTableFrameMaker.changeAnalysisTool(
-                new Analysis.BallAnalysisTool());
-        });
+    addTool("../template/table-track.html",
+        newTableFrameMaker, frameMakerInitializer["table"]);
 
 });
 
 const newPoseFrameMaker = new FrameMaker.TrackFrameMaker();
 
-addToolDefault("../template/video.html", newPoseFrameMaker,
-    (box) => {
-        const newCanvas = box.querySelectorAll("canvas")[0];
-        newPoseFrameMaker.setInstance(newCanvas);
-        
-    }).then(() => {
+addToolDefault("../template/video.html",
+    newPoseFrameMaker, frameMakerInitializer["video"]).then(() => {
         const newTableFrameMaker = new FrameMaker.CustomTableFrameMaker();
 
         addToolDefault("../template/table-track.html",
-             newTableFrameMaker,
-            (box) => {
-                const newDiv = box.getElementsByClassName("table")[0];
-                newTableFrameMaker.setInstance(newDiv);
-                newTableFrameMaker.changeAnalysisTool(
-                    new Analysis.BallAnalysisTool());
-
-            });
+            newTableFrameMaker, frameMakerInitializer["table"]);
 
     });
 

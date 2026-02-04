@@ -1,6 +1,7 @@
 {
     "nav-pose": "Pose",
     "nav-track-ball": "Ball Tracking",
+    "nav-track-bat": "Bat Tracking",
 
     "btn-download-processed-data": "Download processed data",
     "btn-open-process": "Process",

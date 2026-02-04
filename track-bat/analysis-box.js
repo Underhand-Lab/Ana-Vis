@@ -1,6 +1,6 @@
 import { BoxList } from "../src/easy-h/ui/box-list.js";
 import { TrackFrameMaker } from "../src/cv-val/track-bat/frame-maker/frame-maker.js";
-import { SaveFrameMaker } from "../src/cv-val/save-frame-maker.js";
+import { SaveFrameMaker } from "../src/cv-val/ffmpeg-save-frame-maker.js";
 
 let frameMakers = [];
 let processedData = null;
@@ -9,7 +9,6 @@ const confInput = document.getElementById('confInput');
 confInput.addEventListener('change', () => {
     updateImage();
 });
-
 
 const slider = document.getElementById('frameSlider');
 slider.max = 0;
@@ -91,14 +90,14 @@ const analysisSelect = document.getElementById('analysis');
 const addVideoBoxBtn = document.getElementById('add-video-box-button');
 const boxList = new BoxList(document.getElementById("boxes"));
 
-function addToolDefault(src, frameMaker, func, toBottom = true) {
+function addToolDefault(src, frameMaker, func) {
     return new Promise((resolve, reject) => {
         boxList.addBoxTemplate(src, () => {
             frameMakers = frameMakers.filter(fm => fm !== frameMaker);
 
         }, (box) => {
             box.className = 'container neumorphism';
-            func(box);
+            func(frameMaker, box);
             frameMaker.setData(processedData);
 
             frameMakers.push(frameMaker);
@@ -122,61 +121,46 @@ const saveCanvas = document.createElement('canvas');
 saveCanvas.style.display = 'none';
 document.body.appendChild(saveCanvas);
 
-addVideoBoxBtn.addEventListener('click', () => {
-
-    const newFrameMaker = new TrackFrameMaker();
-
-    addTool("../template/video-with-save.html", newFrameMaker, (box) => {
+const frameMakerInitializer = {
+    "video": function(frameMaker, box) {
         const newCanvas = box.querySelectorAll("canvas")[0];
         const saveBtn = box.querySelectorAll(".save")[0];
         const trailInput = box.querySelectorAll(".trailInput")[0];
 
-        const exporter = new SaveFrameMaker(newFrameMaker);
+        const exporter = new SaveFrameMaker(frameMaker);
         saveBtn.addEventListener('click', async () => {
             if (processedData == null) return;
             const metadata = processedData.getVideoMetadata(0);
-            const defaultDPR = window.devicePixelRatio;
-            window.devicePixelRatio = 1;
 
             saveCanvas.width = metadata.width;
             saveCanvas.height = metadata.height;
-            newFrameMaker.setInstance(saveCanvas);
+            frameMaker.setInstance(saveCanvas);
 
             await exporter.export(processedData);
-            window.devicePixelRatio = defaultDPR;
-            newFrameMaker.setInstance(newCanvas);
+            
+            console.log("저장 완료");
+
+            frameMaker.setInstance(newCanvas);
 
         });
 
-        newFrameMaker.setTrail(trailInput);
-        newFrameMaker.setInstance(newCanvas);
-    });
+        frameMaker.setTrail(trailInput);
+        frameMaker.setInstance(newCanvas);
+    }
+};
+
+addVideoBoxBtn.addEventListener('click', () => {
+
+    const newFrameMaker = new TrackFrameMaker();
+
+    addTool("../template/video-with-save.html",
+        newFrameMaker, frameMakerInitializer["video"]);
+
 });
 
 const newFrameMaker = new TrackFrameMaker();
-// 초기 실행
-addToolDefault("../template/video-with-save.html", newFrameMaker, (box) => {
-    const newCanvas = box.querySelectorAll("canvas")[0];
-    const saveBtn = box.querySelectorAll(".save")[0];
-    const trailInput = box.querySelectorAll(".trailInput")[0];
 
-    const exporter = new SaveFrameMaker(newFrameMaker);
-    saveBtn.addEventListener('click', async () => {
-        if (processedData == null) return;
-        const metadata = processedData.getVideoMetadata(0);
-
-        saveCanvas.width = metadata.width;
-        saveCanvas.height = metadata.height;
-        newFrameMaker.setInstance(saveCanvas);
-
-        await exporter.export(processedData);
-        
-        newFrameMaker.setInstance(newCanvas);
-
-    });
-
-    newFrameMaker.setTrail(trailInput);
-    newFrameMaker.setInstance(newCanvas);
-});
+addToolDefault("../template/video-with-save.html",
+    newFrameMaker, frameMakerInitializer["video"]);
 
 export { setData };
