@@ -120,12 +120,34 @@ function addTool(src, frameMaker, func) {
 const saveCanvas = document.createElement('canvas');
 saveCanvas.style.display = 'none';
 document.body.appendChild(saveCanvas);
-
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return [ r, g, b, parseInt(alpha) ];
+}
 const frameMakerInitializer = {
     "video": function(frameMaker, box) {
         const newCanvas = box.querySelectorAll("canvas")[0];
         const saveBtn = box.querySelectorAll(".save")[0];
         const trailInput = box.querySelectorAll(".trailInput")[0];
+
+        const batColor = box.querySelectorAll(".bat-color")[0];
+        const batColorAlpha = box.querySelectorAll(".bat-color-alpha")[0];
+        const trailColor = box.querySelectorAll(".trail-color")[0];
+        const trailColorAlpha = box.querySelectorAll(".trail-color-alpha")[0];
+
+        const colorChange = () => {
+            frameMaker.setColors(hexToRgba(
+                batColor.value, batColorAlpha.value),
+                hexToRgba(trailColor.value, trailColorAlpha.value));
+            frameMaker.drawImageAt(nowIdx());
+        }
+
+        batColor.addEventListener('change', colorChange);
+        batColorAlpha.addEventListener('change', colorChange);
+        trailColor.addEventListener('change', colorChange);
+        trailColorAlpha.addEventListener('change', colorChange);
 
         const exporter = new SaveFrameMaker(frameMaker);
         saveBtn.addEventListener('click', async () => {
@@ -141,9 +163,11 @@ const frameMakerInitializer = {
             console.log("저장 완료");
 
             frameMaker.setInstance(newCanvas);
-
+            frameMaker.drawImageAt(nowIdx());
+            
         });
 
+        colorChange();
         frameMaker.setTrail(trailInput);
         frameMaker.setInstance(newCanvas);
     }
@@ -153,14 +177,14 @@ addVideoBoxBtn.addEventListener('click', () => {
 
     const newFrameMaker = new TrackFrameMaker();
 
-    addTool("../template/video-with-save.html",
+    addTool("../template/bat-video.html",
         newFrameMaker, frameMakerInitializer["video"]);
 
 });
 
 const newFrameMaker = new TrackFrameMaker();
 
-addToolDefault("../template/video-with-save.html",
+addToolDefault("../template/bat-video.html",
     newFrameMaker, frameMakerInitializer["video"]);
 
 export { setData };

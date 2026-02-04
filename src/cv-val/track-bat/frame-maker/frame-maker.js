@@ -38,6 +38,12 @@ export class TrackFrameMaker {
         });
     }
     
+    // 색상을 외부에서 동적으로 변경하기 위한 메서드
+    setColors(currentRGBA, trailRGBA) {
+        if (trailRGBA) this.trailColor = trailRGBA;
+        if (currentRGBA) this.currentBatColor = currentRGBA;
+    }
+    
     setData(trackData) {
         this.trackData = trackData;
         if (trackData == null) return;
@@ -69,7 +75,6 @@ export class TrackFrameMaker {
     }
 
     _generateMaskLayer(idx) {
-        // 마스크 해상도 파악을 위한 샘플 데이터 획득
         let sampleBat = null;
         for (let i = idx; i >= 0; i--) {
             sampleBat = this.trackData.getSelectedBatAt(i);
@@ -90,17 +95,19 @@ export class TrackFrameMaker {
         const pixelBuffer = this.cachedImageData.data;
         const startIdx = Math.max(1, idx - parseInt(this.trail.value) + 1);
 
+        // 1. 과거 궤적 그리기 (설정된 trailColor 사용)
         for (let i = startIdx; i <= idx; i++) {
             const prev = this.trackData.getSelectedBatAt(i - 1);
             const curr = this.trackData.getSelectedBatAt(i);
             
-            const alpha = Math.floor(((i - startIdx + 1) / (idx - startIdx + 1)) * 50) + 75;
-            this.masking(pixelBuffer, prev, curr, this.conf, [0, 255, 0, alpha], maskW, maskH);
+            // 기존의 복잡한 알파 계산 대신 설정된 통일 색상 사용
+            this.masking(pixelBuffer, prev, curr, this.conf, this.trailColor, maskW, maskH);
         }
 
+        // 2. 현재 배트 그리기 (설정된 currentBatColor 사용)
         const nowBat = this.trackData.getSelectedBatAt(idx);
         if (nowBat?.maskConfidenceMap) {
-            this.applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, this.conf, [255, 128, 0, 180], maskW, maskH);
+            this.applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, this.conf, this.currentBatColor, maskW, maskH);
         }
 
         this.offscreenCtx.putImageData(this.cachedImageData, 0, 0);

@@ -3,49 +3,53 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.m
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
 const POSE_CONNECTIONS = [
-    ["L_SHOULDER", "L_ELBOW"],
-    ["L_ELBOW", "L_WRIST"],
-    ["R_SHOULDER", "R_ELBOW"],
-    ["R_ELBOW", "R_WRIST"],
-    ["L_HIP", "L_KNEE"],
-    ["L_KNEE", "L_ANKLE"],
-    ["L_ANKLE", "L_HEEL"],
-    ["L_HEEL", "L_FOOT_INDEX"],
-    ["R_HIP", "R_KNEE"],
-    ["R_KNEE", "R_ANKLE"],
-    ["R_ANKLE", "R_HEEL"],
-    ["R_HEEL", "R_FOOT_INDEX"],
-    ["L_SHOULDER", "R_SHOULDER"],
-    ["L_HIP", "R_HIP"],
-    ["L_SHOULDER", "L_HIP"],
-    ["R_SHOULDER", "R_HIP"]
+    ["L_SHOULDER", "L_ELBOW"], ["L_ELBOW", "L_WRIST"],
+    ["R_SHOULDER", "R_ELBOW"], ["R_ELBOW", "R_WRIST"],
+    ["L_HIP", "L_KNEE"], ["L_KNEE", "L_ANKLE"], ["L_ANKLE", "L_HEEL"], ["L_HEEL", "L_FOOT_INDEX"],
+    ["R_HIP", "R_KNEE"], ["R_KNEE", "R_ANKLE"], ["R_ANKLE", "R_HEEL"], ["R_HEEL", "R_FOOT_INDEX"],
+    ["L_SHOULDER", "R_SHOULDER"], ["L_HIP", "R_HIP"], ["L_SHOULDER", "L_HIP"], ["R_SHOULDER", "R_HIP"],
+    ["NOSE", "L_SHOULDER"], ["NOSE", "R_SHOULDER"]
 ];
 
-const CONNECTIONS_COLORS_RGB = {
-    "L_SHOULDER,L_ELBOW": [255, 0, 0],
-    "L_ELBOW,L_WRIST": [255, 0, 0],
-    "R_SHOULDER,R_ELBOW": [0, 0, 255],
-    "R_ELBOW,R_WRIST": [0, 0, 255],
-    "L_HIP,L_KNEE": [255, 255, 0],
-    "L_KNEE,L_ANKLE": [255, 255, 0],
-    "L_ANKLE,L_HEEL": [255, 255, 0],
-    "L_HEEL,L_FOOT_INDEX": [255, 255, 0],
-    "R_HIP,R_KNEE": [0, 255, 255],
-    "R_KNEE,R_ANKLE": [0, 255, 255],
-    "R_ANKLE,R_HEEL": [0, 255, 255],
-    "R_HEEL,R_FOOT_INDEX": [0, 255, 255],
-    "L_SHOULDER,R_SHOULDER": [0, 255, 0],
-    "L_HIP,R_HIP": [0, 255, 0],
-    "L_SHOULDER,L_HIP": [0, 255, 0],
-    "R_SHOULDER,R_HIP": [0, 255, 0],
-    "NOSE,L_SHOULDER": [255, 255, 255],
-    "NOSE,R_SHOULDER": [255, 255, 255],
+const CONNECTIONS_COLORS_KEY = {
+    "L_SHOULDER,L_ELBOW": "COLOR_LEFT_ARM",
+    "L_ELBOW,L_WRIST": "COLOR_LEFT_ARM",
+
+    "R_SHOULDER,R_ELBOW": "COLOR_RIGHT_ARM",
+    "R_ELBOW,R_WRIST": "COLOR_RIGHT_ARM",
+
+    "L_HIP,L_KNEE": "COLOR_LEFT_LEG",
+    "L_KNEE,L_ANKLE": "COLOR_LEFT_LEG",
+    "L_ANKLE,L_HEEL": "COLOR_LEFT_LEG",
+    "L_HEEL,L_FOOT_INDEX": "COLOR_LEFT_LEG",
+
+    "R_HIP,R_KNEE": "COLOR_RIGHT_LEG",
+    "R_KNEE,R_ANKLE": "COLOR_RIGHT_LEG",
+    "R_ANKLE,R_HEEL": "COLOR_RIGHT_LEG",
+    "R_HEEL,R_FOOT_INDEX": "COLOR_RIGHT_LEG",
+
+    "L_SHOULDER,R_SHOULDER": "COLOR_TORSO",
+    "L_HIP,R_HIP": "COLOR_TORSO",
+    "L_SHOULDER,L_HIP": "COLOR_TORSO",
+    "R_SHOULDER,R_HIP": "COLOR_TORSO",
+
+    "NOSE,L_SHOULDER": "COLOR_HEAD_NECK",
+    "NOSE,R_SHOULDER": "COLOR_HEAD_NECK"
 };
 
 export class Pose3DFrameMaker extends IPoseFrameMaker {
     constructor() {
         super();
         this.canvas3d = null;
+        this.colorPalette = {
+            "COLOR_LEFT_ARM": "#ff0000",
+            "COLOR_RIGHT_ARM": "#0000ff",
+            "COLOR_LEFT_LEG": "#ffff00",
+            "COLOR_RIGHT_LEG": "#00ffff",
+            "COLOR_TORSO": "#00ff00",
+            "COLOR_HEAD_NECK": "#ffffff",
+            "JOINT_STROKE": "#ff0000"
+        };
     }
     setInstance(canvas3d) {
         this.canvas3d = canvas3d;
@@ -106,6 +110,12 @@ export class Pose3DFrameMaker extends IPoseFrameMaker {
         this.lastIdx = 0;
     }
 
+    setColor(key, colorValue) {
+        if (this.colorPalette[key] !== undefined) {
+            this.colorPalette[key] = colorValue;
+        }
+    }
+
     drawImageAt(idx) {
         if (this.processedData == null) return;
 
@@ -131,7 +141,7 @@ export class Pose3DFrameMaker extends IPoseFrameMaker {
             const position = new THREE.Vector3(landmark[0], landmark[1], -landmark[2]);
             jointPositions[key] = position;
 
-            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const sphereMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(this.colorPalette["JOINT_STROKE"]) });
             const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
             sphere.position.copy(position);
             this.scene.add(sphere);
@@ -144,13 +154,15 @@ export class Pose3DFrameMaker extends IPoseFrameMaker {
             const endPoint = jointPositions[endKey];
             
             if (startPoint && endPoint) {
-                let color = CONNECTIONS_COLORS_RGB[`${startKey},${endKey}`];
-                if (!color) {
-                    color = CONNECTIONS_COLORS_RGB[`${endKey},${startKey}`];
+                let colorKey = CONNECTIONS_COLORS_KEY[`${startKey},${endKey}`];
+                if (!colorKey) {
+                    colorKey = CONNECTIONS_COLORS_KEY[`${endKey},${startKey}`];
                 }
 
+                const color = this.colorPalette[colorKey];
+
                 const lineMaterial = new THREE.LineBasicMaterial({
-                    color: new THREE.Color(`rgb(${color[0]}, ${color[1]}, ${color[2]})`)
+                    color: new THREE.Color(color)
                 });
                 const points = [startPoint, endPoint];
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);

@@ -32,6 +32,10 @@ export class PoseBoneFrameMaker extends IPoseFrameMaker {
         }
     }
 
+    setColor(key, value) {
+        this.visualizer.setColor(key, value);
+    }
+
     /**
      * 오프스크린 레이어를 생성하는 내부 메서드
      */

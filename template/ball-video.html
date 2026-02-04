@@ -1,0 +1,22 @@
+<div class="viewer_container">
+    <label style="line-height: 32px;">
+        <e-text key="label-video">
+        </e-text>
+    </label>
+    <hr>
+    <canvas class="outputImage" style="background-color: black;"></canvas>
+    <hr>
+    <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
+        <div style="flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap;">
+            <label>궤적: </label>
+            <input type="color" class="trail-color" value="#ff0000">
+            <label>인식: </label>
+            <input type="color" class="box-color" value="#0000ff">
+            <label>conf 값 표시: </label>
+            <input type="checkbox" class="show-conf" checked>
+        </div>
+        <div style="text-align: right;white-space: nowrap;">
+            <button class="save"><e-text key="btn-save"></e-text></button>
+        </div>
+    </div>
+</div>

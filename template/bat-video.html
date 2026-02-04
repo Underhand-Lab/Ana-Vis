@@ -11,6 +11,16 @@
             <label>Trail: </label>
             <input type="number" pattern="\d*" inputmode="decimal" class="trailInput" value="3" min="0" max="15"
                 step="1">
+            <label>궤적: </label>
+            <input type="color" class="trail-color" value="#00ff00">
+            <input type="number" pattern="\d*"
+                inputmode="decimal" class="trail-color-alpha"
+                value="100" min="0" max="255">
+            <label>배트: </label>
+            <input type="color" class="bat-color" value="#ff8000">
+            <input type="number" pattern="\d*"
+                inputmode="decimal" class="bat-color-alpha"
+                value="100" min="0" max="255">
         </div>
         <div style="text-align: right;white-space: nowrap;">
             <button class="save"><e-text key="btn-save"></e-text></button>

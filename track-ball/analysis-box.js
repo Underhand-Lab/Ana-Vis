@@ -85,7 +85,7 @@ function setData(data) {
 
     const frameCount = processedData.getFrameCnt();
     slider.max = frameCount > 0 ? frameCount - 1 : 0;
-    
+
     console.log(processedData);
 
     updateImage();
@@ -103,12 +103,12 @@ function addToolDefault(src, frameMaker, func, toBottom = true) {
     return new Promise((resolve, reject) => {
         boxList.addBoxTemplate(src, () => {
             frameMakers = frameMakers.filter(fm => fm !== frameMaker);
-    
+
         }, (box) => {
             box.className = 'container neumorphism';
             func(frameMaker, box);
             frameMaker.setData(processedData);
-    
+
             frameMakers.push(frameMaker);
             frameMaker.drawImageAt(nowIdx());
             resolve();
@@ -127,24 +127,49 @@ function addTool(src, frameMaker, func) {
 }
 
 const frameMakerInitializer = {
-    "video": function(frameMaker, box) {
-            const newCanvas = box.querySelectorAll("canvas")[0];
-            frameMaker.setInstance(newCanvas);
-    },
-    "table": function(frameMaker, box) {
-            const newDiv = box.getElementsByClassName("table")[0];
-            frameMaker.setInstance(newDiv);
+    "video": function (frameMaker, box) {
+        const newCanvas = box.querySelectorAll("canvas")[0];
+        frameMaker.setInstance(newCanvas);
+        const confCheckbox = box.querySelectorAll(".show-conf")[0];
+        confCheckbox.addEventListener('change', (e) => {
+            frameMaker.setOptions({ showConfidence: e.target.checked });
+            frameMaker.drawImageAt(nowIdx());
+        });
 
-            frameMaker.changeAnalysisTool(
-                new Analysis.BallAnalysisTool());
-        }
+        const boxPicker = box.querySelectorAll(".box-color")[0];
+        boxPicker.addEventListener('change', (e) => {
+            frameMaker.setOptions({ boxColor: e.target.value });
+            frameMaker.drawImageAt(nowIdx());
+        });
+
+        // 색상 선택기로 궤적 색상 제어
+        const trailPicker = box.querySelectorAll(".trail-color")[0];
+        trailPicker.addEventListener('input', (e) => {
+            frameMaker.setOptions({ trailColor: e.target.value });
+            frameMaker.drawImageAt(nowIdx());
+        });
+
+        frameMaker.setOptions({
+            trailColor: trailPicker.value,
+            showConfidence: confCheckbox.checked,
+            boxColor: boxPicker.value
+        })
+
+    },
+    "table": function (frameMaker, box) {
+        const newDiv = box.getElementsByClassName("table")[0];
+        frameMaker.setInstance(newDiv);
+
+        frameMaker.changeAnalysisTool(
+            new Analysis.BallAnalysisTool());
+    }
 
 }
 
 addVideoBoxBtn.addEventListener('click', () => {
     const newPoseFrameMaker = new FrameMaker.TrackFrameMaker();
     console.log("add");
-    addTool("../template/video.html",
+    addTool("../template/ball-video.html",
         newPoseFrameMaker, frameMakerInitializer["video"]);
 
 });
@@ -160,7 +185,7 @@ addTableBoxBtn.addEventListener('click', () => {
 
 const newPoseFrameMaker = new FrameMaker.TrackFrameMaker();
 
-addToolDefault("../template/video.html",
+addToolDefault("../template/ball-video.html",
     newPoseFrameMaker, frameMakerInitializer["video"]).then(() => {
         const newTableFrameMaker = new FrameMaker.CustomTableFrameMaker();
 

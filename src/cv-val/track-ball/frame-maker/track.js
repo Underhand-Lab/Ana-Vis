@@ -6,16 +6,30 @@ export class TrackFrameMaker {
         this.offscreenCanvas = document.createElement('canvas');
         this.offscreenCtx = this.offscreenCanvas.getContext('2d');
         this.renderer = new CanvasRenderer();
+
+        // --- 설정 옵션 추가 ---
+        this.trailColor = 'red';      // 궤적 색상
+        this.boxColor = 'blue';       // 바운딩 박스 색상
+        this.showConfidence = true;    // 신뢰도 표시 여부
+        this.trailWidth = 5;          // 궤적 두께
+    }
+
+    // 옵션 설정을 위한 메서드
+    setOptions({ trailColor, boxColor, showConfidence, trailWidth }) {
+        if (trailColor !== undefined) this.trailColor = trailColor;
+        if (boxColor !== undefined) this.boxColor = boxColor;
+        if (showConfidence !== undefined) this.showConfidence = showConfidence;
+        if (trailWidth !== undefined) this.trailWidth = trailWidth;
     }
 
     setInstance(instance) { this.renderer.setCanvas(instance); }
+    
     setData(trackData) {
         this.trackData = trackData;
         if (trackData == null) return;
         const image = this.trackData.getRawImgList(0)[0];
         if (image) {
             this.renderer.updateLayout(image.width, image.height);
-            // 오프스크린 크기를 원본 이미지 크기로 고정
             this.offscreenCanvas.width = image.width;
             this.offscreenCanvas.height = image.height;
         }
@@ -23,14 +37,9 @@ export class TrackFrameMaker {
 
     getBall(idx) {
         if (!this.trackData || idx < 0) return null;
-        const ballData = this.trackData.getSelectedBallAt(idx);
-        if (ballData == null) return null;
-        return ballData;
+        return this.trackData.getSelectedBallAt(idx);
     }
 
-    /**
-     * 레이어 생성: 궤적(Line), 박스(Rect), 신뢰도(Text) 모두 포함
-     */
     _generateBallLayer(idx) {
         const ctx = this.offscreenCtx;
         ctx.clearRect(0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height);
@@ -38,10 +47,10 @@ export class TrackFrameMaker {
         const ballList = this.trackData.getBallList();
         if (!ballList) return null;
 
-        // 1. 궤적 그리기 (과거 ~ 현재)
+        // 1. 궤적 그리기
         ctx.beginPath();
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 5; 
+        ctx.strokeStyle = this.trailColor; // 설정된 색상 사용
+        ctx.lineWidth = this.trailWidth; 
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
 
@@ -67,24 +76,26 @@ export class TrackFrameMaker {
         }
         ctx.stroke();
 
-        // 2. 현재 프레임 정보 출력 (박스 + 텍스트)
+        // 2. 현재 프레임 정보 (박스 + 선택적 텍스트)
         const nowBall = this.getBall(idx);
         if (nowBall) {
             const [bx, by, bw, bh] = nowBall.bbox;
-            const confidence = nowBall.confidence;
 
             // 바운딩 박스
-            ctx.strokeStyle = 'blue';
+            ctx.strokeStyle = this.boxColor; // 설정된 색상 사용
             ctx.lineWidth = 3;
             ctx.strokeRect(bx, by, bw, bh);
 
-            // 신뢰도 텍스트 (원본 이미지 크기에 맞춰 폰트 크기 조절)
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 30px Arial'; // 레이어가 크므로 폰트도 크게 설정
-            ctx.shadowColor = 'black';
-            ctx.shadowBlur = 4;
-            ctx.fillText(`Conf: ${confidence.toFixed(2)}`, bx, by - 10);
-            ctx.shadowBlur = 0; // 초기화
+            // 신뢰도 텍스트 출력 옵션 체크
+            if (this.showConfidence) {
+                const confidence = nowBall.confidence;
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 30px Arial';
+                ctx.shadowColor = 'black';
+                ctx.shadowBlur = 4;
+                ctx.fillText(`Conf: ${confidence.toFixed(2)}`, bx, by - 10);
+                ctx.shadowBlur = 0;
+            }
         }
 
         return this.offscreenCanvas;
@@ -95,10 +106,8 @@ export class TrackFrameMaker {
         const image = this.trackData.getRawImgList(0)[idx];
         if (!image) return;
 
-        // 배경 이미지 (CanvasRenderer 활용)
         this.renderer.drawImage(image);
 
-        // 오프스크린 레이어 생성 및 합성
         const ballLayer = this._generateBallLayer(idx);
         if (ballLayer) {
             this.renderer.drawLayer(ballLayer);

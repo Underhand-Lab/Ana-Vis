@@ -70,10 +70,93 @@ const frameMakerInitializer = {
     "video": function (frameMaker, box) {
         const newCanvas = box.querySelectorAll("canvas")[0];
         frameMaker.setInstance(newCanvas);
+        
+        const leftArmPicker = box.querySelectorAll(".color-left-arm")[0];
+        leftArmPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_LEFT_ARM", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+        
+        const rightArmPicker = box.querySelectorAll(".color-right-arm")[0];
+        rightArmPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_RIGHT_ARM", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+        
+        const leftLegPicker = box.querySelectorAll(".color-left-leg")[0];
+        leftLegPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_LEFT_LEG", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+        
+        const rightLegPicker = box.querySelectorAll(".color-right-leg")[0];
+        rightLegPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_RIGHT_LEG", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+        
+        const torsoPicker = box.querySelectorAll(".color-torso")[0];
+        torsoPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_TORSO", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+
+        const headPicker = box.querySelectorAll(".color-head")[0];
+        headPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_HEAD_NECK", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+
+        const jointPicker = box.querySelectorAll(".color-joint")[0];
+        jointPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("JOINT_STROKE", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
     },
     "3d-video": function (frameMaker, box) {
         const newCanvas = box.querySelectorAll("canvas")[0];
         frameMaker.setInstance(newCanvas);
+        const leftArmPicker = box.querySelectorAll(".color-left-arm")[0];
+        leftArmPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_LEFT_ARM", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+        
+        const rightArmPicker = box.querySelectorAll(".color-right-arm")[0];
+        rightArmPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_RIGHT_ARM", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+        
+        const leftLegPicker = box.querySelectorAll(".color-left-leg")[0];
+        leftLegPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_LEFT_LEG", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+        
+        const rightLegPicker = box.querySelectorAll(".color-right-leg")[0];
+        rightLegPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_RIGHT_LEG", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+        
+        const torsoPicker = box.querySelectorAll(".color-torso")[0];
+        torsoPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_TORSO", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+
+        const headPicker = box.querySelectorAll(".color-head")[0];
+        headPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("COLOR_HEAD_NECK", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
+
+        const jointPicker = box.querySelectorAll(".color-joint")[0];
+        jointPicker.addEventListener('change', (e) => {
+            frameMaker.setColor("JOINT_STROKE", e.target.value);
+            frameMaker.drawImageAt(nowIdx());
+        });
     },
     "graph": function (frameMaker, box) {
 
@@ -132,7 +215,7 @@ function addTool(src, frameMaker, func) {
 
 addVideoBoxBtn.addEventListener('click', () => {
     const newPoseFrameMaker = new PoseFrameMaker.PoseBoneFrameMaker();
-    addTool("../template/video.html",
+    addTool("../template/pose-video.html",
         newPoseFrameMaker, frameMakerInitializer["video"]);
 
 });
@@ -163,7 +246,7 @@ addTableBoxBtn.addEventListener('click', () => {
 
 const newPoseFrameMaker = new PoseFrameMaker.PoseBoneFrameMaker();
 
-addToolDefault("../template/video.html", newPoseFrameMaker,
+addToolDefault("../template/pose-video.html", newPoseFrameMaker,
     frameMakerInitializer["video"]).then(() => {
 
         const newGraphFrameMaker = new PoseFrameMaker.CustomGraphFrameMaker();
