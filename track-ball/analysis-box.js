@@ -1,60 +1,26 @@
 import * as FrameMaker from '../src/cv-val/track-ball/frame-maker/index.js';
 import * as Analysis from "../src/cv-val/track-ball/calc/analysis.js";
-import { BoxList } from "../src/easy-h/ui/box-list.js";
+import { AnalysisBox } from "../src/cv-val/common/analysis-box.js";
 
-let frameMakers = [];
-let processedData = null;
-
-const confInput = document.getElementById('confInput');
-confInput.addEventListener('change', () => {
-    if (processedData == null) return;
-    processedData.setConf(parseFloat(confInput.value));
-    updateImage();
+const analysisBox = new AnalysisBox();
+analysisBox.bindUI(document, {
+    onUpdate: (frameIdx) => updateCandidateUI(frameIdx) 
 });
 
-const slider = document.getElementById('frameSlider');
-slider.max = 0;
-
-function nowIdx() {
-    return parseInt(slider.value, 10);
-}
-
-// --- candidateSelect 이벤트 리스너 ---
+const analysisSelect = document.getElementById('analysis');
 const candidateSelect = document.getElementById('candidateSelect');
+const confInput = document.getElementById('confInput');
 
-candidateSelect.addEventListener('change', () => {
-    if (!processedData) return;
-    const idx = nowIdx();
+function updateCandidateUI(frameIdx) {
+    const data = analysisBox.getData();
+    if (!data) return;
 
-    // 사용자가 '선택 안 함'을 고르면 -1이 전달됩니다.
-    const selectedValue = parseInt(candidateSelect.value, 10);
-    processedData.setSelectedIdx(idx, selectedValue);
-
-    updateImage();
-});
-
-function updateImage() {
-    if (!processedData) return;
-
-    const frameIdx = nowIdx();
-
-    // --- 후보군 Select 박스 갱신 로직 (선택 안 함 추가) ---
-    const candidates = processedData.getCandidatesAt(frameIdx);
-    const frameData = processedData.getBallList()[frameIdx];
+    const candidates = data.getCandidatesAt(frameIdx);
+    const frameData = data.getBallList()[frameIdx];
     const currentSelected = frameData ? frameData.selectedIdx : -1;
 
-    candidateSelect.innerHTML = ''; // 초기화
-
-    // 1. 항상 '선택 안 함' 옵션을 맨 위에 추가
-    const noneOpt = document.createElement('option');
-    noneOpt.value = "-1";
-    noneOpt.text = "none";
-
-    if (currentSelected === -1) noneOpt.selected = true;
-    candidateSelect.appendChild(noneOpt);
-
-    // 2. 검출된 후보들이 있다면 리스트업
-    if (candidates && candidates.length > 0) {
+    candidateSelect.innerHTML = '<option value="-1">none</option>';
+    if (candidates) {
         candidates.forEach((cand, i) => {
             const opt = document.createElement('option');
             opt.value = i;
@@ -63,136 +29,60 @@ function updateImage() {
             candidateSelect.appendChild(opt);
         });
     }
-
-    for (let i = 0; i < frameMakers.length; i++) {
-        frameMakers[i].drawImageAt(frameIdx);
-    }
-
 }
 
-slider.addEventListener('input', updateImage);
-
-function setData(data) {
-
-    if (data == null) return;
-
-    processedData = data;
-    processedData.setConf(parseFloat(confInput.value));
-
-    for (let i = 0; i < frameMakers.length; i++) {
-        frameMakers[i].setData(data);
-    }
-
-    const frameCount = processedData.getFrameCnt();
-    slider.max = frameCount > 0 ? frameCount - 1 : 0;
-
-    console.log(processedData);
-
-    updateImage();
-
-}
-
-const analysisSelect = document.getElementById('analysis')
-
-const addVideoBoxBtn = document.getElementById('add-video-box-button');
-const addTableBoxBtn = document.getElementById('add-table-box-button');
-
-const boxList = new BoxList(document.getElementById("boxes"));
-
-function addToolDefault(src, frameMaker, func, toBottom = true) {
-    return new Promise((resolve, reject) => {
-        boxList.addBoxTemplate(src, () => {
-            frameMakers = frameMakers.filter(fm => fm !== frameMaker);
-
-        }, (box) => {
-            box.className = 'container neumorphism';
-            func(frameMaker, box);
-            frameMaker.setData(processedData);
-
-            frameMakers.push(frameMaker);
-            frameMaker.drawImageAt(nowIdx());
-            resolve();
-        });
-    });
-
-}
-
-function addTool(src, frameMaker, func) {
-    addToolDefault(src, frameMaker, func).then(() => {
-        analysisSelect.closeAction();
-        let bottom = document.body.scrollHeight;
-        window.scrollTo({ top: bottom, left: 0, behavior: 'smooth' })
-
-    });
-}
-
-const frameMakerInitializer = {
-    "video": function (frameMaker, box) {
-        const newCanvas = box.querySelectorAll("canvas")[0];
-        frameMaker.setInstance(newCanvas);
-        const confCheckbox = box.querySelectorAll(".show-conf")[0];
-        confCheckbox.addEventListener('change', (e) => {
-            frameMaker.setOptions({ showConfidence: e.target.checked });
-            frameMaker.drawImageAt(nowIdx());
-        });
-
-        const boxPicker = box.querySelectorAll(".box-color")[0];
-        boxPicker.addEventListener('change', (e) => {
-            frameMaker.setOptions({ boxColor: e.target.value });
-            frameMaker.drawImageAt(nowIdx());
-        });
-
-        // 색상 선택기로 궤적 색상 제어
-        const trailPicker = box.querySelectorAll(".trail-color")[0];
-        trailPicker.addEventListener('input', (e) => {
-            frameMaker.setOptions({ trailColor: e.target.value });
-            frameMaker.drawImageAt(nowIdx());
-        });
-
-        frameMaker.setOptions({
-            trailColor: trailPicker.value,
-            showConfidence: confCheckbox.checked,
-            boxColor: boxPicker.value
-        })
-
+const MAKER_CONFIG = {
+    "video": {
+        src: "../template/ball-video.html",
+        btnId: "add-video-box-button",
+        create: () => new FrameMaker.TrackFrameMaker()
     },
-    "table": function (frameMaker, box) {
-        const newDiv = box.getElementsByClassName("table")[0];
-        frameMaker.setInstance(newDiv);
-
-        frameMaker.changeAnalysisTool(
-            new Analysis.BallAnalysisTool());
+    "table": {
+        src: "../template/table-track.html",
+        btnId: "add-table-box-button",
+        create: () => {
+            const fm = new FrameMaker.CustomTableFrameMaker();
+            fm.changeAnalysisTool(new Analysis.BallAnalysisTool());
+            return fm;
+        }
     }
+};
 
-}
-
-addVideoBoxBtn.addEventListener('click', () => {
-    const newPoseFrameMaker = new FrameMaker.TrackFrameMaker();
-    console.log("add");
-    addTool("../template/ball-video.html",
-        newPoseFrameMaker, frameMakerInitializer["video"]);
-
-});
-
-addTableBoxBtn.addEventListener('click', () => {
-    const newTableFrameMaker = new FrameMaker.CustomTableFrameMaker();
-
-    console.log("add");
-    addTool("../template/table-track.html",
-        newTableFrameMaker, frameMakerInitializer["table"]);
-
-});
-
-const newPoseFrameMaker = new FrameMaker.TrackFrameMaker();
-
-addToolDefault("../template/ball-video.html",
-    newPoseFrameMaker, frameMakerInitializer["video"]).then(() => {
-        const newTableFrameMaker = new FrameMaker.CustomTableFrameMaker();
-
-        addToolDefault("../template/table-track.html",
-            newTableFrameMaker, frameMakerInitializer["table"]);
-
+// 이벤트 바인딩 및 초기화 (Pose와 동일한 패턴)
+Object.entries(MAKER_CONFIG).forEach(([key, config]) => {
+    document.getElementById(config.btnId)?.addEventListener('click', async () => {
+        await analysisBox.addFrameMaker(config.src, config.create());
+        analysisSelect.closeAction();
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     });
+});
 
+// 기본 셋업
+async function init() {
+    await analysisBox.addFrameMaker(MAKER_CONFIG.video.src, MAKER_CONFIG.video.create());
+    await analysisBox.addFrameMaker(MAKER_CONFIG.table.src, MAKER_CONFIG.table.create());
+}
+init();
 
-export { setData }
+confInput.addEventListener('change', () => {
+    const data = analysisBox.getData();
+    if (data) {
+        data.setConf(parseFloat(confInput.value));
+        analysisBox.updateAll(); // 모든 Maker 다시 그리기
+    }
+});
+
+let processedData = null;
+
+candidateSelect.addEventListener('change', () => {
+    if (processedData) {
+        processedData.setSelectedIdx(analysisBox.nowIdx(), parseInt(candidateSelect.value));
+        analysisBox.updateImage();
+    }
+});
+
+export const setData = (data) => {
+    processedData = data;
+    data.setConf(parseFloat(confInput.value));
+    analysisBox.setData(data);
+};

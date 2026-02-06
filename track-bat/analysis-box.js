@@ -7,6 +7,10 @@ let processedData = null;
 
 const confInput = document.getElementById('confInput');
 confInput.addEventListener('change', () => {
+    if (processedData) {
+        processedData.setConf(
+            parseFloat(confInput.value));
+    }
     updateImage();
 });
 
@@ -63,7 +67,6 @@ function updateImage() {
     // ------------------------------------------
 
     for (let i = 0; i < frameMakers.length; i++) {
-        frameMakers[i].setConf(parseFloat(confInput.value));
         frameMakers[i].drawImageAt(idx);
     }
 }

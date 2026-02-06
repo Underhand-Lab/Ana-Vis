@@ -8,6 +8,7 @@ class TrackBatData {
         this.rawImgListList = [];
         // batList 구조: [ { selectedIdx: 0, candidates: [candidate1, candidate2, ...] }, ... ]
         this.batList = []; 
+        this.conf = 0.55;
     }
 
     /**
@@ -37,6 +38,14 @@ class TrackBatData {
             selectedIdx: (candidates && candidates.length > 0) ? 0 : -1,
             candidates: candidates || []
         });
+    }
+
+    setConf(conf) {
+        this.conf = conf;
+    }
+
+    getConf() {
+        return this.conf;
     }
 
     /**

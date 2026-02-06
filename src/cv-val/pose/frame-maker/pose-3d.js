@@ -1,4 +1,4 @@
-import { IPoseFrameMaker } from "./pose.interface.js";
+import { PoseFrameMakerBase } from "./pose-frame-maker-base.js";
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
@@ -37,7 +37,7 @@ const CONNECTIONS_COLORS_KEY = {
     "NOSE,R_SHOULDER": "COLOR_HEAD_NECK"
 };
 
-export class Pose3DFrameMaker extends IPoseFrameMaker {
+export class Pose3DFrameMaker extends PoseFrameMakerBase {
     constructor() {
         super();
         this.canvas3d = null;
@@ -50,10 +50,36 @@ export class Pose3DFrameMaker extends IPoseFrameMaker {
             "COLOR_HEAD_NECK": "#ffffff",
             "JOINT_STROKE": "#ff0000"
         };
+        this.lastDrawIdx = 0;
     }
-    setInstance(canvas3d) {
-        this.canvas3d = canvas3d;
-        this.init3DScene();
+
+    bindUI(element) {
+        this.canvas3d = element.querySelectorAll("canvas")[0];
+
+        const dict = {
+            "COLOR_LEFT_ARM": ".color-left-arm",
+            "COLOR_RIGHT_ARM": ".color-right-arm",
+            "COLOR_LEFT_LEG": ".color-left-leg",
+            "COLOR_RIGHT_LEG": ".color-right-leg",
+            "COLOR_TORSO": ".color-torso",
+            "COLOR_HEAD_NECK": ".color-head",
+            "JOINT_STROKE": ".color-joint"
+        }
+
+        for (const key of Object.keys(dict)) {
+
+            const e = element.querySelectorAll(dict[key])[0];
+
+            if (e == null) {
+                continue;
+            }
+
+            e.addEventListener('change', () => {
+                this.setColor(key, e.value);
+                this.drawImageAt(this.lastDrawIdx);
+            });
+        }
+
     }
 
     init3DScene() {
@@ -102,12 +128,11 @@ export class Pose3DFrameMaker extends IPoseFrameMaker {
         this.renderer.render(this.scene, this.camera);
     }
 
-    setData(processedData) {
-        if (processedData == null) return;
-        this.processedData = processedData;
+    setPoseData(data) {
+        if (data == null) return;
+        this.data = data;
         this.targetIdx = 0;
-        this.landmark3dList = processedData.getLandmarks3d(this.targetIdx);
-        this.lastIdx = 0;
+        this.landmark3dList = data.getLandmarks3d(this.targetIdx);
     }
 
     setColor(key, colorValue) {
@@ -117,9 +142,9 @@ export class Pose3DFrameMaker extends IPoseFrameMaker {
     }
 
     drawImageAt(idx) {
-        if (this.processedData == null) return;
+        if (this.data == null) return;
 
-        this.lastIdx = idx;
+        this.lastDrawIdx = idx;
         const landmarks3d = this.landmark3dList[idx];
 
         while(this.scene.children.length > 0) {

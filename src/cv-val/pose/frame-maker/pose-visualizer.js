@@ -33,8 +33,6 @@ const CONNECTIONS_COLORS_KEY = {
     "NOSE,R_SHOULDER": "COLOR_HEAD_NECK"
 };
 
-// ... POSE_CONNECTIONS 및 CONNECTIONS_COLORS_KEY 정의는 동일 ...
-
 export class PoseVisualizer {
     constructor() {
         this.colorPalette = {
@@ -46,8 +44,8 @@ export class PoseVisualizer {
             "COLOR_HEAD_NECK": "#ffffff",
             "JOINT_STROKE": "#ff0000"
         };
-        this.lineWidth = 8;
-        this.jointRadius = 8;
+        this.lineWidth = 4;
+        this.jointRadius = 4;
 
         // --- 그리기 우선순위 정의 (낮을수록 먼저 그림) ---
         this.renderOrder = {

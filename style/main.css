@@ -12,6 +12,10 @@
     font-style: normal;
 }
 
+input[type="color"] {
+    width: 25px;
+}
+
 body {
     width: 100%;
     height: 100%;

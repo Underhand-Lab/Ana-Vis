@@ -1,6 +1,6 @@
-import { IPoseFrameMaker } from "./pose.interface.js"
+import { PoseFrameMakerBase } from "./pose-frame-maker-base.js"
 
-export class RawFrameMaker extends IPoseFrameMaker {
+export class RawFrameMaker extends PoseFrameMakerBase {
     constructor() {
         super();
         this.rawImgList = null

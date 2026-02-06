@@ -1,14 +1,17 @@
 import * as Table from "../../../visualizer/lib/table.js"
+import { BallFrameMakerBase } from "./ball-frame-maker-base.js";
 
-class CustomTableFrameMaker {
+class CustomTableFrameMaker extends BallFrameMakerBase {
     
     constructor() {
+        super();
         this.table = null;
         this.analysisTool = null;
     }
 
-    setInstance(canvas) {
-        this.table = new Table.Table(canvas);
+    bindUI(box) {
+        const newDiv = box.getElementsByClassName("table")[0];
+        this.table = new Table.Table(newDiv);
     }
 
     changeAnalysisTool(analysisTool) {

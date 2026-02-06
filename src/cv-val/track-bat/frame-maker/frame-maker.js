@@ -2,7 +2,6 @@ import { CanvasRenderer } from "../../canvas-renderer.js";
 
 export class TrackFrameMaker {
     constructor() {
-        this.conf = 0.5;
         this.trail = null;
         this.trackData = null;
         this.offscreenCanvas = document.createElement('canvas');
@@ -21,9 +20,6 @@ export class TrackFrameMaker {
         if (metadata == null) return;
         this.renderer.updateLayout(metadata.width, metadata.height);
 
-    }
-    setConf(conf) {
-        this.conf = conf;
     }
     
     setTrail(trail) {
@@ -68,13 +64,14 @@ export class TrackFrameMaker {
         this.renderer.drawImage(image);
 
         // 2. 마스크 레이어 생성 (getSelectedBatAt 활용)
-        const maskLayer = this._generateMaskLayer(idx);
+        const maskLayer = this._generateMaskLayer(
+            idx, this.trackData.getConf());
         if (maskLayer) {
             this.renderer.drawLayer(maskLayer);
         }
     }
 
-    _generateMaskLayer(idx) {
+    _generateMaskLayer(idx, conf) {
         let sampleBat = null;
         for (let i = idx; i >= 0; i--) {
             sampleBat = this.trackData.getSelectedBatAt(i);
@@ -101,13 +98,13 @@ export class TrackFrameMaker {
             const curr = this.trackData.getSelectedBatAt(i);
             
             // 기존의 복잡한 알파 계산 대신 설정된 통일 색상 사용
-            this.masking(pixelBuffer, prev, curr, this.conf, this.trailColor, maskW, maskH);
+            this.masking(pixelBuffer, prev, curr, conf, this.trailColor, maskW, maskH);
         }
 
         // 2. 현재 배트 그리기 (설정된 currentBatColor 사용)
         const nowBat = this.trackData.getSelectedBatAt(idx);
         if (nowBat?.maskConfidenceMap) {
-            this.applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, this.conf, this.currentBatColor, maskW, maskH);
+            this.applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, conf, this.currentBatColor, maskW, maskH);
         }
 
         this.offscreenCtx.putImageData(this.cachedImageData, 0, 0);

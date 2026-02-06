@@ -1,7 +1,9 @@
 import { CanvasRenderer } from "../../canvas-renderer.js";
+import { BallFrameMakerBase } from "./ball-frame-maker-base.js";
 
-export class TrackFrameMaker {
+export class TrackFrameMaker extends BallFrameMakerBase {
     constructor() {
+        super();
         this.trackData = null;
         this.offscreenCanvas = document.createElement('canvas');
         this.offscreenCtx = this.offscreenCanvas.getContext('2d');
@@ -12,19 +14,39 @@ export class TrackFrameMaker {
         this.boxColor = 'blue';       // 바운딩 박스 색상
         this.showConfidence = true;    // 신뢰도 표시 여부
         this.trailWidth = 5;          // 궤적 두께
+        this.lastDrawIdx = 0;
     }
 
     // 옵션 설정을 위한 메서드
-    setOptions({ trailColor, boxColor, showConfidence, trailWidth }) {
-        if (trailColor !== undefined) this.trailColor = trailColor;
-        if (boxColor !== undefined) this.boxColor = boxColor;
-        if (showConfidence !== undefined) this.showConfidence = showConfidence;
+    setOptions({ trailWidth }) {
         if (trailWidth !== undefined) this.trailWidth = trailWidth;
     }
 
-    setInstance(instance) { this.renderer.setCanvas(instance); }
-    
-    setData(trackData) {
+    bindUI(box) {
+        const canvas = box.querySelectorAll('canvas')[0];
+        this.renderer.setCanvas(canvas);
+
+        const confCheckbox = box.querySelectorAll(".show-conf")[0];
+        confCheckbox.addEventListener('change', (e) => {
+            this.showConfidence = e.target.checked;
+            this.drawImageAt(this.lastDrawIdx);
+        });
+
+        const boxPicker = box.querySelectorAll(".box-color")[0];
+        boxPicker.addEventListener('change', (e) => {
+            this.boxColor = e.target.value;
+            this.drawImageAt(this.lastDrawIdx);
+        });
+
+        // 색상 선택기로 궤적 색상 제어
+        const trailPicker = box.querySelectorAll(".trail-color")[0];
+        trailPicker.addEventListener('input', (e) => {
+            this.trailColor = e.target.value;
+            this.drawImageAt(this.lastDrawIdx);
+        });
+    }
+
+    setBallData(trackData) {
         this.trackData = trackData;
         if (trackData == null) return;
         const image = this.trackData.getRawImgList(0)[0];
@@ -50,7 +72,7 @@ export class TrackFrameMaker {
         // 1. 궤적 그리기
         ctx.beginPath();
         ctx.strokeStyle = this.trailColor; // 설정된 색상 사용
-        ctx.lineWidth = this.trailWidth; 
+        ctx.lineWidth = this.trailWidth;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
 
@@ -102,6 +124,9 @@ export class TrackFrameMaker {
     }
 
     drawImageAt(idx) {
+        
+        this.lastDrawIdx = idx;
+
         if (!this.trackData || idx < 0) return;
         const image = this.trackData.getRawImgList(0)[idx];
         if (!image) return;

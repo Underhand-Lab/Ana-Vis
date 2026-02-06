@@ -1,7 +1,7 @@
 import { PoseData } from '../src/cv-val/pose/pose-data.js';
 import { Processor } from '../src/cv-val/processor.js';
 import * as PoseDetector from '../src/cv-val/pose/pose-detector/index.js';
-import * as AnalysisBox from './analysis-box.js';
+import * as AnalysisBox from "./analysis-box.js"
 
 const fileInput = document.getElementById('video-files');
 fileInput.addEventListener('change', () => {
