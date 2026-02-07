@@ -24,13 +24,11 @@ export class SaveFrameMaker {
 
         const metadata = trackData.getVideoMetadata(0);
         const fps = metadata.fps || 24;
-        const canvas = this.frameMaker.renderer.canvas;
 
         try {
             // 2. 프레임 이미지 파일 작성
             for (let i = 0; i < frameCount; i++) {
-                this.frameMaker.drawImageAt(i);
-                
+                const canvas = this.frameMaker.getImageAt(i);
                 // JPEG 퀄리티 조절 (RAM 최적화)
                 const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
                 const arrayBuffer = await blob.arrayBuffer();

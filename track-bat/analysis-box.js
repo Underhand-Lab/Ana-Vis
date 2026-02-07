@@ -1,60 +1,30 @@
-import { BoxList } from "../src/easy-h/ui/box-list.js";
-import { TrackFrameMaker } from "../src/cv-val/track-bat/frame-maker/frame-maker.js";
+import { AnalysisBox } from "../src/cv-val/common/analysis-box.js";
+import { TrackBatFrameMaker } from "../src/cv-val/track-bat/frame-maker/frame-maker.js";
 import { SaveFrameMaker } from "../src/cv-val/ffmpeg-save-frame-maker.js";
 
-let frameMakers = [];
+// 1. AnalysisBox 인스턴스 생성 및 공통 UI 바인딩
+const analysisBox = new AnalysisBox();
+analysisBox.bindUI(document, {
+    // 슬라이더 이동 시 후보군(Candidate) UI도 함께 갱신되도록 콜백 등록
+    onUpdate: (frameIdx) => updateCandidateUI(frameIdx)
+});
+
+const candidateSelect = document.getElementById('candidateSelect');
+const confInput = document.getElementById('confInput');
+const analysisSelect = document.getElementById('analysis');
+const addVideoBoxBtn = document.getElementById('add-video-box-button');
+
 let processedData = null;
 
-const confInput = document.getElementById('confInput');
-confInput.addEventListener('change', () => {
-    if (processedData) {
-        processedData.setConf(
-            parseFloat(confInput.value));
-    }
-    updateImage();
-});
+function updateCandidateUI(frameIdx) {
+    const data = analysisBox.getData();
+    if (!data) return;
 
-const slider = document.getElementById('frameSlider');
-slider.max = 0;
-
-function nowIdx() {
-    return parseInt(slider.value, 10);
-}
-
-// --- candidateSelect 이벤트 리스너 ---
-const candidateSelect = document.getElementById('candidateSelect');
-
-candidateSelect.addEventListener('change', () => {
-    if (!processedData) return;
-    const idx = nowIdx();
-
-    // 사용자가 '선택 안 함'을 고르면 -1이 전달됩니다.
-    const selectedValue = parseInt(candidateSelect.value, 10);
-    processedData.setSelectedIdx(idx, selectedValue);
-
-    updateImage();
-});
-
-function updateImage() {
-    if (!processedData) return;
-
-    const idx = nowIdx();
-
-    // --- 후보군 Select 박스 갱신 로직 (선택 안 함 추가) ---
-    const candidates = processedData.getCandidatesAt(idx);
-    const frameData = processedData.getBatList()[idx];
+    const candidates = data.getCandidatesAt(frameIdx);
+    const frameData = data.getBatList()[frameIdx];
     const currentSelected = frameData ? frameData.selectedIdx : -1;
 
-    candidateSelect.innerHTML = ''; // 초기화
-
-    // 1. 항상 '선택 안 함' 옵션을 맨 위에 추가
-    const noneOpt = document.createElement('option');
-    noneOpt.value = "-1";
-    noneOpt.text = "none";
-    if (currentSelected === -1) noneOpt.selected = true;
-    candidateSelect.appendChild(noneOpt);
-
-    // 2. 검출된 후보들이 있다면 리스트업
+    candidateSelect.innerHTML = '<option value="-1">none</option>';
     if (candidates && candidates.length > 0) {
         candidates.forEach((cand, i) => {
             const opt = document.createElement('option');
@@ -64,130 +34,98 @@ function updateImage() {
             candidateSelect.appendChild(opt);
         });
     }
-    // ------------------------------------------
-
-    for (let i = 0; i < frameMakers.length; i++) {
-        frameMakers[i].drawImageAt(idx);
-    }
 }
 
-// --- 나머지 UI 및 데이터 설정 로직 ---
-
-slider.addEventListener('input', updateImage);
-
-function setData(data) {
-    if (data == null) return;
-    processedData = data;
-
-    for (let i = 0; i < frameMakers.length; i++) {
-        frameMakers[i].setData(data);
-    }
-    const frameCount = processedData.getFrameCnt();
-    const maxValue = frameCount > 0 ? frameCount - 1 : 0;
-
-    slider.max = maxValue;
-    updateImage();
-}
-
-const analysisSelect = document.getElementById('analysis');
-const addVideoBoxBtn = document.getElementById('add-video-box-button');
-const boxList = new BoxList(document.getElementById("boxes"));
-
-function addToolDefault(src, frameMaker, func) {
-    return new Promise((resolve, reject) => {
-        boxList.addBoxTemplate(src, () => {
-            frameMakers = frameMakers.filter(fm => fm !== frameMaker);
-
-        }, (box) => {
-            box.className = 'container neumorphism';
-            func(frameMaker, box);
-            frameMaker.setData(processedData);
-
-            frameMakers.push(frameMaker);
-            frameMaker.drawImageAt(nowIdx());
-            resolve();
-        });
-    });
-
-}
-
-function addTool(src, frameMaker, func) {
-    addToolDefault(src, frameMaker, func).then(() => {
-        analysisSelect.closeAction();
-        let bottom = document.body.scrollHeight;
-        window.scrollTo({ top: bottom, left: 0, behavior: 'smooth' })
-
-    });
-}
-
-const saveCanvas = document.createElement('canvas');
-saveCanvas.style.display = 'none';
-document.body.appendChild(saveCanvas);
 function hexToRgba(hex, alpha) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
-    return [ r, g, b, parseInt(alpha) ];
+    return [r, g, b, parseInt(alpha)];
 }
-const frameMakerInitializer = {
-    "video": function(frameMaker, box) {
-        const newCanvas = box.querySelectorAll("canvas")[0];
-        const saveBtn = box.querySelectorAll(".save")[0];
-        const trailInput = box.querySelectorAll(".trailInput")[0];
 
-        const batColor = box.querySelectorAll(".bat-color")[0];
-        const batColorAlpha = box.querySelectorAll(".bat-color-alpha")[0];
-        const trailColor = box.querySelectorAll(".trail-color")[0];
-        const trailColorAlpha = box.querySelectorAll(".trail-color-alpha")[0];
+const batVideoUIBinder = (box, frameMaker) => {
+    const saveBtn = box.querySelector(".save");
+    const trailInput = box.querySelector(".trailInput");
+    const batColor = box.querySelector(".bat-color");
+    const batColorAlpha = box.querySelector(".bat-color-alpha");
+    const trailColor = box.querySelector(".trail-color");
+    const trailColorAlpha = box.querySelector(".trail-color-alpha");
 
-        const colorChange = () => {
-            frameMaker.setColors(hexToRgba(
-                batColor.value, batColorAlpha.value),
-                hexToRgba(trailColor.value, trailColorAlpha.value));
-            frameMaker.drawImageAt(nowIdx());
-        }
+    const colorChange = () => {
+        frameMaker.setColors(
+            hexToRgba(batColor.value, batColorAlpha.value),
+            hexToRgba(trailColor.value, trailColorAlpha.value)
+        );
+        frameMaker.drawImageAt(analysisBox.nowIdx());
+    };
 
-        batColor.addEventListener('change', colorChange);
-        batColorAlpha.addEventListener('change', colorChange);
-        trailColor.addEventListener('change', colorChange);
-        trailColorAlpha.addEventListener('change', colorChange);
+    // 색상 관련 이벤트 등록
+    [batColor, batColorAlpha, trailColor, trailColorAlpha].forEach(el => {
+        el.addEventListener('change', colorChange);
+    });
 
-        const exporter = new SaveFrameMaker(frameMaker);
-        saveBtn.addEventListener('click', async () => {
-            if (processedData == null) return;
-            const metadata = processedData.getVideoMetadata(0);
+    // 궤적 및 캔버스 기본 바인딩
+    frameMaker.setTrail(trailInput);
+    frameMaker.bindUI(box);
+    colorChange();
 
-            saveCanvas.width = metadata.width;
-            saveCanvas.height = metadata.height;
-            frameMaker.setInstance(saveCanvas);
-
-            await exporter.export(processedData);
-            
-            console.log("저장 완료");
-
-            frameMaker.setInstance(newCanvas);
-            frameMaker.drawImageAt(nowIdx());
-            
-        });
-
-        colorChange();
-        frameMaker.setTrail(trailInput);
-        frameMaker.setInstance(newCanvas);
-    }
+    // 영상 저장 로직
+    const exporter = new SaveFrameMaker(frameMaker);
+    saveBtn.addEventListener('click', async () => {
+        if (!processedData) return;
+        
+        await exporter.export(processedData);
+        console.log("배트 분석 영상 저장 완료");
+        frameMaker.drawImageAt(analysisBox.nowIdx());
+    });
 };
 
-addVideoBoxBtn.addEventListener('click', () => {
+// --- 이벤트 리스너 설정 ---
 
-    const newFrameMaker = new TrackFrameMaker();
-
-    addTool("../template/bat-video.html",
-        newFrameMaker, frameMakerInitializer["video"]);
-
+// 신뢰도(Confidence) 변경 시 데이터 갱신 및 전체 리렌더링
+confInput.addEventListener('change', () => {
+    const data = analysisBox.getData();
+    if (data) {
+        data.setConf(parseFloat(confInput.value));
+        analysisBox.updateImage(); // 모든 Maker 다시 그리기
+    }
 });
 
-const newFrameMaker = new TrackFrameMaker();
+// 후보군 선택 변경 시
+candidateSelect.addEventListener('change', () => {
+    const data = analysisBox.getData();
+    if (data) {
+        data.setSelectedIdx(analysisBox.nowIdx(), parseInt(candidateSelect.value));
+        analysisBox.updateImage();
+    }
+});
 
-addToolDefault("../template/bat-video.html",
-    newFrameMaker, frameMakerInitializer["video"]);
+// 도구 추가 버튼 클릭 이벤트
+addVideoBoxBtn.addEventListener('click', async () => {
+    const videoFrameMaker = new TrackBatFrameMaker();
+    await analysisBox.addFrameMaker(
+        "../template/bat-video.html",
+        videoFrameMaker,
+        (box) => batVideoUIBinder(box, videoFrameMaker)
+    );
+    analysisSelect.closeAction();
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+});
 
-export { setData };
+export const setData = (data) => {
+    processedData = data;
+    data.setConf(parseFloat(confInput.value));
+    analysisBox.setData(data);
+};
+
+// 초기 기본 도구 로드
+async function init() {
+    const videoFrameMaker = new TrackBatFrameMaker();
+    await analysisBox.addFrameMaker(
+        "../template/bat-video.html",
+        videoFrameMaker,
+        (box) => batVideoUIBinder(box, videoFrameMaker)
+    );
+}
+
+init();

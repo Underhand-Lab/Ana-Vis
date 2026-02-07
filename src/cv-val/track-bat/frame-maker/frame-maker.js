@@ -1,6 +1,6 @@
 import { CanvasRenderer } from "../../canvas-renderer.js";
 
-export class TrackFrameMaker {
+export class TrackBatFrameMaker {
     constructor() {
         this.trail = null;
         this.trackData = null;
@@ -9,65 +9,76 @@ export class TrackFrameMaker {
         this.renderer = new CanvasRenderer();
         this.cachedImageData = null;
         this.lastIdx = 0;
+
+        // 색상 초기값 설정
+        this.trailColor = [255, 0, 0, 150];      // 과거 궤적 (RGBA)
+        this.currentBatColor = [255, 0, 0, 255]; // 현재 배트 (RGBA)
     }
 
-    setInstance(instance) {
-        this.renderer.setCanvas(instance);
-
+    bindUI(instance) {
+        const canvas = instance.querySelectorAll('canvas')[0];
+        this.renderer.setCanvas(canvas);
         if (this.trackData == null) return;
         const metadata = this.trackData.getVideoMetadata(0);
-
-        if (metadata == null) return;
-        this.renderer.updateLayout(metadata.width, metadata.height);
-
+        if (metadata) this.renderer.updateLayout(metadata.width, metadata.height);
     }
-    
+
     setTrail(trail) {
         this.trail = trail;
         if (this.trackData != null) {
-            const frameCount = trackData.getFrameCnt();
-            const maxValue = frameCount > 0 ? frameCount - 1 : 0;
-            this.trail.max = maxValue;
+            const frameCount = this.trackData.getFrameCnt();
+            this.trail.max = frameCount > 0 ? frameCount - 1 : 0;
         }
         this.trail.addEventListener('change', () => {
             this.drawImageAt(this.lastIdx);
         });
     }
-    
-    // 색상을 외부에서 동적으로 변경하기 위한 메서드
+
     setColors(currentRGBA, trailRGBA) {
         if (trailRGBA) this.trailColor = trailRGBA;
         if (currentRGBA) this.currentBatColor = currentRGBA;
     }
-    
+
     setData(trackData) {
         this.trackData = trackData;
-        if (trackData == null) return;
-        if (this.trail != null) {
+        if (!trackData) return;
+        if (this.trail) {
             const frameCount = trackData.getFrameCnt();
-            const maxValue = frameCount > 0 ? frameCount - 1 : 0;
-            this.trail.max = maxValue;
+            this.trail.max = frameCount > 0 ? frameCount - 1 : 0;
         }
         const metadata = this.trackData.getVideoMetadata(0);
+        if (metadata) this.renderer.updateLayout(metadata.width, metadata.height);
+    }
+
+    getImageAt(idx) {
+        if (!this.trackData || idx < 0) return null;
+
+        const rawImgList = this.trackData.getRawImgList(0);
+        const backgroundImage = rawImgList[idx];
+        if (!backgroundImage) return null;
+
+        const maskLayer = this._generateMaskLayer(
+            idx, this.trackData.getConf());
         
-        if (metadata == null) return;
-        this.renderer.updateLayout(metadata.width, metadata.height);
+        const compositeCanvas = document.createElement('canvas');
+        compositeCanvas.width = backgroundImage.width;
+        compositeCanvas.height = backgroundImage.height;
+        const compositeCtx = compositeCanvas.getContext('2d');
+
+        compositeCtx.drawImage(backgroundImage, 0, 0);
+
+        if (maskLayer) {
+            compositeCtx.drawImage(maskLayer, 0, 0, backgroundImage.width, backgroundImage.height);
+        }
+
+        return compositeCanvas;
     }
 
     drawImageAt(idx) {
-        if (!this.trackData || idx < 0) return;
         this.lastIdx = idx;
-        const image = this.trackData.getRawImgList(0)[idx];
-        if (!image) return;
-
-        // 1. 배경 이미지 렌더링
-        this.renderer.drawImage(image);
-
-        // 2. 마스크 레이어 생성 (getSelectedBatAt 활용)
-        const maskLayer = this._generateMaskLayer(
-            idx, this.trackData.getConf());
-        if (maskLayer) {
-            this.renderer.drawLayer(maskLayer);
+        const compositeImage = this.getImageAt(idx);
+        if (compositeImage) {
+            this.renderer.drawImage(compositeImage);
         }
     }
 
@@ -90,18 +101,19 @@ export class TrackFrameMaker {
 
         this.cachedImageData.data.fill(0);
         const pixelBuffer = this.cachedImageData.data;
-        const startIdx = Math.max(1, idx - parseInt(this.trail.value) + 1);
+        
+        // 궤적 길이 설정
+        const trailLen = this.trail ? parseInt(this.trail.value) : 0;
+        const startIdx = Math.max(1, idx - trailLen + 1);
 
-        // 1. 과거 궤적 그리기 (설정된 trailColor 사용)
+        // 1. 과거 궤적 및 사이 공간 채우기 (기존 masking 로직 유지)
         for (let i = startIdx; i <= idx; i++) {
             const prev = this.trackData.getSelectedBatAt(i - 1);
             const curr = this.trackData.getSelectedBatAt(i);
-            
-            // 기존의 복잡한 알파 계산 대신 설정된 통일 색상 사용
             this.masking(pixelBuffer, prev, curr, conf, this.trailColor, maskW, maskH);
         }
 
-        // 2. 현재 배트 그리기 (설정된 currentBatColor 사용)
+        // 2. 현재 배트 그리기 (더 진한 색상)
         const nowBat = this.trackData.getSelectedBatAt(idx);
         if (nowBat?.maskConfidenceMap) {
             this.applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, conf, this.currentBatColor, maskW, maskH);
@@ -110,7 +122,7 @@ export class TrackFrameMaker {
         this.offscreenCtx.putImageData(this.cachedImageData, 0, 0);
         return this.offscreenCanvas;
     }
-
+    
     masking(pixelData, prevBat, currBat, threshold, color, maskW, maskH) {
         if (prevBat?.maskConfidenceMap) {
             this.applyMaskToBuffer(pixelData, prevBat.maskConfidenceMap, threshold, color, maskW, maskH);
@@ -119,7 +131,6 @@ export class TrackFrameMaker {
             this.applyMaskToBuffer(pixelData, currBat.maskConfidenceMap, threshold, color, maskW, maskH);
         }
         
-        // 두 마스크 사이의 공간을 8개의 점으로 연결하여 채움
         if (prevBat?.maskConfidenceMap && currBat?.maskConfidenceMap) {
             const vA = this.getMaskVertices(prevBat.maskConfidenceMap, threshold);
             const vB = this.getMaskVertices(currBat.maskConfidenceMap, threshold);
@@ -138,9 +149,10 @@ export class TrackFrameMaker {
         if (!maskMap) return;
         for (let y = 0; y < maskH; y++) {
             const row = maskMap[y];
+            const rowOffset = y * maskW;
             for (let x = 0; x < maskW; x++) {
                 if (row[x] >= threshold) {
-                    const idx = (y * maskW + x) * 4;
+                    const idx = (rowOffset + x) * 4;
                     pixelData[idx] = color[0];
                     pixelData[idx+1] = color[1];
                     pixelData[idx+2] = color[2];
@@ -150,58 +162,39 @@ export class TrackFrameMaker {
         }
     }
 
-    /**
-     * 상단과 하단에서 각각 좌우 끝점 2개씩, 총 4개의 정점을 추출합니다.
-     */
     getMaskVertices(maskMap, threshold) {
         if (!maskMap || maskMap.length === 0) return null;
         const rows = maskMap.length, cols = maskMap[0].length;
-        
-        let topLeft = null, topRight = null;
-        let bottomLeft = null, bottomRight = null;
+        let topLeft = null, topRight = null, bottomLeft = null, bottomRight = null;
 
-        // 상단 영역 포인트 탐색
         for (let y = 0; y < rows; y++) {
-            let foundInRow = false;
             for (let x = 0; x < cols; x++) {
                 if (maskMap[y][x] >= threshold) {
                     if (!topLeft || x < topLeft.x) topLeft = { x, y };
                     if (!topRight || x > topRight.x) topRight = { x, y };
-                    foundInRow = true;
                 }
             }
-            // 상단 정점이 어느 정도 잡히면 루프 종료 (두께 확보)
             if (topLeft && y > topLeft.y + 3) break;
         }
 
-        // 하단 영역 포인트 탐색
         for (let y = rows - 1; y >= 0; y--) {
-            let foundInRow = false;
             for (let x = 0; x < cols; x++) {
                 if (maskMap[y][x] >= threshold) {
                     if (!bottomLeft || x < bottomLeft.x) bottomLeft = { x, y };
                     if (!bottomRight || x > bottomRight.x) bottomRight = { x, y };
-                    foundInRow = true;
                 }
             }
             if (bottomLeft && y < bottomLeft.y - 3) break;
         }
-
         return (topLeft && bottomRight) ? { topLeft, topRight, bottomLeft, bottomRight } : null;
     }
 
-    /**
-     * 전달된 점들을 볼록 다각형으로 정렬하여 내부를 채웁니다.
-     */
     fillPolygon(pixelData, points, color, canvasW, canvasH) {
         const validPoints = points.filter(p => p !== null);
         if (validPoints.length < 3) return;
 
-        // 중심점 기준 각도 정렬 (Convex Hull 구성)
         const center = validPoints.reduce((acc, p) => ({ x: acc.x + p.x / validPoints.length, y: acc.y + p.y / validPoints.length }), { x: 0, y: 0 });
-        const sortedPoints = validPoints.sort((a, b) => {
-            return Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x);
-        });
+        const sortedPoints = validPoints.sort((a, b) => Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x));
 
         let minX = Math.max(0, Math.floor(Math.min(...sortedPoints.map(p => p.x))));
         let maxX = Math.min(canvasW - 1, Math.ceil(Math.max(...sortedPoints.map(p => p.x))));
@@ -209,9 +202,10 @@ export class TrackFrameMaker {
         let maxY = Math.min(canvasH - 1, Math.ceil(Math.max(...sortedPoints.map(p => p.y))));
 
         for (let y = minY; y <= maxY; y++) {
+            const rowOffset = y * canvasW;
             for (let x = minX; x <= maxX; x++) {
                 if (this.isPointInPolygon(sortedPoints, x, y)) {
-                    const idx = (y * canvasW + x) * 4;
+                    const idx = (rowOffset + x) * 4;
                     pixelData[idx] = color[0];
                     pixelData[idx+1] = color[1];
                     pixelData[idx+2] = color[2];

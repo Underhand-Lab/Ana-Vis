@@ -6,4 +6,5 @@ export class FrameMakerBase {
     validateAndSet(data) {}
     bindUI(element) { }
     drawImageAt(idx) { }
+    getImageAt(idx) { return null; }
 }

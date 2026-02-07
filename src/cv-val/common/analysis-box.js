@@ -20,7 +20,7 @@ export class AnalysisBox {
         if (data == null) return;
 
         this.data = data;
-        
+
         const frameCount = this.data.getFrameCnt();
         this.slider.max = frameCount > 0 ? frameCount - 1 : 0;
 
@@ -30,7 +30,7 @@ export class AnalysisBox {
         this.updateImage();
     }
 
-    addFrameMaker(src, frameMaker) {
+    addFrameMaker(src, frameMaker, bindUIFunc) {
 
         return new Promise((resolve, reject) => {
             this.boxList.addBoxTemplate(src, () => {
@@ -41,7 +41,12 @@ export class AnalysisBox {
                 box.className = 'container neumorphism';
                 frameMaker.bindUI(box);
 
-                this.frameMakers.push(frameMaker);  
+                if (bindUIFunc) {
+                    console.log(bindUIFunc);
+                    bindUIFunc(box);
+                }
+
+                this.frameMakers.push(frameMaker);
 
                 frameMaker.setData(this.data);
                 frameMaker.drawImageAt(this.nowIdx());

@@ -26,7 +26,7 @@ export class CustomGraphFrameMaker extends PoseFrameMakerBase {
 
         this.changeAnalysisTool(
             this.analysisTools[options.value]);
-
+        
     }
 
     changeAnalysisTool(analysisTool) {
