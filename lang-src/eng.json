@@ -11,6 +11,7 @@
     "label-process-new-video": "Process new video",
     "label-model": "Model",
     "label-process-ready": "Ready",
+    "label-model-loading": "Model Loading",
     "label-before-process": "Ready",
     "label-on-process": "On Process",
     "label-after-process": "Process Complete",

@@ -11,6 +11,7 @@
     "label-process-new-video": "새로운 동영상 처리",
     "label-model": "모델",
     "label-process-ready": "준비 중",
+    "label-model-loading": "모델 불러오는 중",
     "label-before-process": "처리 전",
     "label-on-process": "처리 중",
     "label-after-process": "처리 완료",

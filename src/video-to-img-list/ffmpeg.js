@@ -1,116 +1,90 @@
 const { createFFmpeg, fetchFile } = FFmpeg;
 
 export class FFMPEGVideoConverter {
-
     constructor() {
         this.ffmpeg = createFFmpeg({
-            mainName: 'main', // 싱글 스레드 버전의 엔트리포인트 이름
+            mainName: 'main',
             corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
         });
         this.isLoaded = false;
     }
 
     async load() {
-
         if (this.isLoaded) return;
-
         await this.ffmpeg.load();
         this.isLoaded = true;
         console.log('FFmpeg 로드 완료.');
-
     }
 
-    async getVideoMetadata(file) {
-
-        if (!file) {
-            throw new Error('비디오 파일이 없습니다.');
-        }
-
-        if (!this.isLoaded) {
-            await this.load();
-        }
+    /**
+     * 메타데이터와 비트맵 배열을 객체 형태로 한 번에 반환합니다.
+     */
+    async convert(file) {
+        if (!file) throw new Error('비디오 파일이 없습니다.');
+        if (!this.isLoaded) await this.load();
 
         const inputFileName = file.name;
+        const outputFileName = 'output_%d.png';
         let ffmpegLogs = '';
 
-        this.ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
-
+        // 1. 로그를 가로채서 메타데이터 파싱 준비
         this.ffmpeg.setLogger(({ type, message }) => {
             if (type === 'fferr') {
                 ffmpegLogs += message + '\n';
             }
         });
 
-        try {
-            // 메타데이터를 분석하는 명령어 실행
-            await this.ffmpeg.run(
-                '-i', inputFileName
-            );
-        }
-        catch (error) {
-
-        } finally {
-            this.ffmpeg.setLogger(() => { });
-            this.ffmpeg.FS('unlink', inputFileName);
-        }
-
-        const match = ffmpegLogs.match(/(\d{2,5})x(\d{2,5}).+?(\d+(?:\.\d+)?)\s+fps/);
-
-        if (match) {
-            return {
-                width: parseInt(match[1], 10),
-                height: parseInt(match[2], 10),
-                fps: parseFloat(match[3]),
-            };
-
-        }
-
-        throw new Error('메타데이터를 파싱할 수 없습니다.');
-    }
-
-    async convert(file) {
-        if (!file) throw new Error('비디오 파일이 없습니다.');
-        if (!this.isLoaded) await this.load();
-
-        const outputFileName = 'output_%d.png';
-        const inputFileName = file.name;
-
+        // 2. 파일 쓰기
         this.ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
+
         try {
+            // 3. 변환 실행 (추출과 동시에 로그 생성)
             await this.ffmpeg.run('-i', inputFileName, outputFileName);
         } catch (error) {
-            // status가 0이면 정상 종료이므로 에러 로그를 찍지 않고 넘어감
             if (error.status !== 0) {
                 console.error("FFmpeg 실제 에러 발생:", error);
                 throw error;
             }
+        } finally {
+            // 로그 수집 중단
+            this.ffmpeg.setLogger(() => { });
         }
 
+        // 4. 메타데이터 파싱
+        const match = ffmpegLogs.match(/(\d{2,5})x(\d{2,5}).+?(\d+(?:\.\d+)?)\s+fps/);
+        const metadata = match ? {
+            width: parseInt(match[1], 10),
+            height: parseInt(match[2], 10),
+            fps: parseFloat(match[3]),
+        } : null;
+
+        // 5. 생성된 이미지 파일 읽기
         const fileNames = this.ffmpeg.FS('readdir', '/')
             .filter((f) => f.startsWith('output_'))
-            .sort((a, b) => { // 파일명 정렬 (output_1, output_2...)
+            .sort((a, b) => {
                 const numA = parseInt(a.match(/\d+/)[0]);
                 const numB = parseInt(b.match(/\d+/)[0]);
                 return numA - numB;
             });
 
-        const bitmapList = [];
+        const imageList = [];
         for (const fileName of fileNames) {
             const data = this.ffmpeg.FS('readFile', fileName);
             const blob = new Blob([data.buffer], { type: 'image/png' });
-
-            // Canvas를 생성하지 않고 ImageBitmap을 바로 생성 (메인 스레드 부하 최소화)
             const bitmap = await createImageBitmap(blob);
-            bitmapList.push(bitmap);
+            imageList.push(bitmap);
+            
+            // 메모리 해제를 위해 가상 파일 시스템에서 삭제
+            this.ffmpeg.FS('unlink', fileName);
         }
 
-
-        // 정리
+        // 6. 원본 입력 파일 삭제
         this.ffmpeg.FS('unlink', inputFileName);
-        fileNames.forEach(f => this.ffmpeg.FS('unlink', f));
 
-        return bitmapList; // ImageBitmap 배열 반환
-
+        // 결과 반환
+        return {
+            imageList,
+            metadata
+        };
     }
-
 }

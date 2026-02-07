@@ -1,11 +1,12 @@
 import { FFMPEGVideoConverter } from '../video-to-img-list/ffmpeg.js'
+import { WebCodecsVideoConverter } from '../video-to-img-list/web-codecs.js';
 
 export class Processor {
 
     constructor() {
         this.ballposeDetector = null;
         this.onProgressCallback = null;
-        this.videoConverter = new FFMPEGVideoConverter();
+        this.videoConverter = new WebCodecsVideoConverter();
     }
 
     setting(ballDetector, onProgress) {
@@ -16,15 +17,16 @@ export class Processor {
     async processVideo(videoList, data) {
 
         if (this.onProgressCallback) {
+            this.onProgressCallback.onState("model-loading");
+        }
+        await this.detector.initialize();
+
+        if (this.onProgressCallback) {
             this.onProgressCallback.onState("process-ready");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
-
-        await this.videoConverter.load();
         
-        const videoMetaData = 
-            await this.videoConverter.getVideoMetadata(videoList[0]);
-        const imageList =
+        const { imageList, metadata } = 
             await this.videoConverter.convert(videoList[0]);
 
         console.log(imageList.length);
@@ -33,11 +35,9 @@ export class Processor {
             this.onProgressCallback.onState("on-process");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
-        
-        await this.detector.initialize();
         let frameIndex = 0;
 
-        data.initialize([videoMetaData]);
+        data.initialize([metadata]);
 
         for (const image of imageList) {
             const ballData = await this.detector.process(image);
