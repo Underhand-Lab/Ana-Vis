@@ -12,11 +12,10 @@ const candidateSelect = document.getElementById('candidateSelect');
 const confInput = document.getElementById('confInput');
 
 function updateCandidateUI(frameIdx) {
-    const data = analysisBox.getData();
-    if (!data) return;
+    if (!processedData) return;
 
-    const candidates = data.getCandidatesAt(frameIdx);
-    const frameData = data.getBallList()[frameIdx];
+    const candidates = processedData.getCandidatesAt(frameIdx);
+    const frameData = processedData.getBallList()[frameIdx];
     const currentSelected = frameData ? frameData.selectedIdx : -1;
 
     candidateSelect.innerHTML = '<option value="-1">none</option>';
@@ -65,10 +64,9 @@ async function init() {
 init();
 
 confInput.addEventListener('change', () => {
-    const data = analysisBox.getData();
-    if (data) {
-        data.setConf(parseFloat(confInput.value));
-        analysisBox.updateAll(); // 모든 Maker 다시 그리기
+    if (processedData) {
+        processedData.setConf(parseFloat(confInput.value));
+        analysisBox.updateImage(); // 모든 Maker 다시 그리기
     }
 });
 

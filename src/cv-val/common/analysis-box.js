@@ -42,7 +42,6 @@ export class AnalysisBox {
                 frameMaker.bindUI(box);
 
                 if (bindUIFunc) {
-                    console.log(bindUIFunc);
                     bindUIFunc(box);
                 }
 
@@ -63,8 +62,12 @@ export class AnalysisBox {
     }
 
     updateImage() {
+        const idx = this.nowIdx();
         for (let i = 0; i < this.frameMakers.length; i++) {
-            this.frameMakers[i].drawImageAt(this.nowIdx());
+            this.frameMakers[i].drawImageAt(idx);
+        }
+        if (this.onUpdateCallback) {
+            this.onUpdateCallback(idx);
         }
     }
 }

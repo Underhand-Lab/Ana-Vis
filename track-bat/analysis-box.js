@@ -17,11 +17,10 @@ const addVideoBoxBtn = document.getElementById('add-video-box-button');
 let processedData = null;
 
 function updateCandidateUI(frameIdx) {
-    const data = analysisBox.getData();
-    if (!data) return;
+    if (!processedData) return;
 
-    const candidates = data.getCandidatesAt(frameIdx);
-    const frameData = data.getBatList()[frameIdx];
+    const candidates = processedData.getCandidatesAt(frameIdx);
+    const frameData = processedData.getBatList()[frameIdx];
     const currentSelected = frameData ? frameData.selectedIdx : -1;
 
     candidateSelect.innerHTML = '<option value="-1">none</option>';
@@ -84,18 +83,16 @@ const batVideoUIBinder = (box, frameMaker) => {
 
 // 신뢰도(Confidence) 변경 시 데이터 갱신 및 전체 리렌더링
 confInput.addEventListener('change', () => {
-    const data = analysisBox.getData();
-    if (data) {
-        data.setConf(parseFloat(confInput.value));
+    if (processedData) {
+        processedData.setConf(parseFloat(confInput.value));
         analysisBox.updateImage(); // 모든 Maker 다시 그리기
     }
 });
 
 // 후보군 선택 변경 시
 candidateSelect.addEventListener('change', () => {
-    const data = analysisBox.getData();
-    if (data) {
-        data.setSelectedIdx(analysisBox.nowIdx(), parseInt(candidateSelect.value));
+    if (processedData) {
+        processedData.setSelectedIdx(analysisBox.nowIdx(), parseInt(candidateSelect.value));
         analysisBox.updateImage();
     }
 });
