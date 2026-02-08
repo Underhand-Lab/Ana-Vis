@@ -1,6 +1,6 @@
 import { AnalysisBox } from "../src/cv-val/common/analysis-box.js";
 import { TrackBatFrameMaker } from "../src/cv-val/track-bat/frame-maker/frame-maker.js";
-import { SaveFrameMaker } from "../src/cv-val/ffmpeg-save-frame-maker.js";
+import { frameMakerExport } from "../src/cv-val/common/frame-maker-export.js";
 
 // 1. AnalysisBox 인스턴스 생성 및 공통 UI 바인딩
 const analysisBox = new AnalysisBox();
@@ -68,12 +68,10 @@ const batVideoUIBinder = (box, frameMaker) => {
     frameMaker.bindUI(box);
     colorChange();
 
-    // 영상 저장 로직
-    const exporter = new SaveFrameMaker(frameMaker);
     saveBtn.addEventListener('click', async () => {
         if (!processedData) return;
         
-        await exporter.export(processedData);
+        await frameMakerExport(frameMaker, processedData);
         console.log("배트 분석 영상 저장 완료");
         frameMaker.drawImageAt(analysisBox.nowIdx());
     });

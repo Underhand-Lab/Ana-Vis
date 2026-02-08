@@ -27,11 +27,13 @@ export class WebCodecsVideoConverter {
                     reject(new Error("비디오 트랙을 찾을 수 없습니다."));
                     return;
                 }
+                const durationSec = track.duration / track.timescale;
+                const fps = track.nb_samples / durationSec;
 
                 metadata = {
                     width: track.track_width,
                     height: track.track_height,
-                    duration: track.duration / track.timescale,
+                    fps: fps,
                     codec: track.codec,
                     sampleCount: track.nb_samples,
                     id: track.id
