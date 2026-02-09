@@ -1,10 +1,11 @@
 import * as FrameMaker from '../src/cv-val/track-ball/frame-maker/index.js';
 import * as Analysis from "../src/cv-val/track-ball/calc/analysis.js";
 import { AnalysisBox } from "../src/cv-val/common/analysis-box.js";
+import { frameMakerExport } from "../src/cv-val/common/frame-maker-export.js";
 
 const analysisBox = new AnalysisBox();
 analysisBox.bindUI(document, {
-    onUpdate: (frameIdx) => updateCandidateUI(frameIdx) 
+    onUpdate: (frameIdx) => updateCandidateUI(frameIdx)
 });
 
 const analysisSelect = document.getElementById('analysis');
@@ -34,7 +35,16 @@ const MAKER_CONFIG = {
     "video": {
         src: "../template/ball-video.html",
         btnId: "add-video-box-button",
-        create: () => new FrameMaker.TrackFrameMaker()
+        create: () => new FrameMaker.TrackFrameMaker(),
+        bindUI: (box, frameMaker) => {
+            const saveBtn = box.querySelector(".save");
+            saveBtn.addEventListener('click', async () => {
+                if (!processedData) return;
+
+                await frameMakerExport(frameMaker, processedData);
+            });
+
+        }
     },
     "table": {
         src: "../template/table-track.html",
@@ -50,18 +60,24 @@ const MAKER_CONFIG = {
 // 이벤트 바인딩 및 초기화 (Pose와 동일한 패턴)
 Object.entries(MAKER_CONFIG).forEach(([key, config]) => {
     document.getElementById(config.btnId)?.addEventListener('click', async () => {
-        await analysisBox.addFrameMaker(config.src, config.create());
+        await analysisBox.addFrameMaker(
+            config.src, config.create(), config.bindUI);
         analysisSelect.closeAction();
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     });
 });
 
-// 기본 셋업
-async function init() {
-    await analysisBox.addFrameMaker(MAKER_CONFIG.video.src, MAKER_CONFIG.video.create());
-    await analysisBox.addFrameMaker(MAKER_CONFIG.table.src, MAKER_CONFIG.table.create());
+async function initDefault(keys) {
+    for (const key of keys) {
+        const config = MAKER_CONFIG[key];
+        await analysisBox.addFrameMaker(
+            config.src, config.create(), config.bindUI);
+    }
 }
-init();
+
+initDefault(["video", "table"]);
+
+let processedData = null;
 
 confInput.addEventListener('change', () => {
     if (processedData) {
@@ -69,9 +85,6 @@ confInput.addEventListener('change', () => {
         analysisBox.updateImage(); // 모든 Maker 다시 그리기
     }
 });
-
-let processedData = null;
-
 candidateSelect.addEventListener('change', () => {
     if (processedData) {
         processedData.setSelectedIdx(analysisBox.nowIdx(), parseInt(candidateSelect.value));

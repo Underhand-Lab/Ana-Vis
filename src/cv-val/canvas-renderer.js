@@ -47,7 +47,7 @@ class CanvasRenderer {
 
     drawImage(source) {
         if (!this.canvas || !source) return;
-
+        
         // --- 해상도 맞춤(DPR 반영) 코드 시작 ---
         const dpr = 1;
         const currentRatio = this.canvas.height / this.canvas.width;

@@ -72,8 +72,6 @@ const batVideoUIBinder = (box, frameMaker) => {
         if (!processedData) return;
         
         await frameMakerExport(frameMaker, processedData);
-        console.log("배트 분석 영상 저장 완료");
-        frameMaker.drawImageAt(analysisBox.nowIdx());
     });
 };
 
@@ -119,7 +117,7 @@ async function init() {
     await analysisBox.addFrameMaker(
         "../template/bat-video.html",
         videoFrameMaker,
-        (box) => batVideoUIBinder(box, videoFrameMaker)
+        batVideoUIBinder
     );
 }
 

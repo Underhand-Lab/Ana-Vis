@@ -1,6 +1,7 @@
 import * as PoseAnalysisTool from "../src/cv-val/pose/analysis-tool/index.js";
 import * as PoseFrameMaker from '../src/cv-val/pose/frame-maker/index.js';
 import { AnalysisBox } from "../src/cv-val/common/analysis-box.js";
+import { frameMakerExport } from "../src/cv-val/common/frame-maker-export.js";
 
 const analysisBox = new AnalysisBox();
 analysisBox.bindUI(document);
@@ -18,7 +19,16 @@ const MAKER_CONFIG = {
     "video": {
         src: "../template/pose-video.html",
         btnId: "add-video-box-button",
-        create: () => new PoseFrameMaker.PoseBoneFrameMaker()
+        create: () => new PoseFrameMaker.PoseBoneFrameMaker(),
+        bindUI: (box, frameMaker) => {
+            const saveBtn = box.querySelector(".save");
+            saveBtn.addEventListener('click', async () => {
+                if (!processedData) return;
+
+                await frameMakerExport(frameMaker, processedData);
+            });
+
+        }
     },
     "3d-video": {
         src: "../template/3d-video.html",
@@ -51,10 +61,16 @@ Object.entries(MAKER_CONFIG).forEach(([key, config]) => {
 async function initDefault(keys) {
     for (const key of keys) {
         const config = MAKER_CONFIG[key];
-        await analysisBox.addFrameMaker(config.src, config.create());
+        await analysisBox.addFrameMaker(
+            config.src, config.create(), config.bindUI);
     }
 }
 
 initDefault(["video", "graph"]);
 
-export const setData = (data) => analysisBox.setData(data);
+let processedData = null;
+
+export function setData(data) {
+    processedData = data;
+    analysisBox.setData(data);
+}

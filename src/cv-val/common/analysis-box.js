@@ -42,7 +42,7 @@ export class AnalysisBox {
                 frameMaker.bindUI(box);
 
                 if (bindUIFunc) {
-                    bindUIFunc(box);
+                    bindUIFunc(box, frameMaker);
                 }
 
                 this.frameMakers.push(frameMaker);
