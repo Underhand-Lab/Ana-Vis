@@ -3,7 +3,8 @@
     "nav-track-ball": "공 추적",
     "nav-track-bat": "배트 궤적",
 
-    "btn-download-processed-data": "처리된 데이터 다운로드",
+    "btn-save": "저장",
+    "btn-load": "불러오기",
     "btn-open-process": "분석",
     "btn-open-guide": "도움말",
     "btn-add-tool": "도구 추가",
@@ -31,7 +32,6 @@
     "label-3d-video": "3d 동영상",
     "label-graph": "그래프",
     "label-table": "표",
-    "btn-save": "저장",
 
     "label-select-tool": "분석 도구",
     "opt-angle": "관절 각도",

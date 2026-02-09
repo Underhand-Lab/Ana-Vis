@@ -1,7 +1,8 @@
 import * as FrameMaker from '../src/cv-val/track-ball/frame-maker/index.js';
 import * as Analysis from "../src/cv-val/track-ball/calc/analysis.js";
 import { AnalysisBox } from "../src/cv-val/common/analysis-box.js";
-import { frameMakerExport } from "../src/cv-val/common/frame-maker-export.js";
+import { frameMakerDataToBlob } from "../src/cv-val/common/frame-maker-export.js";
+import { saveBlobWithPicker } from "../src/save-blob.js";
 
 const analysisBox = new AnalysisBox();
 analysisBox.bindUI(document, {
@@ -11,6 +12,22 @@ analysisBox.bindUI(document, {
 const analysisSelect = document.getElementById('analysis');
 const candidateSelect = document.getElementById('candidateSelect');
 const confInput = document.getElementById('confInput');
+
+const saveBtn = document.querySelector("#save-to-file");
+
+saveBtn.addEventListener('click', async () => {
+    if (!processedData) return;
+    try {
+        const blob = await processedData.toBlob();
+        await saveBlobWithPicker(blob, "trackBall.cvval", [{
+            description: 'Track Ball Data File',
+            accept: { 'application/octet-stream': ['.cvval'] },
+        }], true);
+    }
+    catch (error) {
+        console.error(error);
+    }
+});
 
 function updateCandidateUI(frameIdx) {
     if (!processedData) return;
@@ -41,7 +58,15 @@ const MAKER_CONFIG = {
             saveBtn.addEventListener('click', async () => {
                 if (!processedData) return;
 
-                await frameMakerExport(frameMaker, processedData);
+                const blob = await frameMakerDataToBlob(
+                    frameMaker, processedData, [{
+                    description: 'Video File',
+                    accept: {
+                        'video/mp4': ['.mp4']
+                    },
+                }], true);
+
+                await saveBlobWithPicker(blob, "trackBallVideo.mp4");
             });
 
         }

@@ -71,14 +71,17 @@
                     <button id="open-process-pop-up">
                         <e-text key="btn-open-process"></e-text>
                     </button>
+                    <label for="load-from-file" class="label-for-btn">
+                        <e-text key="btn-load"></e-text></label>
+                    <input type="file" id="load-from-file" style="display:none;" accept="cvval">
+                    <button id="save-to-file">
+                        <e-text key="btn-save"></e-text>
+                    </button>
                 </div>
                 <div style="text-align: right;white-space: nowrap;">
                     <button id="add-box-button">
                         <e-text key="btn-add-tool"></e-text>
                     </button>
-                    <div id="download-section" style="display: none;">
-                        <a id="download-link" href="#" download="processed_data.json">처리된 데이터 다운로드</a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -93,7 +96,7 @@
         <div>
             <div class="input-section">
                 <div style="flex-grow: 1;">
-                    <input type="file" id="video-files" multiple accept="video/*">
+                    <input type="file" id="video-files" accept="video/*">
                 </div>
                 <div style="text-align: left;">
                     <label for="model">

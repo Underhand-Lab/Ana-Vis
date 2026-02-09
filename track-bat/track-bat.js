@@ -77,3 +77,11 @@ processButton.addEventListener('click', async () => {
     }
 
 });
+
+const loadBtn = document.querySelector("#load-from-file");
+
+loadBtn.addEventListener('change', async () => {
+    const data = new TrackBatData();
+    await data.loadFromFile(loadBtn.files[0]);
+    AnalysisBox.setData(data);
+});

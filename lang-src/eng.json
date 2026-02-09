@@ -3,7 +3,8 @@
     "nav-track-ball": "Ball Tracking",
     "nav-track-bat": "Bat Tracking",
 
-    "btn-download-processed-data": "Download processed data",
+    "btn-save": "Save",
+    "btn-load": "Load",
     "btn-open-process": "Process",
     "btn-open-guide": "Guide",
     "btn-add-tool": "Tool",
@@ -31,7 +32,6 @@
     "label-3d-video": "3D Video",
     "label-graph": "Graph",
     "label-table": "Table",
-    "btn-save": "Save",
 
     "label-select-tool": "Select Tool",
     "opt-angle": "Joint Angle",

@@ -1,7 +1,8 @@
 import * as PoseAnalysisTool from "../src/cv-val/pose/analysis-tool/index.js";
 import * as PoseFrameMaker from '../src/cv-val/pose/frame-maker/index.js';
 import { AnalysisBox } from "../src/cv-val/common/analysis-box.js";
-import { frameMakerExport } from "../src/cv-val/common/frame-maker-export.js";
+import { frameMakerDataToBlob } from "../src/cv-val/common/frame-maker-export.js";
+import { saveBlobWithPicker } from "../src/save-blob.js";
 
 const analysisBox = new AnalysisBox();
 analysisBox.bindUI(document);
@@ -15,6 +16,22 @@ const analysisTool = {
     "height": new PoseAnalysisTool.HeightAnalysisTool(),
 };
 
+const saveBtn = document.querySelector("#save-to-file");
+
+saveBtn.addEventListener('click', async () => {
+    if (!processedData) return;
+    try {
+        const blob = await processedData.toBlob();
+        await saveBlobWithPicker(blob, "pose.cvval", [{
+            description: 'Pose Data File',
+            accept: { 'application/octet-stream': ['.cvval'] },
+        }], true);
+    }
+    catch (error) {
+        console.error(error);
+    }
+});
+
 const MAKER_CONFIG = {
     "video": {
         src: "../template/pose-video.html",
@@ -25,7 +42,15 @@ const MAKER_CONFIG = {
             saveBtn.addEventListener('click', async () => {
                 if (!processedData) return;
 
-                await frameMakerExport(frameMaker, processedData);
+                const blob = await frameMakerDataToBlob(
+                    frameMaker, processedData, [{
+                    description: 'Video File',
+                    accept: {
+                        'video/mp4': ['.mp4']
+                    },
+                }], true);
+
+                await saveBlobWithPicker(blob, "poseVideo.mp4");
             });
 
         }

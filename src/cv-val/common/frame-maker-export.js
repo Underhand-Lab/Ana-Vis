@@ -2,7 +2,7 @@ import { MediabunnyImageListToVideo } from "../../image-list-to-video/media-bunn
 
 const videoMaker = new MediabunnyImageListToVideo();
 
-export async function frameMakerExport(frameMaker, trackData) {
+export async function frameMakerDataToBlob(frameMaker, trackData) {
 
     const frameCount = trackData.getFrameCnt();
 
@@ -22,7 +22,8 @@ export async function frameMakerExport(frameMaker, trackData) {
             await videoMaker.addImage(i, blob);
         }
         const outputData = await videoMaker.export(fps);
-        download(outputData, `analysis_${Date.now()}.mp4`);
+
+        return outputData;
 
     } catch (error) {
         console.error(error);
@@ -30,13 +31,4 @@ export async function frameMakerExport(frameMaker, trackData) {
     } finally {
         videoMaker.postprocess();
     }
-}
-
-function download(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
 }

@@ -1,6 +1,7 @@
 import { AnalysisBox } from "../src/cv-val/common/analysis-box.js";
 import { TrackBatFrameMaker } from "../src/cv-val/track-bat/frame-maker/frame-maker.js";
-import { frameMakerExport } from "../src/cv-val/common/frame-maker-export.js";
+import { frameMakerDataToBlob } from "../src/cv-val/common/frame-maker-export.js";
+import { saveBlobWithPicker } from "../src/save-blob.js";
 
 // 1. AnalysisBox 인스턴스 생성 및 공통 UI 바인딩
 const analysisBox = new AnalysisBox();
@@ -13,6 +14,22 @@ const candidateSelect = document.getElementById('candidateSelect');
 const confInput = document.getElementById('confInput');
 const analysisSelect = document.getElementById('analysis');
 const addVideoBoxBtn = document.getElementById('add-video-box-button');
+
+const saveBtn = document.querySelector("#save-to-file");
+
+saveBtn.addEventListener('click', async () => {
+    if (!processedData) return;
+    try {
+        const blob = await processedData.toBlob();
+        await saveBlobWithPicker(blob, "trackBat.cvval", [{
+            description: 'Track Bat Data File',
+            accept: { 'application/octet-stream': ['.cvval'] },
+        }], true);
+    }
+    catch (error) {
+        console.error(error);
+    }
+});
 
 let processedData = null;
 
@@ -70,8 +87,16 @@ const batVideoUIBinder = (box, frameMaker) => {
 
     saveBtn.addEventListener('click', async () => {
         if (!processedData) return;
-        
-        await frameMakerExport(frameMaker, processedData);
+
+        const blob = await frameMakerDataToBlob(
+            frameMaker, processedData, [{
+                description: 'Video File',
+                accept: {
+                    'video/mp4': ['.mp4'] // 확장자를 .mp4로만 제한
+                },
+            }], true);
+
+        await saveBlobWithPicker(blob, "trackBatVideo.mp4");
     });
 };
 

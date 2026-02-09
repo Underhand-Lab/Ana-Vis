@@ -28,8 +28,6 @@ export class Processor {
         const { imageList, metadata } = 
             await this.videoConverter.convert(videoList[0]);
 
-        console.log(imageList.length);
-
         if (this.onProgressCallback) {
             this.onProgressCallback.onState("on-process");
             await new Promise(resolve => setTimeout(resolve, 0));
