@@ -1,7 +1,6 @@
-import { FFMPEGImageListToVideo } from "../../image-list-to-video/FFMPEG.js";
 import { MediabunnyImageListToVideo } from "../../image-list-to-video/media-bunny.js"
 
-const videoMaker = new FFMPEGImageListToVideo();
+const videoMaker = new MediabunnyImageListToVideo();
 
 export async function frameMakerExport(frameMaker, trackData) {
 
@@ -11,8 +10,6 @@ export async function frameMakerExport(frameMaker, trackData) {
 
     const metadata = trackData.getVideoMetadata(0);
     const fps = metadata.fps || 24;
-
-    console.log(fps);
 
     await videoMaker.init();
 
@@ -24,14 +21,11 @@ export async function frameMakerExport(frameMaker, trackData) {
             
             await videoMaker.addImage(i, blob);
         }
-
-        console.log(fps);
         const outputData = await videoMaker.export(fps);
-        console.log(outputData);
         download(outputData, `analysis_${Date.now()}.mp4`);
 
     } catch (error) {
-        console.log(error);
+        console.error(error);
         alert("저장 중 오류 발생");
     } finally {
         videoMaker.postprocess();

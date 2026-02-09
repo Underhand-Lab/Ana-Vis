@@ -2,6 +2,7 @@ import {
     Input,
     BlobSource,
     ALL_FORMATS,
+    EncodedPacketSink
 } from "https://cdn.jsdelivr.net/npm/mediabunny@1.32.2/+esm";
 
 export class MediaBunnyVideoConverter {
@@ -10,65 +11,78 @@ export class MediaBunnyVideoConverter {
     }
 
     async convert(file) {
-        console.log("1. 변환 시작:", file.name);
-
         const imageList = [];
 
-        // 1️⃣ Mediabunny Input 생성
         const input = new Input({
             source: new BlobSource(file),
             formats: ALL_FORMATS,
         });
 
-        // 비디오 트랙 읽기
         const videoTrack = await input.getPrimaryVideoTrack();
         if (!videoTrack) {
             throw new Error("비디오 트랙을 찾을 수 없습니다.");
         }
 
+        const rotation = videoTrack.rotation || 0;
+        
+        const isVertical = rotation === 90 || rotation === 270;
+        const finalWidth = isVertical ? videoTrack.displayHeight : videoTrack.displayWidth;
+        const finalHeight = isVertical ? videoTrack.displayWidth : videoTrack.displayHeight;
+        
+        const packetStats = await videoTrack.computePacketStats();
         const metadata = {
-            width: videoTrack.displayWidth,
-            height: videoTrack.displayHeight,
-            codec: videoTrack.codec,
+            width: finalWidth,
+            height: finalHeight,
+            fps: packetStats.averagePacketRate,
         };
 
-        console.log("2. 메타데이터:", metadata);
+        const canvas = new OffscreenCanvas(finalWidth, finalHeight);
+        const ctx = canvas.getContext("2d");
 
-        // 2️⃣ VideoDecoder 생성
-        const config = {
-            codec: videoTrack.codec,
-            codedWidth: videoTrack.displayWidth,
-            codedHeight: videoTrack.displayHeight,
-            description: videoTrack.codecDescription, // Codec extradata
-        };
-
-        const support = await VideoDecoder.isConfigSupported(config);
-        if (!support.supported) {
-            throw new Error(`지원되지 않는 코덱: ${config.codec}`);
-        }
-
-        this.decoder = new VideoDecoder({
+        const decoder = new VideoDecoder({
             output: async (frame) => {
-                const bmp = await createImageBitmap(frame);
-                imageList.push(bmp);
+                // 캔버스 초기화 및 회전 설정
+                canvas.width = finalWidth;
+                canvas.height = finalHeight;
+                
+                ctx.clearRect(0, 0, finalWidth, finalHeight);
+                ctx.save();
+
+                // 캔버스 중심점을 기준으로 회전 변환
+                ctx.translate(finalWidth / 2, finalHeight / 2);
+                ctx.rotate((rotation * Math.PI) / 180);
+
+                ctx.drawImage(
+                    frame,
+                    -frame.displayWidth / 2,
+                    -frame.displayHeight / 2,
+                    frame.displayWidth,
+                    frame.displayHeight
+                );
+
+                ctx.restore();
+
+                const rotatedBmp = canvas.transferToImageBitmap();
+                imageList.push(rotatedBmp);
+
                 frame.close();
             },
             error: (e) => console.error("VideoDecoder 오류:", e),
         });
 
-        this.decoder.configure(config);
+        const decoderConfig = await videoTrack.getDecoderConfig();
+        decoder.configure(decoderConfig);
 
-        // 3️⃣ Packet → WebCodecs 디코딩 루프
-        let packet;
-        while ((packet = await videoTrack.readPackets())) {
-            // Mediabunny EncodedPacket → EncodedVideoChunk
+        const sink = new EncodedPacketSink(videoTrack);
+        let packet = await sink.getKeyPacket(0);
+
+        while (packet) {
             const chunk = packet.toEncodedVideoChunk();
-            this.decoder.decode(chunk);
+            decoder.decode(chunk);
+            packet = await sink.getNextPacket(packet);
         }
 
-        await this.decoder.flush();
-
-        console.log("3. 디코딩 완료. 프레임 수:", imageList.length);
+        await decoder.flush();
 
         return { imageList, metadata };
     }

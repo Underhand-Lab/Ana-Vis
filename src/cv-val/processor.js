@@ -1,12 +1,11 @@
-import { FFMPEGVideoConverter } from '../video-to-img-list/ffmpeg.js'
-import { WebCodecsVideoConverter } from '../video-to-img-list/web-codecs.js';
+import { MediaBunnyVideoConverter } from '../video-to-img-list/media-bunny.js';
 
 export class Processor {
 
     constructor() {
         this.ballposeDetector = null;
         this.onProgressCallback = null;
-        this.videoConverter = new WebCodecsVideoConverter();
+        this.videoConverter = new MediaBunnyVideoConverter();
     }
 
     setting(ballDetector, onProgress) {
@@ -40,14 +39,15 @@ export class Processor {
         data.initialize([metadata]);
 
         for (const image of imageList) {
-            const ballData = await this.detector.process(image);
-
-            data.addDataAt(0, image, ballData);
 
             if (this.onProgressCallback) {
                 this.onProgressCallback.onProgress
                     (frameIndex + 1, imageList.length);
             }
+            
+            const frameData = await this.detector.process(image);
+
+            data.addDataAt(0, image, frameData);
 
             await new Promise(resolve => setTimeout(resolve, 0));
             frameIndex++;

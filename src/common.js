@@ -1,3 +1,5 @@
+import * as _ from "./markdown.js"
+
 window.addEventListener('load', function () {
 
     let lastScrollY = window.scrollY;

@@ -1,4 +1,5 @@
 import { loadFile } from "./load-file.js"
+import * as marked from 'https://cdn.jsdelivr.net/npm/marked@17.0.1/+esm'
 
 class ImportMarkdown extends HTMLElement {
     constructor() {
