@@ -81,6 +81,16 @@ processButton.addEventListener('click', async () => {
 const loadBtn = document.querySelector("#load-from-file");
 
 loadBtn.addEventListener('change', async () => {
+    if (!loadBtn.files[0]) return;
+
+    const fileName = loadBtn.files[0].name;
+    let ext;
+    if(fileName.indexOf('.') >= 0) {
+        ext = fileName.substring(fileName.lastIndexOf('.')+1, fileName.length);
+    } else {
+        ext = '';
+    }
+    if (ext != "cvbt") return;
     const data = new TrackBatData();
     await data.loadFromFile(loadBtn.files[0]);
     AnalysisBox.setData(data);

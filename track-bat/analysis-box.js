@@ -21,10 +21,10 @@ saveBtn.addEventListener('click', async () => {
     if (!processedData) return;
     try {
         const blob = await processedData.toBlob();
-        await saveBlobWithPicker(blob, "trackBat.cvval", [{
+        await saveBlobWithPicker(blob, "trackBat.cvbt", [{
             description: 'Track Bat Data File',
-            accept: { 'application/octet-stream': ['.cvval'] },
-        }], true);
+            accept: { 'application/cvbt': ['.cvbt'] },
+        }], true, "cvbt");
     }
     catch (error) {
         console.error(error);
@@ -89,14 +89,15 @@ const batVideoUIBinder = (box, frameMaker) => {
         if (!processedData) return;
 
         const blob = await frameMakerDataToBlob(
-            frameMaker, processedData, [{
-                description: 'Video File',
-                accept: {
-                    'video/mp4': ['.mp4'] // 확장자를 .mp4로만 제한
-                },
-            }], true);
+            frameMaker, processedData);
 
-        await saveBlobWithPicker(blob, "trackBatVideo.mp4");
+        await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
+            description: 'Video File',
+            accept: {
+                'video/mp4': ['.mp4']
+            },
+        }], true, "mp4");
+        
     });
 };
 

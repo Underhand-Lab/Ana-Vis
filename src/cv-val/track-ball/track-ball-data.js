@@ -141,7 +141,7 @@ class TrackBallData {
             finalParts.push(vSizeHeader, vBlob);
         }
 
-        return new Blob(finalParts, { type: "application/octet-stream" });
+        return new Blob(finalParts, { type: "application/cvbl" });
     }
 
     /**

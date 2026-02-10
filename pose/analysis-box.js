@@ -22,10 +22,10 @@ saveBtn.addEventListener('click', async () => {
     if (!processedData) return;
     try {
         const blob = await processedData.toBlob();
-        await saveBlobWithPicker(blob, "pose.cvval", [{
+        await saveBlobWithPicker(blob, "pose.cvp", [{
             description: 'Pose Data File',
-            accept: { 'application/octet-stream': ['.cvval'] },
-        }], true);
+            accept: { 'application/cvp': ['.cvp'] },
+        }], true, ".cvp");
     }
     catch (error) {
         console.error(error);
@@ -43,14 +43,14 @@ const MAKER_CONFIG = {
                 if (!processedData) return;
 
                 const blob = await frameMakerDataToBlob(
-                    frameMaker, processedData, [{
+                    frameMaker, processedData);
+
+                await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
                     description: 'Video File',
                     accept: {
                         'video/mp4': ['.mp4']
                     },
-                }], true);
-
-                await saveBlobWithPicker(blob, "poseVideo.mp4");
+                }], true, "mp4");
             });
 
         }

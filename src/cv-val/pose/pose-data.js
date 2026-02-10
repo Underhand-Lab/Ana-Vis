@@ -108,7 +108,7 @@ class PoseData {
         }
 
         // 3. 브라우저 다운로드 실행
-        const combinedBlob = new Blob(finalParts, { type: "application/octet-stream" });
+        const combinedBlob = new Blob(finalParts, { type: "application/cvp" });
 
         return combinedBlob;
     }

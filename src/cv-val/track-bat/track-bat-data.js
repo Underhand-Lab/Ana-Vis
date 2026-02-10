@@ -181,7 +181,7 @@ class TrackBatData {
             finalParts.push(vSizeHeader, vBlob);
         }
 
-        return new Blob(finalParts, { type: "application/octet-stream" });
+        return new Blob(finalParts, { type: "application/cvbt" });
     }
 
     /**

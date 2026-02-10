@@ -1,5 +1,5 @@
 export async function saveBlobWithPicker(
-    blob, suggestedName = "default.txt", types, excludeAcceptAllOption = false) {
+    blob, suggestedName = "default.txt", types, excludeAcceptAllOption = false, endsWith = "txt") {
     if ('showSaveFilePicker' in window) {
         try {
             const handle = await window.showSaveFilePicker({
@@ -20,7 +20,7 @@ export async function saveBlobWithPicker(
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = fileName.endsWith(".pose") ? fileName : fileName + ".pose";
+        a.download = fileName.endsWith(endsWith) ? fileName : fileName + endsWith;
         a.click();
         URL.revokeObjectURL(url);
     }
