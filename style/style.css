@@ -9,6 +9,6 @@
 @import url("./slider.css");
 @import url("./hamburger.css");
 
-@import url("/style/ui/box.css");
-@import url("/style/ui/pop-up.css");
-@import url("/style/ui/bottom-sheet.css");
+@import url("./ui/box.css");
+@import url("./ui/pop-up.css");
+@import url("./ui/bottom-sheet.css");
