@@ -71,20 +71,24 @@ export class AnalysisBox {
 
                 // 2. 최소/최대화 로직 (Grid 방식)
                 let isMax = true;
-                minimaxBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    isMax = !isMax;
-                    
-                    minimaxBtn.innerText = isMax ? "⧉" : "⛶";
-                    
-                    minimaxElements.forEach(el => {
-                        if (isMax) {
-                            el.classList.remove('closed');
-                            el.style.display = null; // display none 대신 클래스로 제어
-                        } else {
-                            el.classList.add('closed');
+                minimaxBtn.addEventListener('click', () => {
+                    if (isMax) {
+                        minimaxBtn.innerText = "⛶";
+
+                        for (const e of minimaxElements) {
+                            e.style.display = "none";
                         }
-                    });
+                        isMax = false;
+                        return;
+                    }
+
+                    minimaxBtn.innerText = "⧉";
+                    for (const e of minimaxElements) {
+                        e.style.display = null;
+                    }
+                    box.style.padding = null;
+                    isMax = true;
+
                 });
 
                 // FrameMaker 바인딩
