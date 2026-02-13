@@ -123,7 +123,7 @@ candidateSelect.addEventListener('change', () => {
 addVideoBoxBtn.addEventListener('click', async () => {
     const videoFrameMaker = new TrackBatFrameMaker();
     await analysisBox.addFrameMaker(
-        "../template/bat-video.html",
+        "./template/video.html",
         videoFrameMaker,
         (box) => batVideoUIBinder(box, videoFrameMaker)
     );
@@ -141,7 +141,7 @@ export const setData = (data) => {
 async function init() {
     const videoFrameMaker = new TrackBatFrameMaker();
     await analysisBox.addFrameMaker(
-        "../template/bat-video.html",
+        "./template/video.html",
         videoFrameMaker,
         batVideoUIBinder
     );

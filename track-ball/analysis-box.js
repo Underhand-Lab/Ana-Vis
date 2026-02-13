@@ -50,7 +50,7 @@ function updateCandidateUI(frameIdx) {
 
 const MAKER_CONFIG = {
     "video": {
-        src: "../template/ball-video.html",
+        src: "./template/video.html",
         btnId: "add-video-box-button",
         create: () => new FrameMaker.TrackFrameMaker(),
         bindUI: (box, frameMaker) => {
@@ -72,7 +72,7 @@ const MAKER_CONFIG = {
         }
     },
     "table": {
-        src: "../template/table-track.html",
+        src: "./template/table.html",
         btnId: "add-table-box-button",
         create: () => {
             const fm = new FrameMaker.CustomTableFrameMaker();

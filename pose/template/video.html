@@ -1,0 +1,57 @@
+<div class="viewer_container">
+    <div minimaxTarget>
+        <label style="line-height: 32px;">
+            <e-text key="label-video">
+            </e-text>
+        </label>
+        <hr>
+    </div>
+    <canvas class="outputImage" style="background-color: black;"></canvas>
+    <div minimaxTarget>
+        <hr>
+        <style>
+            .color-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 90px;
+                white-space: nowrap;
+            }
+        </style>
+        <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
+            <div style="display:flex; flex-wrap: wrap; text-align: left;line-height: 42px; gap: 5px;">
+                <div class="color-item">
+                    <label>왼팔: </label>
+                    <input class="color-left-arm" type="color" value="#ff0000">
+                </div>
+                <div class="color-item">
+                    <label>오른팔: </label>
+                    <input class="color-right-arm" type="color" value="#0000ff">
+                </div>
+                <div class="color-item">
+                    <label>왼다리: </label>
+                    <input class="color-left-leg" type="color" value="#ffff00">
+                </div>
+                <div class="color-item">
+                    <label>오른다리: </label>
+                    <input class="color-right-leg" type="color" value="#00ffff">
+                </div>
+                <div class="color-item">
+                    <label>몸통: </label>
+                    <input class="color-torso" type="color" value="#00ff00">
+                </div>
+                <div class="color-item">
+                    <label>머리: </label>
+                    <input class="color-head" type="color" value="#ffffff">
+                </div>
+                <div class="color-item">
+                    <label>관절부: </label>
+                    <input class="color-joint" type="color" value="#ff0000">
+                </div>
+            </div>
+            <div style="text-align: right;white-space: nowrap;">
+                <button class="save"><e-text key="btn-save"></e-text></button>
+            </div>
+        </div>
+    </div>
+</div>

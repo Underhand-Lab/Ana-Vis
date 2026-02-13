@@ -127,7 +127,7 @@ th {
 }
 
 .container {
-    max-width: 750px;
+    max-width: min(750px, calc(200vh - 100px));
     text-align: center;
     position: relative;
     padding: 10px 15px;

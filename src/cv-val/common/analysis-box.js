@@ -39,6 +39,56 @@ export class AnalysisBox {
 
             }, (box) => {
                 box.className = 'container neumorphism';
+                
+                const closeBtn = box.querySelectorAll('.remove-box-button')[0];
+                const minimaxBtn = document.createElement('button');
+                minimaxBtn.className = "minimax-box-button";
+                minimaxBtn.innerText = "⧉";
+                box.prepend(minimaxBtn);
+                
+                const opacityMember = [closeBtn, minimaxBtn];
+
+                for (const btn of opacityMember) {
+                    btn.style.transition = "opacity 0.3s ease";
+                    btn.style.opacity = 0;
+                }
+
+                const minimaxElement = box.querySelectorAll("*[minimaxTarget]");
+
+                let isMax = true;
+
+                box.addEventListener('mouseenter', () => {
+                    for (const btn of opacityMember) {
+                        btn.style.opacity = 1;
+                    }
+                });
+
+                box.addEventListener('mouseleave', () => {
+                    for (const btn of opacityMember) {
+                        btn.style.opacity = 0;
+                    }
+                });
+
+                minimaxBtn.addEventListener('click', () => {
+                    if (isMax) {
+                        minimaxBtn.innerText = "⛶";
+
+                        for (const e of minimaxElement) {
+                            e.style.display = "none";
+                        }
+                        isMax = false;
+                        return;
+
+                    }
+                    minimaxBtn.innerText = "⧉";
+                    for (const e of minimaxElement) {
+                        e.style.display = null;
+                    }
+                    box.style.padding = null;
+                    isMax = true;
+
+                });
+
                 frameMaker.bindUI(box);
 
                 if (bindUIFunc) {

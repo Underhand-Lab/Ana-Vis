@@ -34,7 +34,7 @@ saveBtn.addEventListener('click', async () => {
 
 const MAKER_CONFIG = {
     "video": {
-        src: "../template/pose-video.html",
+        src: "./template/video.html",
         btnId: "add-video-box-button",
         create: () => new PoseFrameMaker.PoseBoneFrameMaker(),
         bindUI: (box, frameMaker) => {
@@ -56,17 +56,17 @@ const MAKER_CONFIG = {
         }
     },
     "3d-video": {
-        src: "../template/3d-video.html",
+        src: "./template/3d-video.html",
         btnId: "add-3d-video-box-button",
         create: () => new PoseFrameMaker.Pose3DFrameMaker()
     },
     "graph": {
-        src: "../template/graph.html",
+        src: "./template/graph.html",
         btnId: "add-graph-box-button",
         create: () => new PoseFrameMaker.CustomGraphFrameMaker(analysisTool)
     },
     "table": {
-        src: "../template/table-pose.html",
+        src: "./template/table.html",
         btnId: "add-table-box-button",
         create: () => new PoseFrameMaker.CustomTableFrameMaker(analysisTool)
     }
