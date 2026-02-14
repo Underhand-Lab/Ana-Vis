@@ -45,7 +45,7 @@ const MAKER_CONFIG = {
                 const blob = await frameMakerDataToBlob(
                     frameMaker, processedData);
 
-                await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
+                await saveBlobWithPicker(blob, "poseVideo.mp4", [{
                     description: 'Video File',
                     accept: {
                         'video/mp4': ['.mp4']

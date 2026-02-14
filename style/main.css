@@ -125,11 +125,16 @@ th {
     text-align: right;
 }
 
+#boxes > .container {
+    padding: 0;
+    
+}
+
 .container {
     max-width: min(750px, calc(200vh - 300px));
     text-align: center;
     position: relative;
-    padding: 0;
+    padding: 10px 15px;
     margin: 20px auto;
     overflow: hidden;
 }

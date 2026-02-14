@@ -14,6 +14,8 @@ const detectors = {
         "../external/models/mediapipe/pose_landmarker_heavy.task"),
     "mediapipe_full": new PoseDetector.MediaPipePoseDetector(
         "../external/models/mediapipe/pose_landmarker_full.task"),
+    "mediapipe_lite": new PoseDetector.MediaPipePoseDetector(
+        "../external/models/mediapipe/pose_landmarker_lite.task"),
 }
 
 const processButton = document.getElementById('process-button');

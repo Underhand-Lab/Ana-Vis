@@ -91,7 +91,7 @@ const batVideoUIBinder = (box, frameMaker) => {
         const blob = await frameMakerDataToBlob(
             frameMaker, processedData);
 
-        await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
+        await saveBlobWithPicker(blob, "trackBatVideo.mp4", [{
             description: 'Video File',
             accept: {
                 'video/mp4': ['.mp4']
