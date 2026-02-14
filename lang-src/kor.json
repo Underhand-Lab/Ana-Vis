@@ -37,7 +37,33 @@
     "opt-angle": "관절 각도",
     "opt-velocity": "관절 이동 속도",
     "opt-angle-velocity": "관절 회전 속도",
-    "opt-height": "관절 높이"
+    "opt-height": "관절 높이",
 
-    
+    "R_ARM": "오른팔",
+    "L_ARM": "왼팔",
+    "R_LEG": "오른다리",
+    "L_LEG": "왼다리",
+    "R_ELBOW": "오른팔꿈치",
+    "L_ELBOW": "왼팔꿈치",
+    "R_SHOULDER": "오른어깨",
+    "L_SHOULDER": "왼어깨",
+    "R_KNEE": "오른무릎",
+    "L_KNEE": "왼무릎",
+    "R_WRIST": "오른손목",
+    "L_WRIST": "왼손목",
+    "R_HIP": "오른엉덩이",
+    "L_HIP": "왼엉덩이",
+    "R_ANKLE": "오른발목",
+    "L_ANKLE": "왼발목",
+    "BODY": "몸통",
+    "HEAD": "머리",
+    "JOINT": "관절",
+    "SHOULDER": "어깨",
+    "PELVIS": "골반",
+    "TWIST": "꼬임",
+
+    "label-trajectory": "궤적",
+    "label-recognize": "인식",
+    "label-display-conf": "conf 값 표시",
+    "label-select": "선택"
 }

@@ -11,42 +11,38 @@
         <hr>
         <style>
             .color-item {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                width: 90px;
                 white-space: nowrap;
             }
         </style>
-        <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
-            <div style="display:flex; flex-wrap: wrap; text-align: left;line-height: 42px; gap: 5px;">
+        <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;align-items: center;justify-content: space-between;">
+            <div style="display:flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
                 <div class="color-item">
-                    <label>왼팔: </label>
                     <input class="color-left-arm" type="color" value="#ff0000">
+                    <label><e-text key="L_ARM"></e-text></label>
                 </div>
                 <div class="color-item">
-                    <label>오른팔: </label>
                     <input class="color-right-arm" type="color" value="#0000ff">
+                    <label><e-text key="R_ARM"></e-text></label>
                 </div>
                 <div class="color-item">
-                    <label>왼다리: </label>
                     <input class="color-left-leg" type="color" value="#ffff00">
+                    <label><e-text key="L_LEG"></e-text></label>
                 </div>
                 <div class="color-item">
-                    <label>오른다리: </label>
                     <input class="color-right-leg" type="color" value="#00ffff">
+                    <label><e-text key="R_LEG"></e-text></label>
                 </div>
                 <div class="color-item">
-                    <label>몸통: </label>
                     <input class="color-torso" type="color" value="#00ff00">
+                    <label><e-text key="BODY"></e-text></label>
                 </div>
                 <div class="color-item">
-                    <label>머리: </label>
                     <input class="color-head" type="color" value="#ffffff">
+                    <label><e-text key="HEAD"></e-text></label>
                 </div>
                 <div class="color-item">
-                    <label>관절부: </label>
                     <input class="color-joint" type="color" value="#ff0000">
+                    <label><e-text key="JOINT"></e-text></label>
                 </div>
             </div>
             <div style="text-align: right;white-space: nowrap;">

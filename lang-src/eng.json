@@ -37,7 +37,33 @@
     "opt-angle": "Joint Angle",
     "opt-velocity": "Joint Velocity",
     "opt-angle-velocity": "Joint Angular Velocity",
-    "opt-height": "Joint Height"
+    "opt-height": "Joint Height",
 
-    
+    "R_ARM": "Arm(R)",
+    "L_ARM": "Arm(L)",
+    "R_LEG": "Leg(R)",
+    "L_LEG": "Leg(L)",
+    "R_ELBOW": "Elbow(R)",
+    "L_ELBOW": "Elbow(L)",
+    "R_SHOULDER": "Shoulder(R)",
+    "L_SHOULDER": "Shoulder(L)",
+    "R_KNEE": "Knee(R)",
+    "L_KNEE": "Knee(L)",
+    "R_WRIST": "Wrist(R)",
+    "L_WRIST": "Wrist(L)",
+    "R_HIP": "Hip(R)",
+    "L_HIP": "Hip(L)",
+    "R_ANKLE": "Ankle(R)",
+    "L_ANKLE": "Ankle(L)",
+    "BODY": "Body",
+    "HEAD": "Head",
+    "JOINT": "Joint",
+    "SHOULDER": "Shoulder",
+    "PELVIS": "Pelvis",
+    "TWIST": "Twist",
+
+    "label-trajectory": "Trajectory",
+    "label-recognize": "Recognize",
+    "label-display-conf": "Display conf",
+    "label-select": "Select"
 }

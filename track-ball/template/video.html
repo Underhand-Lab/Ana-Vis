@@ -10,12 +10,16 @@
     <div minimaxTarget>
         <hr>
         <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
-            <div style="flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap;">
-                <label>궤적: </label>
-                <input type="color" class="trail-color" value="#ff0000">
-                <label>인식: </label>
-                <input type="color" class="box-color" value="#0000ff">
-                <label>conf 값 표시: </label>
+            <div style="display:flex; flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap; gap: 10px">
+                <div>
+                    <input type="color" class="trail-color" value="#ff0000">
+                    <label><e-text key="label-trajectory"></e-text></label>
+                </div>
+                <div>
+                    <input type="color" class="box-color" value="#0000ff">
+                    <label><e-text key="label-recognize"></e-text></label>
+                </div>
+                <label><e-text key="label-display-conf"></e-text>: </label>
                 <input type="checkbox" class="show-conf" checked>
             </div>
             <div style="text-align: right;white-space: nowrap;">
