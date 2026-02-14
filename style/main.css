@@ -99,10 +99,9 @@ summary h1 {
 
 table {
     width: 100%;
-    margin: 20px 0;
+    margin: 0;
     table-layout: fixed;
     border-collapse: collapse;
-    /* 테이블 셀 간의 간격 제거 */
 }
 
 th,
@@ -130,8 +129,17 @@ th {
     max-width: min(750px, calc(200vh - 300px));
     text-align: center;
     position: relative;
-    padding: 10px 15px;
+    padding: 0;
     margin: 20px auto;
+    overflow: hidden;
+}
+
+.slider > .container {
+    padding: 10px 15px;
+}
+
+canvas {
+    display: block;
 }
 
 .float-left {
