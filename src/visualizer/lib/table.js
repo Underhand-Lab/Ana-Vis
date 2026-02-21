@@ -14,7 +14,7 @@ class Table {
         let str = '<table><tbody>'
         
         for (let key of Object.keys(data)) {
-            str += "<tr><th>" + key + "</th>";
+            str += `<tr><th><e-text key="${key}"></e-text></th>`;
             str += "<td>" + (data[key] != null ? data[key] : "?") + "</td></tr>"
         }
 
