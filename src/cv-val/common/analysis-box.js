@@ -5,18 +5,43 @@ export class AnalysisBox {
         this.frameMakers = [];
         this.data = null;
         this.boxList = null;
+        this.makeConfig = {};
+    }
+
+    registerFrameMaker(type, config) {
+        this.makeConfig[type] = config;
+    }
+
+    async addFrame(key) {
+        const config = this.makeConfig[key];
+
+        if (!config) return
+        await this.addFrameMaker(
+            config.src, config.create(), config.bindUI);
+
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    async initDefault(keys) {
+        
+        for (const key of keys) {
+            const config = this.makeConfig[key];
+            await this.addFrameMaker(
+                config.src, config.create(), config.bindUI);
+        }
+
     }
 
     bindUI(element, options = {}) {
         this.slider = element.getElementById('frameSlider');
         this.onUpdateCallback = options.onUpdate;
-        
+
         // 모바일 스크롤 간섭 방지
         if (this.slider) {
             this.slider.style.touchAction = "none";
             this.slider.addEventListener('input', () => this.updateImage());
         }
-        
+
         this.boxList = new BoxList(element.getElementById("boxes"));
     }
 
@@ -39,20 +64,20 @@ export class AnalysisBox {
                 this.frameMakers = this.frameMakers.filter(fm => fm !== frameMaker);
             }, (box) => {
                 box.className = 'container neumorphism';
-                
+
                 // 버튼 생성 및 초기화
                 const closeBtn = box.querySelectorAll('.remove-box-button')[0];
                 const minimaxBtn = document.createElement('button');
                 minimaxBtn.className = "minimax-box-button";
                 minimaxBtn.innerText = "⧉";
                 box.prepend(minimaxBtn);
-                
+
                 const opacityMember = [closeBtn, minimaxBtn].filter(Boolean);
                 const minimaxElements = box.querySelectorAll("*[minimaxTarget]");
 
                 // 1. 버튼 가시성 로직 (모바일 & 데스크톱 통합)
                 const setBtnOpacity = (val) => opacityMember.forEach(b => b.style.opacity = val);
-                
+
                 for (const btn of opacityMember) {
                     btn.style.transition = "opacity 0.3s ease";
                     btn.style.opacity = 0;

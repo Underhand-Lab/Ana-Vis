@@ -1,5 +1,6 @@
 import * as _ from "./markdown.js"
 
+/*
 window.addEventListener('load', function () {
 
     let lastScrollY = window.scrollY;
@@ -23,4 +24,4 @@ window.addEventListener('load', function () {
 
         lastScrollY = currentScrollY;
     });
-});
+});*/

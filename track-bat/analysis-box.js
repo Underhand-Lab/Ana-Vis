@@ -3,17 +3,14 @@ import { TrackBatFrameMaker } from "../src/cv-val/track-bat/frame-maker/frame-ma
 import { frameMakerDataToBlob } from "../src/cv-val/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../src/save-blob.js";
 
-// 1. AnalysisBox 인스턴스 생성 및 공통 UI 바인딩
 const analysisBox = new AnalysisBox();
 analysisBox.bindUI(document, {
-    // 슬라이더 이동 시 후보군(Candidate) UI도 함께 갱신되도록 콜백 등록
     onUpdate: (frameIdx) => updateCandidateUI(frameIdx)
 });
 
 const candidateSelect = document.getElementById('candidateSelect');
 const confInput = document.getElementById('confInput');
 const analysisSelect = document.getElementById('analysis');
-const addVideoBoxBtn = document.getElementById('add-video-box-button');
 
 const saveBtn = document.querySelector("#save-to-file");
 
@@ -101,9 +98,6 @@ const batVideoUIBinder = (box, frameMaker) => {
     });
 };
 
-// --- 이벤트 리스너 설정 ---
-
-// 신뢰도(Confidence) 변경 시 데이터 갱신 및 전체 리렌더링
 confInput.addEventListener('change', () => {
     if (processedData) {
         processedData.setConf(parseFloat(confInput.value));
@@ -111,7 +105,6 @@ confInput.addEventListener('change', () => {
     }
 });
 
-// 후보군 선택 변경 시
 candidateSelect.addEventListener('change', () => {
     if (processedData) {
         processedData.setSelectedIdx(analysisBox.nowIdx(), parseInt(candidateSelect.value));
@@ -119,32 +112,31 @@ candidateSelect.addEventListener('change', () => {
     }
 });
 
-// 도구 추가 버튼 클릭 이벤트
-addVideoBoxBtn.addEventListener('click', async () => {
-    const videoFrameMaker = new TrackBatFrameMaker();
-    await analysisBox.addFrameMaker(
-        "./template/video.html",
-        videoFrameMaker,
-        (box) => batVideoUIBinder(box, videoFrameMaker)
-    );
-    analysisSelect.closeAction();
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+const MAKER_CONFIG = {
+    "video": {
+        src: "./template/video.html",
+        btnId: "add-video-box-button",
+        create: () => new TrackBatFrameMaker(),
+        bindUI: batVideoUIBinder
+    },
+
+}
+
+Object.entries(MAKER_CONFIG).forEach(([key, config]) => {
+    const btn = document.getElementById(config.btnId);
+    if (!btn) return;
+
+    analysisBox.registerFrameMaker(key, config);
+    btn.addEventListener('click', async () => {
+        await analysisBox.addFrame(key);
+        analysisSelect.closeAction();
+    });
 });
 
-export const setData = (data) => {
+export function setData(data) {
     processedData = data;
     data.setConf(parseFloat(confInput.value));
     analysisBox.setData(data);
 };
 
-// 초기 기본 도구 로드
-async function init() {
-    const videoFrameMaker = new TrackBatFrameMaker();
-    await analysisBox.addFrameMaker(
-        "./template/video.html",
-        videoFrameMaker,
-        batVideoUIBinder
-    );
-}
-
-init();
+analysisBox.initDefault(["video"]);

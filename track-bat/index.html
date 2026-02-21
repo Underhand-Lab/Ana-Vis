@@ -25,27 +25,35 @@
 <body>
     <nav>
         <div>
-            <div style="flex-grow: 1">
-                <h1><a href="../">CV-Val</a></h1>
-            </div>
-            <div style="flex-grow: 1">
+            <div>
                 <ul>
+                    <li><a href="../">CV-Val</a></li>
                     <li>
-                        <a href="../pose">
-                            <e-text key="nav-pose"></e-text>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="../track-ball">
-                            <e-text key="nav-track-ball"></e-text>
-                        </a>
-                    </li>
-                    <li>
-                        <a select="true" href="../track-bat">
+                        <a href="../track-bat">
                             <e-text key="nav-track-bat"></e-text>
                         </a>
                     </li>
                 </ul>
+            </div>
+            <div>
+                <ul>
+                    <li>
+                        <button id="open-process-pop-up">
+                            <e-text key="btn-open-process"></e-text>
+                        </button>
+                    </li>
+                    <li>
+                        <label for="load-from-file" class="label-for-btn">
+                            <e-text key="btn-load"></e-text></label>
+                        <input type="file" id="load-from-file" style="display:none;" accept=".cvbt">
+                    </li>
+                    <li>
+                        <button id="save-to-file">
+                            <e-text key="btn-save"></e-text>
+                        </button>
+                    </li>
+                </ul>
+
             </div>
         </div>
     </nav>
@@ -66,15 +74,6 @@
             <input type="range" id="frameSlider" min="0" value="0">
             <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
                 <div style="flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap;">
-                    <button id="open-process-pop-up">
-                        <e-text key="btn-open-process"></e-text>
-                    </button>
-                    <label for="load-from-file" class="label-for-btn">
-                        <e-text key="btn-load"></e-text></label>
-                    <input type="file" id="load-from-file" style="display:none;" accept=".cvbt">
-                    <button id="save-to-file">
-                        <e-text key="btn-save"></e-text>
-                    </button>
                     <label for="confInput">CONF: </label>
                     <input type="number" pattern="\d*" inputmode="decimal" id="confInput" value="0.55" min="0" max="1"
                         step="0.01">

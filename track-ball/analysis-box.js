@@ -15,6 +15,28 @@ const confInput = document.getElementById('confInput');
 
 const saveBtn = document.querySelector("#save-to-file");
 
+let processedData = null;
+
+confInput.addEventListener('change', () => {
+    if (processedData) {
+        processedData.setConf(parseFloat(confInput.value));
+        analysisBox.updateImage(); // 모든 Maker 다시 그리기
+    }
+});
+
+candidateSelect.addEventListener('change', () => {
+    if (processedData) {
+        processedData.setSelectedIdx(analysisBox.nowIdx(), parseInt(candidateSelect.value));
+        analysisBox.updateImage();
+    }
+});
+
+export const setData = (data) => {
+    processedData = data;
+    data.setConf(parseFloat(confInput.value));
+    analysisBox.setData(data);
+};
+
 saveBtn.addEventListener('click', async () => {
     if (!processedData) return;
     try {
@@ -48,28 +70,30 @@ function updateCandidateUI(frameIdx) {
     }
 }
 
+function saveToVideo(box, frameMaker) {
+    const saveBtn = box.querySelector(".save");
+    saveBtn.addEventListener('click', async () => {
+        if (!processedData) return;
+
+        const blob = await frameMakerDataToBlob(
+            frameMaker, processedData);
+
+        await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
+            description: 'Video File',
+            accept: {
+                'video/mp4': ['.mp4']
+            },
+        }], true, "mp4");
+    });
+
+}
+
 const MAKER_CONFIG = {
     "video": {
         src: "./template/video.html",
         btnId: "add-video-box-button",
         create: () => new FrameMaker.TrackFrameMaker(),
-        bindUI: (box, frameMaker) => {
-            const saveBtn = box.querySelector(".save");
-            saveBtn.addEventListener('click', async () => {
-                if (!processedData) return;
-
-                const blob = await frameMakerDataToBlob(
-                    frameMaker, processedData);
-
-                await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
-                    description: 'Video File',
-                    accept: {
-                        'video/mp4': ['.mp4']
-                    },
-                }], true, "mp4");
-            });
-
-        }
+        bindUI: saveToVideo
     },
     "table": {
         src: "./template/table.html",
@@ -82,43 +106,15 @@ const MAKER_CONFIG = {
     }
 };
 
-// 이벤트 바인딩 및 초기화 (Pose와 동일한 패턴)
 Object.entries(MAKER_CONFIG).forEach(([key, config]) => {
-    document.getElementById(config.btnId)?.addEventListener('click', async () => {
-        await analysisBox.addFrameMaker(
-            config.src, config.create(), config.bindUI);
+    const btn = document.getElementById(config.btnId);
+    if (!btn) return;
+
+    analysisBox.registerFrameMaker(key, config);
+    btn.addEventListener('click', async () => {
+        await analysisBox.addFrame(key);
         analysisSelect.closeAction();
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     });
 });
 
-async function initDefault(keys) {
-    for (const key of keys) {
-        const config = MAKER_CONFIG[key];
-        await analysisBox.addFrameMaker(
-            config.src, config.create(), config.bindUI);
-    }
-}
-
-initDefault(["video", "table"]);
-
-let processedData = null;
-
-confInput.addEventListener('change', () => {
-    if (processedData) {
-        processedData.setConf(parseFloat(confInput.value));
-        analysisBox.updateImage(); // 모든 Maker 다시 그리기
-    }
-});
-candidateSelect.addEventListener('change', () => {
-    if (processedData) {
-        processedData.setSelectedIdx(analysisBox.nowIdx(), parseInt(candidateSelect.value));
-        analysisBox.updateImage();
-    }
-});
-
-export const setData = (data) => {
-    processedData = data;
-    data.setConf(parseFloat(confInput.value));
-    analysisBox.setData(data);
-};
+analysisBox.initDefault(["video", "table"]);

@@ -16,6 +16,13 @@ const analysisTool = {
     "height": new PoseAnalysisTool.HeightAnalysisTool(),
 };
 
+let processedData = null;
+
+export function setData(data) {
+    processedData = data;
+    analysisBox.setData(data);
+}
+
 const saveBtn = document.querySelector("#save-to-file");
 
 saveBtn.addEventListener('click', async () => {
@@ -32,28 +39,30 @@ saveBtn.addEventListener('click', async () => {
     }
 });
 
+function saveToVideo(box, frameMaker) {
+    const saveBtn = box.querySelector(".save");
+    saveBtn.addEventListener('click', async () => {
+        if (!processedData) return;
+
+        const blob = await frameMakerDataToBlob(
+            frameMaker, processedData);
+
+        await saveBlobWithPicker(blob, "poseVideo.mp4", [{
+            description: 'Video File',
+            accept: {
+                'video/mp4': ['.mp4']
+            },
+        }], true, "mp4");
+    });
+    
+}
+
 const MAKER_CONFIG = {
     "video": {
         src: "./template/video.html",
         btnId: "add-video-box-button",
         create: () => new PoseFrameMaker.PoseBoneFrameMaker(),
-        bindUI: (box, frameMaker) => {
-            const saveBtn = box.querySelector(".save");
-            saveBtn.addEventListener('click', async () => {
-                if (!processedData) return;
-
-                const blob = await frameMakerDataToBlob(
-                    frameMaker, processedData);
-
-                await saveBlobWithPicker(blob, "poseVideo.mp4", [{
-                    description: 'Video File',
-                    accept: {
-                        'video/mp4': ['.mp4']
-                    },
-                }], true, "mp4");
-            });
-
-        }
+        bindUI: saveToVideo
     },
     "3d-video": {
         src: "./template/3d-video.html",
@@ -76,26 +85,11 @@ Object.entries(MAKER_CONFIG).forEach(([key, config]) => {
     const btn = document.getElementById(config.btnId);
     if (!btn) return;
 
+    analysisBox.registerFrameMaker(key, config);
     btn.addEventListener('click', async () => {
-        await analysisBox.addFrameMaker(config.src, config.create());
+        await analysisBox.addFrame(key);
         analysisSelect.closeAction();
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     });
 });
 
-async function initDefault(keys) {
-    for (const key of keys) {
-        const config = MAKER_CONFIG[key];
-        await analysisBox.addFrameMaker(
-            config.src, config.create(), config.bindUI);
-    }
-}
-
-initDefault(["video", "graph"]);
-
-let processedData = null;
-
-export function setData(data) {
-    processedData = data;
-    analysisBox.setData(data);
-}
+analysisBox.initDefault(["video", "graph"]);
