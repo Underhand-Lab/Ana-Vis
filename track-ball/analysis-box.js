@@ -106,15 +106,16 @@ const MAKER_CONFIG = {
     }
 };
 
-Object.entries(MAKER_CONFIG).forEach(([key, config]) => {
+for (const [key, config] of Object.entries(MAKER_CONFIG))
+{
     const btn = document.getElementById(config.btnId);
-    if (!btn) return;
+    if (!btn) break;
 
-    analysisBox.registerFrameMaker(key, config);
+    await analysisBox.registerFrameMaker(key, config);
     btn.addEventListener('click', async () => {
         await analysisBox.addFrame(key);
         analysisSelect.closeAction();
     });
-});
+}
 
 analysisBox.initDefault(["video", "table"]);

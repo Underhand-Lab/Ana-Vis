@@ -8,26 +8,49 @@ export class AnalysisBox {
         this.makeConfig = {};
     }
 
-    registerFrameMaker(type, config) {
-        this.makeConfig[type] = config;
+    async registerFrameMaker(type, config) {
+
+        const bindUIFunc = config.bindUI ? config.bindUI : null;
+        let html = '';
+        
+        if (config.src) {
+            const response = (await fetch(config.src));
+
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            html = await response.text();
+        }
+        else if (config.html) {
+            html = config.html;
+        }
+
+        this.makeConfig[type] = {
+            create: config.create,
+            bindUI: bindUIFunc,
+            html: html
+        };
     }
 
     async addFrame(key) {
         const config = this.makeConfig[key];
 
-        if (!config) return
-        await this.addFrameMaker(
-            config.src, config.create(), config.bindUI);
+        if (!config) return;
 
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        this.addFrameMaker(config.html, config.create(), config.bindUI);
+
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+        });
     }
 
     async initDefault(keys) {
-        
+
         for (const key of keys) {
             const config = this.makeConfig[key];
-            await this.addFrameMaker(
-                config.src, config.create(), config.bindUI);
+
+            this.addFrameMaker(config.html, config.create(), config.bindUI);
         }
 
     }
@@ -58,75 +81,73 @@ export class AnalysisBox {
         this.updateImage();
     }
 
-    addFrameMaker(src, frameMaker, bindUIFunc) {
-        return new Promise((resolve) => {
-            this.boxList.addBoxTemplate(src, () => {
-                this.frameMakers = this.frameMakers.filter(fm => fm !== frameMaker);
-            }, (box) => {
-                box.className = 'container neumorphism';
+    addFrameMaker(html, frameMaker, bindUIFunc) {
 
-                // 버튼 생성 및 초기화
-                const closeBtn = box.querySelectorAll('.remove-box-button')[0];
-                const minimaxBtn = document.createElement('button');
-                minimaxBtn.className = "minimax-box-button";
-                minimaxBtn.innerText = "⧉";
-                box.prepend(minimaxBtn);
-
-                const opacityMember = [closeBtn, minimaxBtn].filter(Boolean);
-                const minimaxElements = box.querySelectorAll("*[minimaxTarget]");
-
-                // 1. 버튼 가시성 로직 (모바일 & 데스크톱 통합)
-                const setBtnOpacity = (val) => opacityMember.forEach(b => b.style.opacity = val);
-
-                for (const btn of opacityMember) {
-                    btn.style.transition = "opacity 0.3s ease";
-                    btn.style.opacity = 0;
-                }
-
-                // 데스크톱 호버
-                box.addEventListener('mouseenter', () => setBtnOpacity(1));
-                box.addEventListener('mouseleave', () => setBtnOpacity(0));
-
-                // 모바일 터치 대응: 박스 터치 시 버튼 보이기 (3초 후 사라짐)
-                box.addEventListener('touchstart', () => {
-                    setBtnOpacity(1);
-                    clearTimeout(box._hideTimer);
-                    box._hideTimer = setTimeout(() => setBtnOpacity(0), 3000);
-                }, { passive: true });
-
-                // 2. 최소/최대화 로직 (Grid 방식)
-                let isMax = true;
-                minimaxBtn.addEventListener('click', () => {
-                    if (isMax) {
-                        minimaxBtn.innerText = "⛶";
-
-                        for (const e of minimaxElements) {
-                            e.style.display = "none";
-                        }
-                        isMax = false;
-                        return;
-                    }
-
-                    minimaxBtn.innerText = "⧉";
-                    for (const e of minimaxElements) {
-                        e.style.display = null;
-                    }
-                    box.style.padding = null;
-                    isMax = true;
-
-                });
-
-                // FrameMaker 바인딩
-                frameMaker.bindUI(box);
-                if (bindUIFunc) bindUIFunc(box, frameMaker);
-
-                this.frameMakers.push(frameMaker);
-                frameMaker.setData(this.data);
-                frameMaker.drawImageAt(this.nowIdx());
-
-                resolve();
-            });
+        const box = this.boxList.addBox(html, () => {
+            this.frameMakers =
+                this.frameMakers.filter(fm => fm !== frameMaker);
         });
+
+        box.className = 'container neumorphism';
+
+        // 버튼 생성 및 초기화
+        const closeBtn = box.querySelectorAll('.remove-box-button')[0];
+        const minimaxBtn = document.createElement('button');
+        minimaxBtn.className = "minimax-box-button";
+        minimaxBtn.innerText = "⧉";
+        box.prepend(minimaxBtn);
+
+        const opacityMember = [closeBtn, minimaxBtn].filter(Boolean);
+        const minimaxElements = box.querySelectorAll("*[minimaxTarget]");
+
+        // 1. 버튼 가시성 로직 (모바일 & 데스크톱 통합)
+        const setBtnOpacity = (val) => opacityMember.forEach(b => b.style.opacity = val);
+
+        for (const btn of opacityMember) {
+            btn.style.transition = "opacity 0.3s ease";
+            btn.style.opacity = 0;
+        }
+
+        // 데스크톱 호버
+        box.addEventListener('mouseenter', () => setBtnOpacity(1));
+        box.addEventListener('mouseleave', () => setBtnOpacity(0));
+
+        // 모바일 터치 대응: 박스 터치 시 버튼 보이기 (3초 후 사라짐)
+        box.addEventListener('touchstart', () => {
+            setBtnOpacity(1);
+            clearTimeout(box._hideTimer);
+            box._hideTimer = setTimeout(() => setBtnOpacity(0), 3000);
+        }, { passive: true });
+
+        // 2. 최소/최대화 로직 (Grid 방식)
+        let isMax = true;
+        minimaxBtn.addEventListener('click', () => {
+            if (isMax) {
+                minimaxBtn.innerText = "⛶";
+
+                for (const e of minimaxElements) {
+                    e.style.display = "none";
+                }
+                isMax = false;
+                return;
+            }
+
+            minimaxBtn.innerText = "⧉";
+            for (const e of minimaxElements) {
+                e.style.display = null;
+            }
+            box.style.padding = null;
+            isMax = true;
+
+        });
+
+        // FrameMaker 바인딩
+        frameMaker.bindUI(box);
+        if (bindUIFunc) bindUIFunc(box, frameMaker);
+
+        this.frameMakers.push(frameMaker);
+        frameMaker.setData(this.data);
+        frameMaker.drawImageAt(this.nowIdx());
     }
 
     nowIdx() {

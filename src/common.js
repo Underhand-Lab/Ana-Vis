@@ -1,5 +1,13 @@
 import * as _ from "./markdown.js"
 
+const menuSelector = document.querySelector("#feature");
+
+menuSelector?.addEventListener('change', () => {
+    const link = `../${menuSelector.value}`;
+    location.href = link;
+    location.replace(link);
+});
+
 /*
 window.addEventListener('load', function () {
 

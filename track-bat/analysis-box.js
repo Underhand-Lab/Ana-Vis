@@ -122,15 +122,52 @@ const MAKER_CONFIG = {
 
 }
 
-Object.entries(MAKER_CONFIG).forEach(([key, config]) => {
+for (const [key, config] of Object.entries(MAKER_CONFIG))
+{
     const btn = document.getElementById(config.btnId);
-    if (!btn) return;
+    if (!btn) break;
 
-    analysisBox.registerFrameMaker(key, config);
+    await analysisBox.registerFrameMaker(key, config);
     btn.addEventListener('click', async () => {
         await analysisBox.addFrame(key);
         analysisSelect.closeAction();
     });
+}
+
+const uploadInput = document.getElementById('plugin-upload');
+
+uploadInput?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const objectURL = URL.createObjectURL(file);
+
+    try {
+        const module = await import(objectURL);
+        const PluginClass = module.default;
+
+        if (!PluginClass || !PluginClass.metaData) {
+            throw new Error("not plugin");
+        }
+
+        const { html } = PluginClass.metaData;
+
+        await analysisBox.registerFrameMaker('plugin', {
+            html: html,
+            create: ()=> new PluginClass()
+        });
+        
+        analysisBox.addFrame('plugin');
+        analysisSelect.closeAction();
+
+    } catch (err) {
+        console.log(err);
+    }
+    finally {
+        URL.revokeObjectURL(objectURL);
+        e.target.value = "";
+    }
+
 });
 
 export function setData(data) {
