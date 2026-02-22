@@ -29,24 +29,16 @@
                 <ul>
                     <li><a href="../">CV-Val</a></li>
                     <li>
-                        <select id="feature">
-                            <option value="../pose">
-                                <e-text key="nav-pose">
-                                </e-text>
-                            </option>
-                            <option value="../track-ball">
-                                <e-text key="nav-track-ball">
-                                </e-text>
-                            </option>
-                            <option value="../track-bat">
-                                <e-text key="nav-track-bat">
-                                </e-text>
-                            </option>
-                            <option selected hidden>
-                                <e-text key="nav-track-bat">
-                                </e-text>
-                            </option>
-                        </select>
+                        <e-text-select id="feature">
+                            <option data-lang-key="nav-pose"
+                                value="../pose"></option>
+                            <option data-lang-key="nav-track-ball"
+                                value="../track-ball"></option>
+                            <option data-lang-key="nav-track-bat"
+                                value="../track-bat"></option>
+                            <option data-lang-key="nav-track-bat"
+                                selected hidden></option>
+                        </e-text-select>
                     </li>
                 </ul>
             </div>

@@ -13,6 +13,10 @@ class ETextSelect extends HTMLElement {
         });
     }
 
+    get value() {
+        return this.select.value;
+    }
+
     onChange() {
         this.select.querySelectorAll('option[data-lang-key]').forEach(opt => {
             const key = opt.getAttribute('data-lang-key');
@@ -27,6 +31,7 @@ class ETextSelect extends HTMLElement {
         while (this.firstChild) {
             this.select.appendChild(this.firstChild);
         }
+        this.select.id = this.id + "-select";
         this.appendChild(this.select);
         lang.addObserver(this);
     }
