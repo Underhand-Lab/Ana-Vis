@@ -24,45 +24,35 @@
 
 <body>
     <nav>
-        <div>
-            <div>
-                <ul>
-                    <li><a href="../">CV-Val</a></li>
-                    <li>
-                        <e-text-select id="feature">
-                            <option data-lang-key="nav-pose"
-                                value="../pose"></option>
-                            <option data-lang-key="nav-track-ball"
-                                value="../track-ball"></option>
-                            <option data-lang-key="nav-track-bat"
-                                value="../track-bat"></option>
-                            <option data-lang-key="nav-track-bat"
-                                selected hidden></option>
-                        </e-text-select>
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <ul>
-                    <li>
-                        <button id="open-process-pop-up">
-                            <e-text key="btn-open-process"></e-text>
-                        </button>
-                    </li>
-                    <li>
-                        <label for="load-from-file" class="label-for-btn">
-                            <e-text key="btn-load"></e-text></label>
-                        <input type="file" id="load-from-file" style="display:none;" accept=".cvbt">
-                    </li>
-                    <li>
-                        <button id="save-to-file">
-                            <e-text key="btn-save"></e-text>
-                        </button>
-                    </li>
-                </ul>
-
-            </div>
-        </div>
+        <ul>
+            <li><a href="../">CV-Val</a></li>
+            <li>
+                <e-text-select id="feature">
+                    <option data-lang-key="nav-pose" value="../pose"></option>
+                    <option data-lang-key="nav-track-ball" value="../track-ball"></option>
+                    <option data-lang-key="nav-track-bat" value="../track-bat"></option>
+                    <option data-lang-key="nav-track-bat"
+                        selected hidden disabled></option>
+                </e-text-select>
+            </li>
+        </ul>
+        <ul>
+            <li>
+                <button id="open-process-pop-up">
+                    <e-text key="btn-open-process"></e-text>
+                </button>
+            </li>
+            <li>
+                <label for="load-from-file" class="label-for-btn">
+                    <e-text key="btn-load"></e-text></label>
+                <input type="file" id="load-from-file" style="display:none;" accept=".cvbt">
+            </li>
+            <li>
+                <button id="save-to-file">
+                    <e-text key="btn-save"></e-text>
+                </button>
+            </li>
+        </ul>
     </nav>
 
     <div id="wrapper">
