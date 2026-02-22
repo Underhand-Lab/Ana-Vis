@@ -140,33 +140,10 @@ uploadInput?.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const objectURL = URL.createObjectURL(file);
-
-    try {
-        const module = await import(objectURL);
-        const PluginClass = module.default;
-
-        if (!PluginClass || !PluginClass.metaData) {
-            throw new Error("not plugin");
-        }
-
-        const { html } = PluginClass.metaData;
-
-        await analysisBox.registerFrameMaker('plugin', {
-            html: html,
-            create: ()=> new PluginClass()
-        });
-        
-        analysisBox.addFrame('plugin');
-        analysisSelect.closeAction();
-
-    } catch (err) {
-        console.log(err);
-    }
-    finally {
-        URL.revokeObjectURL(objectURL);
-        e.target.value = "";
-    }
+    await analysisBox.registerPlugin(file);
+    
+    analysisSelect.closeAction();
+    e.target.value = "";
 
 });
 

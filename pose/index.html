@@ -38,15 +38,19 @@
                     <li><a href="../">CV-Val</a></li>
                     <li>
                         <select id="feature">
-                            <option value="pose" selected>
+                            <option selected hidden>
                                 <e-text key="nav-pose">
                                 </e-text>
                             </option>
-                            <option value="track-ball">
+                            <option value="../pose">
+                                <e-text key="nav-pose">
+                                </e-text>
+                            </option>
+                            <option value="../track-ball">
                                 <e-text key="nav-track-ball">
                                 </e-text>
                             </option>
-                            <option value="track-bat">
+                            <option value="../track-bat">
                                 <e-text key="nav-track-bat">
                                 </e-text>
                             </option>
@@ -83,11 +87,10 @@
 
     <div class="slider">
         <div class="container neumorphism">
-            <input type="range" id="frameSlider" min="0" value="0">
-            <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
-                <div style="flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap;">
-                </div>
-                <div style="text-align: right;white-space: nowrap;">
+            <div class="divide">
+                <input type="range" id="frameSlider"
+                    min="0" max="0" value="0">
+                <div>
                     <button id="add-box-button">
                         <e-text key="btn-add-tool"></e-text>
                     </button>
@@ -185,6 +188,11 @@
             <button id="add-table-box-button">
                 <e-text key="btn-add-table"></e-text>
             </button>
+            <br>
+            <label for="plugin-upload" class="label-for-btn">
+                Plugin
+            </label>
+            <input type="file" id="plugin-upload" style="display:none;" accept=".js">
             <hr>
             <button class="close-btn">
                 <e-text key="btn-close">

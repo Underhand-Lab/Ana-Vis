@@ -12,7 +12,7 @@ export class AnalysisBox {
 
         const bindUIFunc = config.bindUI ? config.bindUI : null;
         let html = '';
-        
+
         if (config.src) {
             const response = (await fetch(config.src));
 
@@ -30,6 +30,36 @@ export class AnalysisBox {
             bindUI: bindUIFunc,
             html: html
         };
+    }
+
+    async registerPlugin(file) {
+
+        const objectURL = URL.createObjectURL(file);
+
+        try {
+            const module = await import(objectURL);
+            const PluginClass = module.default;
+
+            if (!PluginClass || !PluginClass.metaData) {
+                throw new Error("not plugin");
+            }
+
+            const { html } = PluginClass.metaData;
+
+            await this.registerFrameMaker('plugin', {
+                html: html,
+                create: () => new PluginClass()
+            });
+
+            this.addFrame('plugin');
+
+        } catch (err) {
+            console.log(err);
+        }
+        finally {
+            URL.revokeObjectURL(objectURL);
+        }
+
     }
 
     async addFrame(key) {

@@ -69,19 +69,22 @@ nav button:hover, nav .label-for-btn:hover {
 }
 
 nav select {
+    -webkit-appearance: none; /* iOS Safari용 */
+    -moz-appearance: none;    /* Firefox용 */
+    appearance: none;         /* 표준 *//* 배경 설정: 배경색, 이미지(SVG), 위치, 크기 순 */
     background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaaaaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0px center; /* 오른쪽에서 8px 떨어진 중앙 */
+    background-size: 12px; /* 화살표 크기 조절 */
     color: #aaa;
     border-width: 0;
-    padding: 0;
+    padding: 0 25px 0 0;
     font-size: 15px;
 }
 
 nav option {
     background-color: var(--secondary-color);
-}
-
-nav select:hover option:hover {
-    background-color: var(--secondary-color)
 }
 
 nav option:checked {

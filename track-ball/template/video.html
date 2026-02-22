@@ -7,8 +7,8 @@
     </div>
     <canvas class="outputImage" style="background-color: black;"></canvas>
     <div style="padding: 10px 15px" minimaxTarget>
-        <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
-            <div style="display:flex; flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap; gap: 10px">
+        <div class="divide">
+            <div class="frameMakerSetting">
                 <div>
                     <input type="color" class="trail-color" value="#ff0000">
                     <label><e-text key="label-trajectory"></e-text></label>
@@ -17,10 +17,14 @@
                     <input type="color" class="box-color" value="#0000ff">
                     <label><e-text key="label-recognize"></e-text></label>
                 </div>
-                <label><e-text key="label-display-conf"></e-text>: </label>
+                <div>
+                <label>
+                    <e-text key="label-display-conf"></e-text>: 
+                </label>
                 <input type="checkbox" class="show-conf" checked>
+                </div>
             </div>
-            <div style="text-align: right;white-space: nowrap;">
+            <div>
                 <button class="save"><e-text key="btn-save"></e-text></button>
             </div>
         </div>

@@ -118,4 +118,17 @@ for (const [key, config] of Object.entries(MAKER_CONFIG))
     });
 }
 
+const uploadInput = document.getElementById('plugin-upload');
+
+uploadInput?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    await analysisBox.registerPlugin(file);
+    
+    analysisSelect.closeAction();
+    e.target.value = "";
+
+});
+
 analysisBox.initDefault(["video", "table"]);

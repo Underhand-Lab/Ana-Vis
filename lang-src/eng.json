@@ -7,7 +7,7 @@
     "btn-load": "Load",
     "btn-open-process": "Process",
     "btn-open-guide": "Guide",
-    "btn-add-tool": "Tool",
+    "btn-add-tool": "+",
 
     "label-process-new-video": "Process new video",
     "label-model": "Model",

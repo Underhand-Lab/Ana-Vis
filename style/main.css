@@ -73,6 +73,7 @@ h1 {
 }
 
 button, .label-for-btn {
+    display: inline-block;
     font-family: 'KBO-Dia-Gothic_medium', Arial, sans-serif;
     font-size: 15px;
     background-color: var(--primary-color);
@@ -81,6 +82,8 @@ button, .label-for-btn {
     border-radius: 5px;
     padding: 5px 10px;
     margin: 5px;
+    line-height: normal;
+    user-select: none;
 }
 
 select {
@@ -249,4 +252,25 @@ canvas {
 .content {
     display: flex;
     flex-direction: column;
+}
+
+.divide {
+    display:flex;
+    flex-wrap: nowrap;
+    gap:10px;
+    overflow-x:auto;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.frameMakerSetting {
+    display:flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.frameMakerSetting > * {
+    white-space: nowrap;
+
 }

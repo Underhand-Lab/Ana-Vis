@@ -7,21 +7,36 @@
     </div>
     <canvas class="outputImage" style="background-color: black;"></canvas>
     <div style="padding: 10px 15px" minimaxTarget>
-        <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
-            <div style="flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap;">
-                <label>Trail: </label>
-                <input type="number" pattern="\d*" inputmode="decimal" class="trailInput" value="3" min="0" max="15"
-                    step="1">
-                <label><e-text key="label-trajectory"></e-text>: </label>
-                <input type="color" class="trail-color" value="#00ff00">
-                <input type="number" pattern="\d*" inputmode="decimal" class="trail-color-alpha" value="100" min="0"
-                    max="255">
-                <label><e-text key="label-recognize"></e-text>: </label>
-                <input type="color" class="bat-color" value="#ff8000">
-                <input type="number" pattern="\d*" inputmode="decimal" class="bat-color-alpha" value="100" min="0"
-                    max="255">
+        <div class="divide">
+            <div class="frameMakerSetting">
+                <div>
+                    <label>Trail: </label>
+                    <input type="number" pattern="\d*"
+                        inputmode="decimal" class="trailInput"
+                        value="3" min="0" max="15" step="1">
+                </div>
+                <div>
+                    <label>
+                        <e-text key="label-trajectory"></e-text>: 
+                    </label>
+                    <input type="color" class="trail-color"
+                        value="#00ff00">
+                    <input type="number" pattern="\d*"
+                        inputmode="decimal" class="trail-color-alpha"
+                        value="100" min="0" max="255">
+                </div>
+                <div>
+                    <label>
+                        <e-text key="label-recognize"></e-text>: 
+                    </label>
+                    <input type="color" class="bat-color"
+                        value="#ff8000">
+                    <input type="number" pattern="\d*"
+                        inputmode="decimal" class="bat-color-alpha"
+                        value="100" min="0" max="255">
+                </div>
             </div>
-            <div style="text-align: right;white-space: nowrap;">
+            <div>
                 <button class="save"><e-text key="btn-save"></e-text></button>
             </div>
         </div>

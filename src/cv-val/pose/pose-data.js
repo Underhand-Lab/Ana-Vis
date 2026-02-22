@@ -176,8 +176,6 @@ class PoseData {
             const images = await this._videoToImageBitmaps(videoBlob);
             this.rawImgListList.push(images);
         }
-        
-        console.log("데이터 로드 완료:", this);
     }
 
     async _videoToImageBitmaps(videoBlob) {

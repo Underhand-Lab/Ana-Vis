@@ -7,7 +7,7 @@
     "btn-load": "불러오기",
     "btn-open-process": "분석",
     "btn-open-guide": "도움말",
-    "btn-add-tool": "도구 추가",
+    "btn-add-tool": "+",
 
     "label-process-new-video": "새로운 동영상 처리",
     "label-model": "모델",
