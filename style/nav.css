@@ -50,7 +50,7 @@ nav h1 a, .nav h1 a {
 }
 
 nav button, nav .label-for-btn {
-    color: inherit;
+    color: #aaa;
     padding: 0;
     background-color: transparent;
     margin: 0;
@@ -70,17 +70,20 @@ nav button:hover, nav .label-for-btn:hover {
 
 nav select {
     background-color: transparent;
-    color: inherit;
+    color: #aaa;
     border-width: 0;
     padding: 0;
-    font-size: inherit;
+    font-size: 15px;
 }
 
 nav option {
     background-color: var(--secondary-color);
 }
 
-nav option:hover {
-    background-color: inherit;
+nav select:hover option:hover {
+    background-color: var(--secondary-color)
+}
+
+nav option:checked {
     color: var(--primary-color);
 }
