@@ -1,66 +1,17 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/src/lib/easy-h/lang/component.js" type="module"></script>
     <title>CV-Val</title>
-
-    <link rel="stylesheet" href="./style/style.css">
-    <link rel="icon" href="./favicon.ico">
     
-    <script src="./src/easy-h/lang/component.js" type="module"></script>
-    <script src="./src/common.js" type="module"></script>
-
     <e-text-set key="en" src="./lang-src/eng.json"></e-text-set>
     <e-text-set key="ko ko-kr ko-Kr" src="./lang-src/kor.json"></e-text-set>
-</head>
-
-<body>
-    <nav>
-        <div>
-            <div style="flex-grow: 1">
-                <h1><a href="/" select="true">CV-Val</a></h1>
-            </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="flex-grow: 1">
-                <ul>
-                    <li>
-                        <a href="./pose">
-                            <e-text key="nav-pose"></e-text>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="./track-ball">
-                            <e-text key="nav-track-ball"></e-text>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="./track-bat">
-                            <e-text key="nav-track-bat"></e-text>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div id="wrapper" style="padding-bottom: 10px;">
-        <div class="container neumorphism markdown-container" data-markdown-file="./goal.md">
-        </div>
-        <div class="container neumorphism markdown-container" data-markdown-file="./feature.md">
-        </div>
-        <div class="container neumorphism markdown-container" data-markdown-file="./contact.md">
-        </div>
-        <div class="container neumorphism">
-            <details>
-                <summary>
-                    <h1>🔗 참고</h1>
-                </summary>
-                <hr>
-                <div class="markdown-container" data-markdown-file="./ref.md">
-                </div>
-            </details>
-        </div>
-    </div>
-</body>
-
+  </head>
+  <body>
+    <div id="root" style="min-height: 100vh; width: 100%"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
