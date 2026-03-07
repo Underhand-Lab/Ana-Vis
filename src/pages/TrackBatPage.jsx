@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import AnalysisContainer from '../components/AnalysisContainer';
+import VideoProcessorModal from '../components/VideoProcessorModal';
 import Modal from '../components/Modal';
 import Navigation from '../components/Navigation.jsx';
 
@@ -18,7 +19,28 @@ const DETECTORS = {
     "yolo11m": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11m-seg_web_model/model.json", 34),
     "yolo11s": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11s_web_model/model.json", 34),
     "yolo11n": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11n-seg_web_model/model.json", 34),
-    "yolo26n": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11m-seg_web_model/model.json", 34)
+    /*"yolo26n": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11m-seg_web_model/model.json", 34)*/
+};
+
+
+const MAKER_CONFIG = {
+    "video": {
+        src: "/cv-val/template/track-bat/video.html",
+        create: () => new TrackBatFrameMaker(),
+        bindUI: (box, frameMaker) => {
+            // batVideoUIBinder 로직 구현
+            const saveBtn = box.querySelector(".save");
+
+            saveBtn?.addEventListener('click', async () => {
+                const currentData = instance.data;
+                if (!currentData) return;
+                const blob = await frameMakerDataToBlob(frameMaker, currentData);
+                await saveBlobWithPicker(blob, "trackBatVideo.mp4", [{
+                    description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
+                }], true, "mp4");
+            });
+        }
+    }
 };
 
 const TrackBatPage = () => {
@@ -26,9 +48,7 @@ const TrackBatPage = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState({ current: 0, total: 0 });
     const [statusKey, setStatusKey] = useState('label-before-process');
-    const [selectedModel, setSelectedModel] = useState('yolo11m');
     const [confValue, setConfValue] = useState(0.55); // 기본값 0.55
-    const [hasFile, setHasFile] = useState(false);
 
     // 후보군(Candidate) 관련 상태
     const [candidates, setCandidates] = useState([]);
@@ -39,31 +59,22 @@ const TrackBatPage = () => {
     const [isToolModalOpen, setToolModalOpen] = useState(false);
 
     const analysisBoxRef = useRef(null);
-    const videoInputRef = useRef(null);
     const dataInputRef = useRef(null);
 
     // 프레임 변경 시 후보군 UI 업데이트 로직
     const updateCandidateState = useCallback((frameIdx) => {
-        if (!analysisBoxRef.current?.data) return;
 
-        const data = analysisBoxRef.current.data;
+        if (!processedData) return;
+
         setCurrentFrameIdx(frameIdx);
 
-        const cands = data.getCandidatesAt(frameIdx) || [];
-        const frameData = data.getBatList()[frameIdx]; // Bat List 참조
+        const cands = processedData.getCandidatesAt(frameIdx) || [];
+        const frameData = processedData.getBatList()[frameIdx]; // Bat List 참조
         const currentSelected = frameData ? frameData.selectedIdx : -1;
 
         setCandidates(cands);
         setSelectedCandidateIdx(currentSelected);
-    }, []);
-
-    // 헬퍼: Hex 색상을 RGBA 배열로 변환
-    const hexToRgba = (hex, alpha) => {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return [r, g, b, parseInt(alpha)];
-    };
+    }, [processedData]);
 
     // 데이터 불러오기 (.cvbt)
     const handleLoadFile = async (e) => {
@@ -79,70 +90,16 @@ const TrackBatPage = () => {
         }
     };
 
-    // 분석 인스턴스 초기화
-    const handleInstanceReady = useCallback(async (instance) => {
-        analysisBoxRef.current = instance;
-
-        // 엔진 업데이트 이벤트 바인딩
-        instance.bindUI(document, {
-            onUpdate: (frameIdx) => updateCandidateState(frameIdx)
-        });
-
-        const MAKER_CONFIG = {
-            "video": {
-                src: "/cv-val/template/track-bat/video.html",
-                create: () => new TrackBatFrameMaker(),
-                bindUI: (box, frameMaker) => {
-                    // batVideoUIBinder 로직 구현
-                    const saveBtn = box.querySelector(".save");
-                    const trailInput = box.querySelector(".trailInput");
-                    const batColor = box.querySelector(".bat-color");
-                    const batColorAlpha = box.querySelector(".bat-color-alpha");
-                    const trailColor = box.querySelector(".trail-color");
-                    const trailColorAlpha = box.querySelector(".trail-color-alpha");
-
-                    const colorChange = () => {
-                        frameMaker.setColors(
-                            hexToRgba(batColor.value, batColorAlpha.value),
-                            hexToRgba(trailColor.value, trailColorAlpha.value)
-                        );
-                        frameMaker.drawImageAt(instance.nowIdx());
-                    };
-
-                    [batColor, batColorAlpha, trailColor, trailColorAlpha].forEach(el => {
-                        el?.addEventListener('change', colorChange);
-                    });
-
-                    frameMaker.setTrail(trailInput);
-                    frameMaker.bindUI(box);
-                    if (batColor) colorChange();
-
-                    saveBtn?.addEventListener('click', async () => {
-                        const currentData = instance.data;
-                        if (!currentData) return;
-                        const blob = await frameMakerDataToBlob(frameMaker, currentData);
-                        await saveBlobWithPicker(blob, "trackBatVideo.mp4", [{
-                            description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
-                        }], true, "mp4");
-                    });
-                }
-            }
-        };
-
-        await instance.registerFrameMaker("video", MAKER_CONFIG.video);
-        instance.initDefault(["video"]);
-    }, [updateCandidateState]);
-
     // 비디오 처리 실행
-    const handleProcessVideo = async () => {
-        const files = videoInputRef.current?.files;
+    const handleProcessVideo = async (files, model) => {
+
         if (!files || files.length < 1) return;
 
         setProgress({ current: 0, total: 0 });
         setIsProcessing(true);
         const processor = new Processor();
         try {
-            processor.setting(DETECTORS[selectedModel], {
+            processor.setting(DETECTORS[model], {
                 onState: (state) => setStatusKey(`label-${state}`),
                 onProgress: (current, total) => setProgress({ current, total })
             });
@@ -171,7 +128,7 @@ const TrackBatPage = () => {
         const idx = parseInt(e.target.value);
         setSelectedCandidateIdx(idx);
         if (processedData) {
-            processedData.setSelectedIdx(analysisBoxRef.current.nowIdx(), idx);
+            processedData.setSelectedIdx(currentFrameIdx, idx);
             analysisBoxRef.current?.updateImage();
         }
     };
@@ -183,9 +140,6 @@ const TrackBatPage = () => {
             <Navigation buttons={[
                 {
                     name: "새 분석", action: () => {
-                        setHasFile(false);
-                        setProgress({ current: 0, total: 0 });
-                        setStatusKey('label-before-process');
                         setProcessModalOpen(true);
                     }
                 },
@@ -201,7 +155,13 @@ const TrackBatPage = () => {
                 }
             ]} />
 
-            <AnalysisContainer data={processedData} onInstanceReady={handleInstanceReady} />
+            <AnalysisContainer
+                ref={analysisBoxRef}
+                data={processedData}
+                toolConfigs={MAKER_CONFIG}
+                defaultTools={["video"]}
+                onUpdate={updateCandidateState}
+            />
 
 
             <div className="slider">
@@ -255,39 +215,20 @@ const TrackBatPage = () => {
                 </div>
             </div>
 
-            <Modal isOpen={isProcessModalOpen} onClose={() => !isProcessing && setProcessModalOpen(false)} title="비디오 처리">
-                <div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', gap: '15px' }}>
-                        <div style={{ flex: '1' }}>
-                            <input type="file" ref={videoInputRef} accept="video/*" style={{ width: '100%' }} onChange={(e) => setHasFile(e.target.files.length > 0)} />
-                        </div>
-                        <div>
-                            <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className="neumorphism-select">
-                                {Object.keys(DETECTORS).map(m => <option key={m} value={m}>{m}</option>)}
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <button
-                            style={{ width: '100%', margin: '0px', padding: '12px 24px', fontSize: '16px' }}
-                            onClick={handleProcessVideo}
-                            disabled={!hasFile || isProcessing}
-                        >
-                            {isProcessing ? '처리 중...' : '분석 시작'}
-                        </button>
-                        <div id="status-section">
-                            <p>{statusKey} {isProcessing && progress.total > 0 && ` : ${progress.current} / ${progress.total}`}</p>
-                            <div id="progress-bar-container">
-                                <div id="progress-bar" style={{ width: `${(progress.current / Math.max(progress.total, 1)) * 100}%` }}></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
+            <VideoProcessorModal
+                isOpen={isProcessModalOpen}
+                onClose={() => setProcessModalOpen(false)}
+                models={Object.keys(DETECTORS)}
+                defaultModel={"yolo11m"}
+                onProcess={handleProcessVideo}
+                isProcessing={isProcessing}
+                progress={progress}
+                statusKey={statusKey}
+            />
 
             <Modal isOpen={isToolModalOpen} onClose={() => setToolModalOpen(false)} title="분석 도구 추가">
                 <div>
-                    <button onClick={() => { analysisBoxRef.current?.addFrame("video"); setToolModalOpen(false); }}>VIDEO</button>
+                    <button onClick={() => { analysisBoxRef.current?.addTool("video"); setToolModalOpen(false); }}>VIDEO</button>
                     <br />
                     <label className="label-for-btn">
                         Plugin

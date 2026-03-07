@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import AnalysisContainer from '../components/AnalysisContainer';
+import VideoProcessorModal from '../components/VideoProcessorModal';
 import Modal from '../components/Modal';
 import Navigation from '../components/Navigation.jsx';
 
@@ -21,14 +22,37 @@ const DETECTORS = {
     "yolo11n": new BallDetector.YOLOBallDetector("/cv-val/external/models/yolo11/yolo11n_web_model/model.json", 32),
 };
 
+const MAKER_CONFIG = {
+    "video": {
+        src: "/cv-val/template/track-ball/video.html",
+        create: () => new FrameMaker.TrackFrameMaker(),
+        bindUI: (box, frameMaker) => {
+            box.querySelector(".save")?.addEventListener('click', async () => {
+                const currentData = instance.data;
+                if (!currentData) return;
+                const blob = await frameMakerDataToBlob(frameMaker, currentData);
+                await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
+                    description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
+                }], true, "mp4");
+            });
+        }
+    },
+    "table": {
+        src: "/cv-val/template/track-ball/table.html",
+        create: () => {
+            const fm = new FrameMaker.CustomTableFrameMaker();
+            fm.changeAnalysisTool(new Analysis.BallAnalysisTool());
+            return fm;
+        }
+    }
+};
+
 const TrackBallPage = () => {
     const [processedData, setProcessedData] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState({ current: 0, total: 0 });
     const [statusKey, setStatusKey] = useState('label-before-process');
-    const [selectedModel, setSelectedModel] = useState('yolo11m');
-    const [confValue, setConfValue] = useState(0.01); //
-    const [hasFile, setHasFile] = useState(false);
+    const [confValue, setConfValue] = useState(0.01);
 
     // 후보군(Candidate) UI 상태 관리
     const [candidates, setCandidates] = useState([]);
@@ -39,23 +63,22 @@ const TrackBallPage = () => {
     const [isToolModalOpen, setToolModalOpen] = useState(false);
 
     const analysisBoxRef = useRef(null);
-    const videoInputRef = useRef(null);
     const dataInputRef = useRef(null);
 
     // 프레임 변경 시 후보군 UI 갱신 (기존 updateCandidateUI 로직)
     const updateCandidateState = useCallback((frameIdx) => {
-        if (!analysisBoxRef.current?.data) return;
 
-        const data = analysisBoxRef.current.data;
+        if (!processedData) return;
+
         setCurrentFrameIdx(frameIdx);
 
-        const cands = data.getCandidatesAt(frameIdx) || [];
-        const frameData = data.getBallList()[frameIdx];
+        const cands = processedData.getCandidatesAt(frameIdx) || [];
+        const frameData = processedData.getBallList()[frameIdx];
         const currentSelected = frameData ? frameData.selectedIdx : -1;
 
         setCandidates(cands);
         setSelectedCandidateIdx(currentSelected);
-    }, []);
+    }, [processedData]);
 
     // 파일 불러오기 핸들러 (.cvbl)
     const handleLoadFile = async (e) => {
@@ -73,49 +96,8 @@ const TrackBallPage = () => {
         }
     };
 
-    // 인스턴스 초기화 및 이벤트 바인딩
-    const handleInstanceReady = useCallback(async (instance) => {
-        analysisBoxRef.current = instance;
-
-        // 엔진의 프레임 업데이트 이벤트 구독
-        instance.bindUI(document, {
-            onUpdate: (frameIdx) => updateCandidateState(frameIdx)
-        });
-
-        const MAKER_CONFIG = {
-            "video": {
-                src: "/cv-val/template/track-ball/video.html",
-                create: () => new FrameMaker.TrackFrameMaker(),
-                bindUI: (box, frameMaker) => {
-                    box.querySelector(".save")?.addEventListener('click', async () => {
-                        const currentData = instance.data;
-                        if (!currentData) return;
-                        const blob = await frameMakerDataToBlob(frameMaker, currentData);
-                        await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
-                            description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
-                        }], true, "mp4");
-                    });
-                }
-            },
-            "table": {
-                src: "/cv-val/template/track-ball/table.html",
-                create: () => {
-                    const fm = new FrameMaker.CustomTableFrameMaker();
-                    fm.changeAnalysisTool(new Analysis.BallAnalysisTool());
-                    return fm;
-                }
-            }
-        };
-
-        for (const [key, config] of Object.entries(MAKER_CONFIG)) {
-            await instance.registerFrameMaker(key, config);
-        }
-        instance.initDefault(['video', 'table']);
-    }, [updateCandidateState]);
-
     // 비디오 처리 실행
-    const handleProcessVideo = async () => {
-        const files = videoInputRef.current?.files;
+    const handleProcessVideo = async (files, model) => {
         if (!files || files.length < 1) return;
 
         // 수정사항: 초기화 로직
@@ -124,7 +106,7 @@ const TrackBallPage = () => {
 
         const processor = new Processor();
         try {
-            processor.setting(DETECTORS[selectedModel], {
+            processor.setting(DETECTORS[model], {
                 onState: (state) => setStatusKey(`label-${state}`),
                 onProgress: (current, total) => setProgress({ current, total })
             });
@@ -175,7 +157,6 @@ const TrackBallPage = () => {
                 {
                     name: "새 분석",
                     action: () => {
-                        setHasFile(false); // 파일 상태 초기화
                         setProgress({ current: 0, total: 0 }); // 진행도 초기화
                         setStatusKey('label-before-process'); // 상태 메시지 초기화
                         setProcessModalOpen(true);
@@ -200,8 +181,11 @@ const TrackBallPage = () => {
             ]} />
 
             <AnalysisContainer
+                ref={analysisBoxRef}
                 data={processedData}
-                onInstanceReady={handleInstanceReady}
+                toolConfigs={MAKER_CONFIG}
+                defaultTools={["video", "table"]}
+                onUpdate={updateCandidateState}
             />
 
             <div className="slider">
@@ -214,7 +198,7 @@ const TrackBallPage = () => {
                             도구 추가
                         </button>
                     </div>
-                    <div style={{display:'flex', gap: '10px'}}>
+                    <div style={{ display: 'flex', gap: '10px' }}>
 
                         {/* CONF 입력 UI */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -256,63 +240,17 @@ const TrackBallPage = () => {
             </div>
 
             {/* 모달: 비디오 분석 */}
-            <Modal
+
+            <VideoProcessorModal
                 isOpen={isProcessModalOpen}
-                onClose={() => !isProcessing && setProcessModalOpen(false)}
-                title="비디오 처리"
-            >
-                <div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', gap: '15px' }}>
-                        <div style={{ flex: '1' }}>
-                            <input
-                                type="file"
-                                ref={videoInputRef}
-                                accept="video/*"
-                                style={{ width: '100%' }}
-                                onChange={(e) => setHasFile(e.target.files.length > 0)} // 수정사항: 파일 유무 감지
-                            />
-                        </div>
-                        <div style={{ whiteSpace: 'nowrap' }}>
-                            <label htmlFor="model">모델 선택 </label>
-                            <select
-                                value={selectedModel}
-                                id="model"
-                                onChange={(e) => setSelectedModel(e.target.value)}
-                                className="neumorphism-select"
-                            >
-                                {Object.keys(DETECTORS).map(m => (
-                                    <option key={m} value={m}>{m}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        {/* 수정사항: 파일 미선택 시 비활성화 */}
-                        <button
-                            style={{ width: '100%', margin: '0px', padding: '12px 24px', fontSize: '16px' }}
-                            onClick={handleProcessVideo}
-                            disabled={!hasFile || isProcessing}
-                        >
-                            {isProcessing ? '처리 중...' : '분석 시작'}
-                        </button>
-
-                        <div id="status-section">
-                            {/* 수정사항: 분석 중일 때만 진행 프레임 숫자 노출 */}
-                            <p>
-                                {statusKey}
-                                {isProcessing && progress.total > 0 && ` : ${progress.current} / ${progress.total}`}
-                            </p>
-
-                            <div id="progress-bar-container">
-                                <div
-                                    id="progress-bar"
-                                    style={{ width: `${(progress.current / Math.max(progress.total, 1)) * 100}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
+                onClose={() => setProcessModalOpen(false)}
+                models={Object.keys(DETECTORS)}
+                defaultModel={"yolo11m"}
+                onProcess={handleProcessVideo}
+                isProcessing={isProcessing}
+                progress={progress}
+                statusKey={statusKey}
+            />
 
             {/* 모달: 도구 추가 */}
             <Modal
@@ -324,7 +262,7 @@ const TrackBallPage = () => {
                     {['video', 'table'].map(key => (
                         <div key={key}>
                             <button onClick={() => {
-                                analysisBoxRef.current?.addFrame(key);
+                                analysisBoxRef.current?.addTool(key);
                                 setToolModalOpen(false);
                             }}>
                                 {key.toUpperCase()}

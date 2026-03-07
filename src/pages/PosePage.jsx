@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import AnalysisContainer from '../components/AnalysisContainer';
+import VideoProcessorModal from '../components/VideoProcessorModal';
 import Modal from '../components/Modal';
 import Navigation from '../components/Navigation.jsx';
 
@@ -26,21 +27,42 @@ const ANALYSIS_TOOLS = {
   "height": new PoseAnalysisTool.HeightAnalysisTool(),
 };
 
+
+const MAKER_CONFIG = {
+  "video": {
+    src: "/cv-val/template/pose/video.html",
+    create: () => new PoseFrameMaker.PoseBoneFrameMaker(),
+    bindUI: (box, frameMaker) => {
+      box.querySelector(".save")?.addEventListener('click', async () => {
+        const currentData = instance.data;
+        if (!currentData) return;
+        const blob = await frameMakerDataToBlob(frameMaker, currentData);
+        await saveBlobWithPicker(blob, "poseVideo.mp4", [{
+          description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
+        }], true, "mp4");
+      });
+    }
+  },
+  "graph": {
+    src: "/cv-val/template/pose/graph.html",
+    create: () => new PoseFrameMaker.CustomGraphFrameMaker(ANALYSIS_TOOLS)
+  },
+  "table": {
+    src: "/cv-val/template/pose/table.html",
+    create: () => new PoseFrameMaker.CustomTableFrameMaker(ANALYSIS_TOOLS)
+  }
+};
+
 const PosePage = () => {
   const [processedData, setProcessedData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [statusKey, setStatusKey] = useState('label-before-process');
-  const [selectedModel, setSelectedModel] = useState('mediapipe_heavy');
-
-  // 수정사항 1: 분석 대상 파일 선택 상태
-  const [hasFile, setHasFile] = useState(false);
 
   const [isProcessModalOpen, setProcessModalOpen] = useState(false);
   const [isToolModalOpen, setToolModalOpen] = useState(false);
 
   const analysisBoxRef = useRef(null);
-  const videoInputRef = useRef(null);
   const dataInputRef = useRef(null);
 
   // 파일 불러오기 핸들러 (.cvp)
@@ -59,45 +81,9 @@ const PosePage = () => {
     }
   };
 
-  // 인스턴스 초기화 콜백
-  const handleInstanceReady = useCallback(async (instance) => {
-    analysisBoxRef.current = instance;
-
-    const MAKER_CONFIG = {
-      "video": {
-        src: "/cv-val/template/pose/video.html",
-        create: () => new PoseFrameMaker.PoseBoneFrameMaker(),
-        bindUI: (box, frameMaker) => {
-          box.querySelector(".save")?.addEventListener('click', async () => {
-            const currentData = instance.data;
-            if (!currentData) return;
-            const blob = await frameMakerDataToBlob(frameMaker, currentData);
-            await saveBlobWithPicker(blob, "poseVideo.mp4", [{
-              description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
-            }], true, "mp4");
-          });
-        }
-      },
-      "graph": {
-        src: "/cv-val/template/pose/graph.html",
-        create: () => new PoseFrameMaker.CustomGraphFrameMaker(ANALYSIS_TOOLS)
-      },
-      "table": {
-        src: "/cv-val/template/pose/table.html",
-        create: () => new PoseFrameMaker.CustomTableFrameMaker(ANALYSIS_TOOLS)
-      }
-    };
-
-    for (const [key, config] of Object.entries(MAKER_CONFIG)) {
-      await instance.registerFrameMaker(key, config);
-    }
-
-    instance.initDefault(['video', 'graph']);
-  }, []);
-
   // 수정사항 3: 비디오 처리 핸들러 (이전 데이터 초기화 포함)
-  const handleProcessVideo = async () => {
-    const files = videoInputRef.current?.files;
+  const handleProcessVideo = async (files, model) => {
+
     if (!files || files.length < 1) return;
 
     // 분석 시작 시 진행도 초기화
@@ -106,7 +92,8 @@ const PosePage = () => {
 
     const processor = new Processor();
     try {
-      processor.setting(DETECTORS[selectedModel], {
+      console.log(model);
+      processor.setting(DETECTORS[model], {
         onState: (state) => setStatusKey(`label-${state}`),
         onProgress: (current, total) => setProgress({ current, total })
       });
@@ -135,9 +122,6 @@ const PosePage = () => {
       <Navigation buttons={[
         {
           name: "새 분석", action: () => {
-            setHasFile(false); // 모달 열기 전 파일 상태 초기화
-            setProgress({ current: 0, total: 0 }); // 이전 진행도 초기화
-            setStatusKey('label-before-process');
             setProcessModalOpen(true);
           }
         },
@@ -160,8 +144,10 @@ const PosePage = () => {
       ]} />
 
       <AnalysisContainer
+        ref={analysisBoxRef}
         data={processedData}
-        onInstanceReady={handleInstanceReady}
+        toolConfigs={MAKER_CONFIG}
+        defaultTools={["video", "graph"]}
       />
 
       <div className="slider">
@@ -174,67 +160,16 @@ const PosePage = () => {
           </div>
         </div>
       </div>
-
-      {/* 모달: 비디오 분석 */}
-      <Modal
+      <VideoProcessorModal
         isOpen={isProcessModalOpen}
-        onClose={() => !isProcessing && setProcessModalOpen(false)}
-        title="비디오 처리"
-      >
-        <div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', gap: '15px' }}>
-            <div style={{ flex: '1' }}>
-              <input
-                type="file"
-                ref={videoInputRef}
-                accept="video/*"
-                style={{ width: '100%' }}
-                onChange={(e) => setHasFile(e.target.files.length > 0)}
-              />
-            </div>
-            <div style={{ whiteSpace: 'nowrap' }}>
-              <label htmlFor="model">모델 선택 </label>
-              <select
-                value={selectedModel}
-                id="model"
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="neumorphism-select"
-              >
-                <option value="mediapipe_heavy">Heavy 모델</option>
-                <option value="mediapipe_full">Full 모델</option>
-                <option value="mediapipe_lite">Lite 모델</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            {/* 수정사항 1: 파일이 없거나 분석 중일 때 버튼 비활성화 */}
-            <button
-              style={{ width: '100%', margin: '0px', padding: '12px 24px', fontSize: '16px' }}
-              onClick={handleProcessVideo}
-              disabled={!hasFile || isProcessing}
-            >
-              {isProcessing ? '처리 중...' : '분석 시작'}
-            </button>
-
-            <div id="status-section">
-              {/* 수정사항 2: 분석 중일 때만 (0/0) 형식 노출 */}
-              <p>
-                {statusKey}
-                {isProcessing && progress.total > 0 && ` : ${progress.current} / ${progress.total}`}
-              </p>
-
-              {/* 분석 중이거나 이미 진행된 데이터가 있을 때만 게이지 표시 */}
-
-              <div id="progress-bar-container">
-                <div
-                  id="progress-bar"
-                  style={{ width: `${(progress.current / Math.max(progress.total, 1)) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
+        onClose={() => setProcessModalOpen(false)}
+        models={Object.keys(DETECTORS)}
+        defaultModel={"mediapipe_full"}
+        onProcess={handleProcessVideo}
+        isProcessing={isProcessing}
+        progress={progress}
+        statusKey={statusKey}
+      />
 
       {/* 모달: 도구 추가 */}
       <Modal
@@ -246,7 +181,7 @@ const PosePage = () => {
           {['video', 'graph', 'table'].map(key => (
             <div key={key}>
               <button onClick={() => {
-                analysisBoxRef.current?.addFrame(key);
+                analysisBoxRef.current?.addTool(key);
                 setToolModalOpen(false);
               }}>
                 {key.toUpperCase()}

@@ -1,5 +1,13 @@
 import { CanvasRenderer } from "../../canvas-renderer.js";
 
+// 헬퍼: Hex 색상을 RGBA 배열로 변환
+const hexToRgba = (hex, alpha) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return [r, g, b, parseInt(alpha)];
+};
+
 export class TrackBatFrameMaker {
     constructor() {
         this.trail = null;
@@ -15,12 +23,37 @@ export class TrackBatFrameMaker {
         this.currentBatColor = [255, 0, 0, 255]; // 현재 배트 (RGBA)
     }
 
-    bindUI(instance) {
-        const canvas = instance.querySelectorAll('canvas')[0];
+    bindUI(box) {
+        const canvas = box.querySelectorAll('canvas')[0];
         this.renderer.setCanvas(canvas);
+
+        const trailInput = box.querySelector(".trailInput");
+        const batColor = box.querySelector(".bat-color");
+        const batColorAlpha = box.querySelector(".bat-color-alpha");
+        const trailColor = box.querySelector(".trail-color");
+        const trailColorAlpha = box.querySelector(".trail-color-alpha");
+
+        const colorChange = () => {
+            this.setColors(
+                hexToRgba(batColor.value, batColorAlpha.value),
+                hexToRgba(trailColor.value, trailColorAlpha.value)
+            );
+            this.drawImageAt(this.lastIdx);
+        };
+
+        [batColor, batColorAlpha, trailColor, trailColorAlpha].forEach(el => {
+            el?.addEventListener('change', colorChange);
+        });
+
+        this.setTrail(trailInput);
+
+        if (batColor) colorChange();
+
         if (this.trackData == null) return;
+        
         const metadata = this.trackData.getVideoMetadata(0);
-        if (metadata) this.renderer.updateLayout(metadata.width, metadata.height);
+        if (metadata)
+            this.renderer.updateLayout(metadata.width, metadata.height);
     }
 
     setTrail(trail) {
@@ -59,7 +92,7 @@ export class TrackBatFrameMaker {
 
         const maskLayer = this._generateMaskLayer(
             idx, this.trackData.getConf());
-        
+
         const compositeCanvas = document.createElement('canvas');
         compositeCanvas.width = backgroundImage.width;
         compositeCanvas.height = backgroundImage.height;
@@ -101,7 +134,7 @@ export class TrackBatFrameMaker {
 
         this.cachedImageData.data.fill(0);
         const pixelBuffer = this.cachedImageData.data;
-        
+
         // 궤적 길이 설정
         const trailLen = this.trail ? parseInt(this.trail.value) : 0;
         const startIdx = Math.max(1, idx - trailLen + 1);
@@ -122,7 +155,7 @@ export class TrackBatFrameMaker {
         this.offscreenCtx.putImageData(this.cachedImageData, 0, 0);
         return this.offscreenCanvas;
     }
-    
+
     masking(pixelData, prevBat, currBat, threshold, color, maskW, maskH) {
         if (prevBat?.maskConfidenceMap) {
             this.applyMaskToBuffer(pixelData, prevBat.maskConfidenceMap, threshold, color, maskW, maskH);
@@ -130,11 +163,11 @@ export class TrackBatFrameMaker {
         if (currBat?.maskConfidenceMap) {
             this.applyMaskToBuffer(pixelData, currBat.maskConfidenceMap, threshold, color, maskW, maskH);
         }
-        
+
         if (prevBat?.maskConfidenceMap && currBat?.maskConfidenceMap) {
             const vA = this.getMaskVertices(prevBat.maskConfidenceMap, threshold);
             const vB = this.getMaskVertices(currBat.maskConfidenceMap, threshold);
-            
+
             if (vA && vB) {
                 const points = [
                     vA.topLeft, vA.topRight, vA.bottomRight, vA.bottomLeft,
@@ -154,9 +187,9 @@ export class TrackBatFrameMaker {
                 if (row[x] >= threshold) {
                     const idx = (rowOffset + x) * 4;
                     pixelData[idx] = color[0];
-                    pixelData[idx+1] = color[1];
-                    pixelData[idx+2] = color[2];
-                    pixelData[idx+3] = color[3];
+                    pixelData[idx + 1] = color[1];
+                    pixelData[idx + 2] = color[2];
+                    pixelData[idx + 3] = color[3];
                 }
             }
         }
@@ -207,9 +240,9 @@ export class TrackBatFrameMaker {
                 if (this.isPointInPolygon(sortedPoints, x, y)) {
                     const idx = (rowOffset + x) * 4;
                     pixelData[idx] = color[0];
-                    pixelData[idx+1] = color[1];
-                    pixelData[idx+2] = color[2];
-                    pixelData[idx+3] = color[3];
+                    pixelData[idx + 1] = color[1];
+                    pixelData[idx + 2] = color[2];
+                    pixelData[idx + 3] = color[3];
                 }
             }
         }
