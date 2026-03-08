@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
-import AnalysisContainer from '../components/AnalysisContainer';
+import React, { useState, useRef, useEffect } from 'react';
+import AnalysisContainer from '../components/AnalysisGridContainer';
 import VideoProcessorModal from '../components/VideoProcessorModal';
 import Modal from '../components/Modal';
 import Navigation from '../components/Navigation.jsx';
@@ -12,6 +12,11 @@ import * as PoseFrameMaker from '../lib/cv-val/pose/frame-maker/index.js';
 import * as PoseAnalysisTool from "../lib/cv-val/pose/analysis-tool/index.js";
 import { frameMakerDataToBlob } from "../lib/cv-val/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../lib/save-blob.js";
+
+import PoseVideoContainer from '../components/frame-maker/pose/PoseVideoContainer.jsx';
+import PoseGraphContainer from '../components/frame-maker/pose/PoseGraphContainer.jsx';
+import PoseTableContainer from '../components/frame-maker/pose/PoseTableContainer.jsx';
+
 
 // 정적 설정값
 const DETECTORS = {
@@ -27,16 +32,14 @@ const ANALYSIS_TOOLS = {
   "height": new PoseAnalysisTool.HeightAnalysisTool(),
 };
 
-
 const MAKER_CONFIG = {
   "video": {
-    src: "/cv-val/template/pose/video.html",
-    create: () => new PoseFrameMaker.PoseBoneFrameMaker(),
+    Component: PoseVideoContainer,
     bindUI: (box, frameMaker) => {
       box.querySelector(".save")?.addEventListener('click', async () => {
-        const currentData = instance.data;
-        if (!currentData) return;
-        const blob = await frameMakerDataToBlob(frameMaker, currentData);
+        // 주의: 여기서 instance.data 대신 현재 컴포넌트의 processedData를 참조해야 함
+        // 이 부분은 보통 frameMaker 내부나 bind 시점에 처리됩니다.
+        const blob = await frameMakerDataToBlob(frameMaker, frameMaker.data);
         await saveBlobWithPicker(blob, "poseVideo.mp4", [{
           description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
         }], true, "mp4");
@@ -44,12 +47,20 @@ const MAKER_CONFIG = {
     }
   },
   "graph": {
-    src: "/cv-val/template/pose/graph.html",
-    create: () => new PoseFrameMaker.CustomGraphFrameMaker(ANALYSIS_TOOLS)
+    Component: (props) => (
+      <PoseGraphContainer 
+        {...props} 
+        analysisTools={ANALYSIS_TOOLS} 
+      />
+    ),
   },
   "table": {
-    src: "/cv-val/template/pose/table.html",
-    create: () => new PoseFrameMaker.CustomTableFrameMaker(ANALYSIS_TOOLS)
+    Component: (props) => (
+      <PoseTableContainer 
+        {...props} 
+        analysisTools={ANALYSIS_TOOLS} 
+      />
+    ),
   }
 };
 
@@ -58,12 +69,16 @@ const PosePage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [statusKey, setStatusKey] = useState('label-before-process');
+  const [currentIdx, setCurrentIdx] = useState(0);
 
   const [isProcessModalOpen, setProcessModalOpen] = useState(false);
   const [isToolModalOpen, setToolModalOpen] = useState(false);
 
   const analysisBoxRef = useRef(null);
   const dataInputRef = useRef(null);
+
+  // 데이터의 총 프레임 수를 계산 (processedData.length 가 존재한다고 가정)
+  const maxFrame = processedData ? (processedData.getFrameCnt() - 1) : 0;
 
   // 파일 불러오기 핸들러 (.cvp)
   const handleLoadFile = async (e) => {
@@ -74,6 +89,7 @@ const PosePage = () => {
       const data = new PoseData();
       await data.loadFromFile(file);
       setProcessedData(data);
+      setCurrentIdx(0); // 데이터 로드 시 인덱스 초기화
       e.target.value = "";
     } catch (err) {
       console.error("파일 로드 실패:", err);
@@ -81,18 +97,15 @@ const PosePage = () => {
     }
   };
 
-  // 수정사항 3: 비디오 처리 핸들러 (이전 데이터 초기화 포함)
+  // 비디오 처리 핸들러
   const handleProcessVideo = async (files, model) => {
-
     if (!files || files.length < 1) return;
 
-    // 분석 시작 시 진행도 초기화
     setProgress({ current: 0, total: 0 });
     setIsProcessing(true);
 
     const processor = new Processor();
     try {
-      console.log(model);
       processor.setting(DETECTORS[model], {
         onState: (state) => setStatusKey(`label-${state}`),
         onProgress: (current, total) => setProgress({ current, total })
@@ -100,6 +113,7 @@ const PosePage = () => {
 
       const result = await processor.processVideo(files, new PoseData());
       setProcessedData(result);
+      setCurrentIdx(0); // 처리 완료 시 인덱스 초기화
       setProcessModalOpen(false);
     } catch (e) {
       console.error(e);
@@ -143,23 +157,42 @@ const PosePage = () => {
         }
       ]} />
 
+      {/* 그리드 컨테이너: currentIdx와 data를 prop으로 직접 전달 */}
       <AnalysisContainer
         ref={analysisBoxRef}
+        currentIdx={currentIdx}
         data={processedData}
         toolConfigs={MAKER_CONFIG}
         defaultTools={["video", "graph"]}
       />
 
+      {/* 하단 컨트롤러 영역 */}
       <div className="slider">
         <div className="container neumorphism">
-          <div className="divide">
-            <input type="range" id="frameSlider" min="0" max="0" step="1" />
-            <button style={{ whiteSpace: "nowrap" }} onClick={() => setToolModalOpen(true)}>
+          <div className="divide" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <input 
+                type="range" 
+                id="frameSlider" 
+                min="0" 
+                max={maxFrame} 
+                step="1" 
+                value={currentIdx}
+                onChange={(e) => setCurrentIdx(parseInt(e.target.value, 10))} 
+                style={{ flex: 1 }}
+              />
+            </div>
+            
+            <button 
+              className="neumorphism-button"
+              onClick={() => setToolModalOpen(true)}
+            >
               도구 추가
             </button>
           </div>
         </div>
       </div>
+
       <VideoProcessorModal
         isOpen={isProcessModalOpen}
         onClose={() => setProcessModalOpen(false)}
@@ -171,23 +204,22 @@ const PosePage = () => {
         statusKey={statusKey}
       />
 
-      {/* 모달: 도구 추가 */}
       <Modal
         isOpen={isToolModalOpen}
         onClose={() => setToolModalOpen(false)}
         title="분석 도구 추가"
       >
         <div>
-          {['video', 'graph', 'table'].map(key => (
+          {Object.keys(MAKER_CONFIG).map(key => (
             <div key={key}>
-              <button onClick={() => {
+            <button onClick={() => {
                 analysisBoxRef.current?.addTool(key);
                 setToolModalOpen(false);
-              }}>
-                {key.toUpperCase()}
-              </button>
-              <br />
-            </div>
+              }}
+            >
+              {key}
+            </button>
+            <br/></div>
           ))}
         </div>
       </Modal>

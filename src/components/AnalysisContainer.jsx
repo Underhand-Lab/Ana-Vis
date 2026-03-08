@@ -1,17 +1,24 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { AnalysisBox } from "../lib/cv-val/common/analysis-box.js";
 
-const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdate }, ref) => {
+const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdate, currentIdx = 0 }, ref) => {
   const wrapperRef = useRef(null);
   const boxInstance = useRef(new AnalysisBox());
-  
-  // 1. 클로저 문제 해결을 위해 최신 콜백을 담을 Ref 생성
   const onUpdateRef = useRef(onUpdate);
+  const isInitialized = useRef(false); // 초기화 완료 여부 플래그
 
-  // onUpdate가 바뀔 때마다 Ref를 갱신 (리렌더링 유발 X)
   useEffect(() => {
     onUpdateRef.current = onUpdate;
   }, [onUpdate]);
+
+  // 1. currentIdx 변경 시 자동 이미지 업데이트
+  useEffect(() => {
+    // 초기화가 완료된 시점부터만 인스턴스 메서드를 호출합니다.
+    if (isInitialized.current && boxInstance.current) {
+      // drawImageAt이 내부 인덱스 동기화까지 담당한다면 이것만 호출하면 됩니다.
+      boxInstance.current.updateImage(currentIdx)
+    }
+  }, [currentIdx]);
 
   useImperativeHandle(ref, () => ({
     addTool: async (type) => {
@@ -21,9 +28,9 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
       await boxInstance.current.registerPlugin(file);
     },
     getCurrentIdx: () => boxInstance.current.nowIdx(),
-    updateImage: () => boxInstance.current.updateImage(),
-    bindEvents: (target, callbacks) => {
-      boxInstance.current.bindUI(target, callbacks);
+    updateImage: () => boxInstance.current.updateImage(currentIdx),
+    drawImageAt: (idx) => {
+      boxInstance.current.drawImageAt?.(idx);
     }
   }));
 
@@ -33,9 +40,9 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
       if (!wrapperRef.current) return;
       const instance = boxInstance.current;
 
-      // 2. 바인딩 시 직접 onUpdate를 주지 않고, 항상 Ref의 현재값을 호출하는 익명 함수 전달
-      instance.bindUI(wrapperRef.current.ownerDocument, {
+      instance.bindUI(wrapperRef.current, {
         onUpdate: (frameIdx) => {
+          // 내부에서 드래그 등으로 인덱스 변경 시 부모 상태로 역전파
           if (onUpdateRef.current) onUpdateRef.current(frameIdx);
         }
       });
@@ -49,20 +56,21 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
       if (defaultTools) {
         await instance.initDefault(defaultTools);
       }
+
+      // 2. 초기화 완료 후 첫 화면 그리기
+      isInitialized.current = true;
+      instance.setData(data);
+      instance.drawImageAt?.(currentIdx);
     };
 
     initAnalysis();
-    
-    // Cleanup: 컴포넌트 언마운트 시 인스턴스 정리 로직이 필요하다면 여기에 추가
-  }, []); // 의존성을 비워 초기 1회만 실행 (config가 동적으로 변하지 않는다는 가정)
+  }, []); // 마운트 시 1회
 
   // 3. 데이터 업데이트 감지
   useEffect(() => {
-    // data가 null이라도 인스턴스에는 알려줘야 함
-    if (boxInstance.current) {
+    if (isInitialized.current && boxInstance.current) {
       boxInstance.current.setData(data);
-      // 데이터가 새로 들어왔을 때 화면 갱신이 필요하면 추가
-      boxInstance.current.updateImage(); 
+      boxInstance.current.updateImage?.(currentIdx); 
     }
   }, [data]);
 

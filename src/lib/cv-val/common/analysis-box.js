@@ -86,16 +86,9 @@ export class AnalysisBox {
     }
 
     bindUI(element, options = {}) {
-        this.slider = element.getElementById('frameSlider');
         this.onUpdateCallback = options.onUpdate;
 
-        // 모바일 스크롤 간섭 방지
-        if (this.slider) {
-            this.slider.style.touchAction = "none";
-            this.slider.addEventListener('input', () => this.updateImage());
-        }
-
-        this.boxList = new BoxList(element.getElementById("boxes"));
+        this.boxList = new BoxList(element);
     }
 
     setData(data) {
@@ -103,9 +96,6 @@ export class AnalysisBox {
         this.data = data;
 
         const frameCount = this.data.getFrameCnt();
-        if (this.slider) {
-            this.slider.max = frameCount > 0 ? frameCount - 1 : 0;
-        }
 
         this.frameMakers.forEach(fm => fm.setData(this.data));
         this.updateImage();
@@ -184,8 +174,7 @@ export class AnalysisBox {
         return this.slider ? parseInt(this.slider.value, 10) : 0;
     }
 
-    updateImage() {
-        const idx = this.nowIdx();
+    updateImage(idx) {
         this.frameMakers.forEach(fm => fm.drawImageAt(idx));
         if (this.onUpdateCallback) this.onUpdateCallback(idx);
     }

@@ -1,23 +1,23 @@
 import {
-  Chart,
-  LineController,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale, // 오류의 원인인 category 스케일
-  Legend,
-  Tooltip
+    Chart,
+    LineController,
+    LineElement,
+    PointElement,
+    LinearScale,
+    CategoryScale, // 오류의 원인인 category 스케일
+    Legend,
+    Tooltip
 } from 'https://cdn.jsdelivr.net/npm/chart.js@4.5.1/+esm';
 
 // 필요한 구성 요소 등록
 Chart.register(
-  LineController,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  Legend,
-  Tooltip
+    LineController,
+    LineElement,
+    PointElement,
+    LinearScale,
+    CategoryScale,
+    Legend,
+    Tooltip
 );
 
 const hideAfterIndexPlugin = {
@@ -46,6 +46,9 @@ export class GraphVisualizer {
         this.data = null;
         this.customColors = {};
         //chartJs.Chart.defaults.font.family = 'KBO-Dia-Gothic_medium', 'Arial', 'sans-serif';
+    }
+    setCanvas(canvas) {
+        this.canvas = canvas;
     }
 
     // 데이터셋 생성 (저장된 색상 우선 적용)
@@ -88,6 +91,7 @@ export class GraphVisualizer {
             options: {
                 animation: false,
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false }, // 내장 범례 숨김
                     hideAfterIndex: { idx: idx }
@@ -183,6 +187,7 @@ export class GraphVisualizer {
     }
 
     setData(data, legendContainer) {
+        
         this.data = data;
         const [datasets, labels] = this.getDataSet();
 

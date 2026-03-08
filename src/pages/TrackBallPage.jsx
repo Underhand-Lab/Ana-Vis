@@ -52,6 +52,7 @@ const TrackBallPage = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState({ current: 0, total: 0 });
     const [statusKey, setStatusKey] = useState('label-before-process');
+    const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.01);
 
     // 후보군(Candidate) UI 상태 관리
@@ -80,6 +81,8 @@ const TrackBallPage = () => {
         setSelectedCandidateIdx(currentSelected);
     }, [processedData]);
 
+    const maxFrame = processedData ? (processedData.getFrameCnt() - 1) : 0;
+
     // 파일 불러오기 핸들러 (.cvbl)
     const handleLoadFile = async (e) => {
         const file = e.target.files[0];
@@ -89,6 +92,7 @@ const TrackBallPage = () => {
             const data = new TrackBallData();
             await data.loadFromFile(file);
             setProcessedData(data);
+            setCurrentIdx(0);
             e.target.value = "";
         } catch (err) {
             console.error(err);
@@ -113,6 +117,7 @@ const TrackBallPage = () => {
 
             const result = await processor.processVideo(files, new TrackBallData());
             setProcessedData(result);
+            setCurrentIdx(0);
             setProcessModalOpen(false);
         } catch (e) {
             console.error(e);
@@ -182,6 +187,7 @@ const TrackBallPage = () => {
 
             <AnalysisContainer
                 ref={analysisBoxRef}
+                currentIdx={currentIdx}
                 data={processedData}
                 toolConfigs={MAKER_CONFIG}
                 defaultTools={["video", "table"]}
@@ -191,8 +197,16 @@ const TrackBallPage = () => {
             <div className="slider">
                 <div className="container neumorphism">
                     <div className="divide">
-                        <input type="range" id="frameSlider" min="0" max="0" step="1" />
-
+                        <input
+                            type="range"
+                            id="frameSlider"
+                            min="0"
+                            max={maxFrame}
+                            step="1"
+                            value={currentIdx}
+                            onChange={(e) => setCurrentIdx(parseInt(e.target.value, 10))}
+                            style={{ flex: 1 }}
+                        />
 
                         <button style={{ whiteSpace: "nowrap" }} onClick={() => setToolModalOpen(true)}>
                             도구 추가
