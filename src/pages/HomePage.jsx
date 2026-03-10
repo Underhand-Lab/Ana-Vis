@@ -29,17 +29,17 @@ const HomePage = () => {
         <div id="boxes">
           {/* 기존 container neumorphism 구조들 */}
           <div className="container neumorphism">
-            <MarkdownContainer file="/cv-val/goal.md" />
+            <MarkdownContainer file="./goal.md" />
           </div>
           <div className="container neumorphism">
-            <MarkdownContainer file="/cv-val/feature.md" />
+            <MarkdownContainer file="./feature.md" />
           </div>
 
           <div className="container neumorphism">
             <details>
               <summary><h1>🔗 참고</h1></summary>
               <hr />
-              <MarkdownContainer file="/cv-val/ref.md" />
+              <MarkdownContainer file="./ref.md" />
             </details>
           </div>
         </div>

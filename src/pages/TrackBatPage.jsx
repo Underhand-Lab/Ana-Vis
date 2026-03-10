@@ -14,10 +14,10 @@ import { saveBlobWithPicker } from "../lib/save-blob.js";
 
 // YOLO Bat Detector 설정
 const DETECTORS = {
-    "yolo11x": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11x-seg_web_model/model.json", 34),
-    "yolo11l": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11l-seg_web_model/model.json", 34),
-    "yolo11m": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11m-seg_web_model/model.json", 34),
-    "yolo11s": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11s_web_model/model.json", 34),
+    "yolo11x": new BatDetector.YOLOBatDetector("./external/models/yolo11/yolo11x-seg_web_model/model.json", 34),
+    "yolo11l": new BatDetector.YOLOBatDetector("./external/models/yolo11/yolo11l-seg_web_model/model.json", 34),
+    "yolo11m": new BatDetector.YOLOBatDetector("./external/models/yolo11/yolo11m-seg_web_model/model.json", 34),
+    "yolo11s": new BatDetector.YOLOBatDetector("./external/models/yolo11/yolo11s_web_model/model.json", 34),
     "yolo11n": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11n-seg_web_model/model.json", 34),
     /*"yolo26n": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11m-seg_web_model/model.json", 34)*/
 };
@@ -25,7 +25,7 @@ const DETECTORS = {
 
 const MAKER_CONFIG = {
     "video": {
-        src: "/cv-val/template/track-bat/video.html",
+        src: "./template/track-bat/video.html",
         create: () => new TrackBatFrameMaker(),
         bindUI: (box, frameMaker) => {
             // batVideoUIBinder 로직 구현

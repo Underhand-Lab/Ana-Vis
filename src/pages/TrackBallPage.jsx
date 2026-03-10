@@ -15,16 +15,16 @@ import { saveBlobWithPicker } from "../lib/save-blob.js";
 
 // YOLO 탐지기 설정
 const DETECTORS = {
-    "yolo11x": new BallDetector.YOLOBallDetector("/cv-val/external/models/yolo11/yolo11x_web_model/model.json", 32),
-    "yolo11l": new BallDetector.YOLOBallDetector("/cv-val/external/models/yolo11/yolo11l_web_model/model.json", 32),
-    "yolo11m": new BallDetector.YOLOBallDetector("/cv-val/external/models/yolo11/yolo11m_web_model/model.json", 32),
-    "yolo11s": new BallDetector.YOLOBallDetector("/cv-val/external/models/yolo11/yolo11s_web_model/model.json", 32),
-    "yolo11n": new BallDetector.YOLOBallDetector("/cv-val/external/models/yolo11/yolo11n_web_model/model.json", 32),
+    "yolo11x": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11x_web_model/model.json", 32),
+    "yolo11l": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11l_web_model/model.json", 32),
+    "yolo11m": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11m_web_model/model.json", 32),
+    "yolo11s": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11s_web_model/model.json", 32),
+    "yolo11n": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11n_web_model/model.json", 32),
 };
 
 const MAKER_CONFIG = {
     "video": {
-        src: "/cv-val/template/track-ball/video.html",
+        src: "./template/track-ball/video.html",
         create: () => new FrameMaker.TrackFrameMaker(),
         bindUI: (box, frameMaker) => {
             box.querySelector(".save")?.addEventListener('click', async () => {
@@ -38,7 +38,7 @@ const MAKER_CONFIG = {
         }
     },
     "table": {
-        src: "/cv-val/template/track-ball/table.html",
+        src: "./template/track-ball/table.html",
         create: () => {
             const fm = new FrameMaker.CustomTableFrameMaker();
             fm.changeAnalysisTool(new Analysis.BallAnalysisTool());
