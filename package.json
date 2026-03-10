@@ -2,14 +2,24 @@
   "name": "cv-val-react",
   "private": true,
   "version": "0.0.0",
+  "description": "Computer Vision Validation Tool",
+  "author": "underhand-lab <skysea001010@gmail.com>",
   "type": "module",
+  "main": "./out/main/index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev:web": "vite dev",
+    "dev:electron": "electron-vite dev",
+    "build:web": "vite build",
+    "build:electron": "electron-vite build",
+    "dist": "electron-vite build && electron-builder",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "electron-vite preview",
+    "prebuild": "electron-vite build"
   },
   "dependencies": {
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/utils": "^4.0.0",
     "chart.js": "^4.5.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -18,10 +28,14 @@
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
+    "electron": "^40.8.0",
+    "electron-builder": "^26.8.1",
     "@eslint/js": "^9.39.1",
+    "@types/node": "^25.4.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "electron-vite": "^5.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
