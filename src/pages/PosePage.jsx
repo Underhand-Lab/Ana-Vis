@@ -8,7 +8,6 @@ import Navigation from '../components/Navigation.jsx';
 import { PoseData } from '../lib/cv-val/pose/pose-data.js';
 import { Processor } from '../lib/cv-val/processor.js';
 import * as PoseDetector from '../lib/cv-val/pose/pose-detector/index.js';
-import * as PoseFrameMaker from '../lib/cv-val/pose/frame-maker/index.js';
 import * as PoseAnalysisTool from "../lib/cv-val/pose/analysis-tool/index.js";
 import { frameMakerDataToBlob } from "../lib/cv-val/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../lib/save-blob.js";

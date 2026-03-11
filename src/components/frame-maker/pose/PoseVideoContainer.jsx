@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { CanvasRenderer } from "../../../lib/cv-val/canvas-renderer.js"
-import { PoseVisualizer } from "../../../lib/cv-val/pose/frame-maker/pose-visualizer.js"
+import { CanvasRenderer } from "../../../lib/cv-val-visualizer/canvas-renderer.js"
+import { PoseVisualizer } from "../../../lib/cv-val-visualizer/pose/pose-visualizer.js"
 
 function PoseVideoContainer({ data, idx }) {
     // 1. 캔버스 및 렌더링 인스턴스 관리
     const canvasRef = useRef(null);
     const renderer = useMemo(() => new CanvasRenderer(), []);
     const visualizer = useMemo(() => new PoseVisualizer(), []);
-    
+
     // 오프스크린 캔버스 (합성용)
     const offscreenRef = useRef(document.createElement('canvas'));
 
@@ -30,10 +30,11 @@ function PoseVideoContainer({ data, idx }) {
 
     // 4. 데이터 초기화 및 레이아웃 설정
     useEffect(() => {
+        console.log(data);
         if (!data || !canvasRef.current) return;
 
         renderer.setCanvas(canvasRef.current);
-        
+
         const rawImgList = data.getRawImgList(0); // targetIdx가 0이라고 가정
         const firstImg = rawImgList[0];
 
@@ -76,31 +77,23 @@ function PoseVideoContainer({ data, idx }) {
         <div>
 
             {/* 메인 출력 캔버스 */}
-            <canvas ref={canvasRef} style={{ flex: 1, background: 'black', width: '100%', height: '100%',position:'absolute', top: 0}} />
-            <div className="grid-item-overlay" style={{width: '100%', height: '100%', top: 0, left: 0}}>
-                <div className="grid-item-header frostedglassmorphism" style={{ width: '100%' }}>
-                    <div style={{ padding: '10px 15px' }}>
-                    <label style={{ lineHeight: '32px' }}>
-                        <strong>Video</strong>
-                    </label>
-                    </div>
-                </div>
-                
-                <div style={{ position:'absolute', bottom: 0, width: '100%'}}>
-                    <div className="divide frostedglassmorphism" style={{padding: '10px 15px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                        <div className="frameMakerSetting" style={{ display: 'flex', gap: '10px' }}>
-                            {Object.entries(colorMap).map(([key, label]) => (
-                                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <input 
-                                        type="color" 
-                                        value={colors[key]} 
-                                        onChange={(e) => handleColorChange(key, e.target.value)} 
-                                    />
-                                    <span style={{ fontSize: '12px' }}>{label}</span>
-                                </div>
-                            ))}
+            <canvas ref={canvasRef} style={{ flex: 1, background: 'black', width: '100%', height: '100%', position: 'absolute', top: 0 }} />
+            <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px' }}>
+
+                <div className="flex-view"
+                    style={{ justifyContent: 'left' }}>
+                    {Object.entries(colorMap).map(([key, label]) => (
+                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <input
+                                type="color"
+                                value={colors[key]}
+                                onChange={(e) => handleColorChange(key, e.target.value)}
+                            />
+                            <span style={{ fontSize: '12px' }}>{label}</span>
                         </div>
-                        {/*
+                    ))}
+                </div>
+                {/*
                         <div style={{ textAlign: 'right' }}>
                             <button className="neumorphism-button" style={{ padding: '5px 15px' }} onClick={
                                 async () => {const blob = await frameMakerDataToBlob(frameMaker, frameMaker.data);
@@ -111,10 +104,7 @@ function PoseVideoContainer({ data, idx }) {
                             }>SAVE</button>
                         </div>
                          */}
-                    </div>
-                </div>
             </div>
-
         </div>
     );
 }

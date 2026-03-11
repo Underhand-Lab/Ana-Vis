@@ -1,14 +1,17 @@
 import React, { useState, useRef, useCallback } from 'react';
-import AnalysisContainer from '../components/AnalysisContainer';
+import AnalysisContainer from '../components/AnalysisGridContainer';
 import VideoProcessorModal from '../components/VideoProcessorModal';
 import Modal from '../components/Modal';
 import Navigation from '../components/Navigation.jsx';
+
+import TrackBallVideoContainer from "../components/frame-maker/track-ball/TrackBallVideoContainer.jsx"
+import TrackBallTableContainer from "../components/frame-maker/track-ball/TrackBallTableContainer.jsx"
 
 // 라이브러리 import
 import { Processor } from '../lib/cv-val/processor.js';
 import { TrackBallData } from "../lib/cv-val/track-ball/track-ball-data.js";
 import * as BallDetector from '../lib/cv-val/track-ball/ball-detector/index.js';
-import * as FrameMaker from '../lib/cv-val/track-ball/frame-maker/index.js';
+//import * as FrameMaker from '../lib/cv-val-visualizer/track-ball/index.js';
 import * as Analysis from "../lib/cv-val/track-ball/calc/analysis.js";
 import { frameMakerDataToBlob } from "../lib/cv-val/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../lib/save-blob.js";
@@ -24,20 +27,15 @@ const DETECTORS = {
 
 const MAKER_CONFIG = {
     "video": {
-        src: "./template/track-ball/video.html",
-        create: () => new FrameMaker.TrackFrameMaker(),
-        bindUI: (box, frameMaker) => {
-            box.querySelector(".save")?.addEventListener('click', async () => {
-                const currentData = instance.data;
-                if (!currentData) return;
-                const blob = await frameMakerDataToBlob(frameMaker, currentData);
-                await saveBlobWithPicker(blob, "trackBallVideo.mp4", [{
-                    description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
-                }], true, "mp4");
-            });
-        }
+        Component: TrackBallVideoContainer
     },
     "table": {
+        Component: (props) => (
+            <TrackBallTableContainer 
+                {...props} 
+                analysisTool={new Analysis.BallAnalysisTool()} 
+            />
+        ),
         src: "./template/track-ball/table.html",
         create: () => {
             const fm = new FrameMaker.CustomTableFrameMaker();
@@ -191,7 +189,6 @@ const TrackBallPage = () => {
                 data={processedData}
                 toolConfigs={MAKER_CONFIG}
                 defaultTools={["video", "table"]}
-                onUpdate={updateCandidateState}
             />
 
             <div className="slider">
@@ -204,7 +201,11 @@ const TrackBallPage = () => {
                             max={maxFrame}
                             step="1"
                             value={currentIdx}
-                            onChange={(e) => setCurrentIdx(parseInt(e.target.value, 10))}
+                            onChange={(e) => {
+                                const idx = parseInt(e.target.value, 10);
+                                setCurrentIdx(idx);
+                                updateCandidateState(idx);
+                            }}
                             style={{ flex: 1 }}
                         />
 

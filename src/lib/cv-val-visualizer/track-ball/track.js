@@ -1,4 +1,4 @@
-import { CanvasRenderer } from "../../canvas-renderer.js";
+import { CanvasRenderer } from "../canvas-renderer.js";
 import { BallFrameMakerBase } from "./ball-frame-maker-base.js";
 
 export class TrackFrameMaker extends BallFrameMakerBase {

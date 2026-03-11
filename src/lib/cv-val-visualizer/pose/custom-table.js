@@ -1,4 +1,4 @@
-import { TableVisualizer } from "../../../visualizer/table.js"
+import { TableVisualizer } from "../../visualizer/table.js"
 import { PoseFrameMakerBase } from "./pose-frame-maker-base.js"
 
 

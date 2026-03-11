@@ -26,9 +26,9 @@ const Navigation = ({ buttons }) => {
             value={`..${location.pathname === '/' ? '/home' : location.pathname}`} 
             onChange={handleFeatureChange}
           >
-            <option value="../pose">Pose Analysis</option>
-            <option value="../track-ball">Ball Tracking</option>
-            <option value="../track-bat">Bat Tracking</option>
+            <option value="../pose">자세</option>
+            <option value="../track-ball">공 추적</option>
+            <option value="../track-bat">배트 궤적</option>
           </select>
         </li>
       </ul>

@@ -27,6 +27,14 @@ const AnalysisGridItem = forwardRef(({
     return () => observer.disconnect();
   }, [fm, data, currentIdx]);
 
+  // 클래스를 조작하는 함수
+  const toggleCardClass = (className, force) => {
+    if (itemRef.current) {
+      // force가 true면 무조건 추가, false면 무조건 제거, 없으면 토글
+      itemRef.current.classList.toggle(className, force);
+    }
+  };
+
   return (
     <div
       // 1. RGL이 이 요소를 제어할 수 있도록 ref 연결
@@ -44,7 +52,7 @@ const AnalysisGridItem = forwardRef(({
       onTouchEnd={onTouchEnd}
     >
       {/* 콘텐츠 영역 */}
-      <div className="grid-item-content" style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <div className="grid-item-content no-drag" style={{ width: '100%', height: '100%', position: 'relative' }}>
         {Component ? (
           <Component data={data} idx={currentIdx} />
         ) : (
@@ -53,23 +61,27 @@ const AnalysisGridItem = forwardRef(({
       </div>
 
       {/* 오버레이 (디자인 수정 없음) */}
-      <div className="grid-item-overlay drag-handle" style={{ right: 0 }}>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onTogglePin(id); }} 
+      <div className="grid-item-overlay drag-handle frostedglassmorphism" style={{ width: '100%' }}>
+        <div style={{ display: 'flex', gap: '6px', padding: '5px 20px' }}>
+          <div style={{ flex: '1', textAlign: 'left' }}>
+            {type}
+          </div>
+          
+          <button
+            onClick={(e) => { toggleCardClass('isSetting') }}
             style={iconBtnStyle}
           >
-            {isPinned ? '📍' : '🔓'}
+            ⚙️
           </button>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onRemove(id); }} 
+          <button
+            onClick={(e) => { e.stopPropagation(); onRemove(id); }}
             style={iconBtnStyle}
           >
             ✕
           </button>
         </div>
       </div>
-      
+
       {/* RGL 리사이즈 핸들이 자식 요소로 들어올 때를 위한 공간 (children) */}
       {children}
     </div>

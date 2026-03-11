@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import AnalysisContainer from '../components/AnalysisContainer';
+import AnalysisContainer from '../components/AnalysisGridContainer';
 import VideoProcessorModal from '../components/VideoProcessorModal';
 import Modal from '../components/Modal';
 import Navigation from '../components/Navigation.jsx';
@@ -8,7 +8,9 @@ import Navigation from '../components/Navigation.jsx';
 import { Processor } from '../lib/cv-val/processor.js';
 import { TrackBatData } from "../lib/cv-val/track-bat/track-bat-data.js";
 import * as BatDetector from '../lib/cv-val/track-bat/bat-detector/index.js';
-import { TrackBatFrameMaker } from "../lib/cv-val/track-bat/frame-maker/frame-maker.js";
+
+
+import TrackBatVideoContainer from "../components/frame-maker/track-bat/TrackBatVideoContainer.jsx"
 import { frameMakerDataToBlob } from "../lib/cv-val/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../lib/save-blob.js";
 
@@ -25,8 +27,7 @@ const DETECTORS = {
 
 const MAKER_CONFIG = {
     "video": {
-        src: "./template/track-bat/video.html",
-        create: () => new TrackBatFrameMaker(),
+        Component: TrackBatVideoContainer,
         bindUI: (box, frameMaker) => {
             // batVideoUIBinder 로직 구현
             const saveBtn = box.querySelector(".save");

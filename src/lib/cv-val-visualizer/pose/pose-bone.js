@@ -1,5 +1,5 @@
 import { PoseFrameMakerBase } from "./pose-frame-maker-base.js";
-import { CanvasRenderer } from "../../canvas-renderer.js";
+import { CanvasRenderer } from "../../cv-val/canvas-renderer.js";
 import { PoseVisualizer } from "./pose-visualizer.js";
 
 export class PoseBoneFrameMaker extends PoseFrameMakerBase {

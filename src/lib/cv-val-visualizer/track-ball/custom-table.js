@@ -1,4 +1,4 @@
-import * as Table from "../../../visualizer/lib/table.js"
+import * as Table from "../../visualizer/lib/table.js"
 import { BallFrameMakerBase } from "./ball-frame-maker-base.js";
 
 class CustomTableFrameMaker extends BallFrameMakerBase {

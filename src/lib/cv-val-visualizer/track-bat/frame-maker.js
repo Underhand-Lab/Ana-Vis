@@ -1,4 +1,4 @@
-import { CanvasRenderer } from "../../canvas-renderer.js";
+import { CanvasRenderer } from "../canvas-renderer.js";
 
 // 헬퍼: Hex 색상을 RGBA 배열로 변환
 const hexToRgba = (hex, alpha) => {

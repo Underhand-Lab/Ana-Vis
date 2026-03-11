@@ -5,26 +5,39 @@ function PoseTableContainer({ data, idx, analysisTools }) {
   const [selectedToolKey, setSelectedToolKey] = useState("angle");
 
   // 데이터 계산 로직 (기존 CustomTableFrameMaker의 processData 역할)
-  const currentFrameData = useMemo(() => {
+  const processedData = useMemo(() => {
+
     if (!data || !analysisTools) return null;
 
     const currentTool = analysisTools[selectedToolKey];
     const processedData = currentTool ? currentTool.calc(data) : data;
 
     // 현재 프레임(idx)의 데이터 추출
-    return processedData[idx] || null;
-  }, [data, selectedToolKey, analysisTools, idx]);
+    return processedData || null;
+  }, [data, selectedToolKey, analysisTools]);
+
+  const currentFrameData = () => {
+    if (!processedData) return null;
+    let ret = {}
+    console.log(processedData);
+    console.log(Object.keys(processedData));
+    for (const key of Object.keys(processedData)) {
+      console.log(key);
+      ret[key] = processedData[key][idx].toFixed(2);
+    }
+    return ret;
+  };
 
   return (
     <div className="viewer_container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
       <div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
         {/* 분리한 테이블 컴포넌트에 데이터만 주입 */}
-        <DataTable data={currentFrameData} />
+        <DataTable data={currentFrameData()} />
       </div>
 
-      <div className="grid-item-overlay" style={{ width: '100%', height: '100%', top: 0, left: 0 }}>
-        <div className="grid-item-header  frostedglassmorphism" style={{ padding: '10px 15px' }}>
+      <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px' }}>
+        <div>
           <select
             value={selectedToolKey}
             onChange={(e) => setSelectedToolKey(e.target.value)}

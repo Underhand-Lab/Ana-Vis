@@ -60,11 +60,11 @@ function PoseGraphContainer({ data, idx, analysisTools }) {
                 />
             </div>
 
-            <div className="grid-item-overlay" style={{width: '100%', height: '100%', top: 0, left: 0}}>
+            <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px'}}>
                 {/* 상단 도구 선택 영역 */}
-                <div className="grid-item-header frostedglassmorphism" style={{ padding: '10px 15px', width: '100%' }}>
+                <div>
                     <label style={{ marginRight: '10px' }}>
-                        <strong>SELECT TOOL</strong>:
+                        <strong>도구</strong>:
                     </label>
                     <select 
                         value={selectedToolKey} 
@@ -79,11 +79,11 @@ function PoseGraphContainer({ data, idx, analysisTools }) {
                 </div>
 
                 {/* 범례 컨테이너 영역 */}
-                <div className='frostedglassmorphism' style={{ position: 'absolute', bottom: 0, padding: '10px 15px' }}>
+                <div>
                     <div 
                         ref={legendRef} 
-                        className="custom-legend-container frameMakerSetting"
-                        style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}
+                        className="custom-legend-container flex-view"
+                        style={{ textAlign: 'left'}}
                     >
                         {/* GraphVisualizer.setData에 의해 내부 DOM이 동적으로 생성됩니다 */}
                     </div>

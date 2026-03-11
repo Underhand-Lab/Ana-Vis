@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Processor } from '../lib/cv-val/processor.js';
 import { PoseData } from '../lib/cv-val/pose/pose-data.js';
 
-export const usePoseProcessor = (detector) => {
+export const useProcessor = (detector) => {
   const [status, setStatus] = useState('before-process');
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [isProcessing, setIsProcessing] = useState(false);

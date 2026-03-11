@@ -23,12 +23,6 @@ const DataTable = ({ data }) => {
           </tr>
         ))}
       </tbody>
-      <style>{`
-        .analysis-table { width: 100%; border-collapse: collapse; }
-        .analysis-table th, .analysis-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .analysis-table th { background-color: #f2f2f2; width: 40%; font-size: 0.9em; }
-        .analysis-table td { font-family: monospace; }
-      `}</style>
     </table>
   );
 };

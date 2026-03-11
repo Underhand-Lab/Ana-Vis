@@ -1,4 +1,4 @@
-import { GraphVisualizer } from "../../../visualizer/graph.js"
+import { GraphVisualizer } from "../../visualizer/graph.js"
 import { PoseFrameMakerBase } from "./pose-frame-maker-base.js"
 
 export class CustomGraphFrameMaker extends PoseFrameMakerBase {

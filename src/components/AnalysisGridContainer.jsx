@@ -26,7 +26,10 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
   }, []);
 
   useImperativeHandle(ref, () => ({
-    addTool: (type) => addNewFrame(type)
+    addTool: (type) => addNewFrame(type),
+    updateImage: () => {
+      
+    }
   }));
 
   const addNewFrame = (type) => {
@@ -43,7 +46,7 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
   };
 
   const togglePin = (id) => {
-    setFrames(prev => prev.map(f => f.id === id ? { ...f, isPinned: !f.isPinned } : f));
+    //setFrames(prev => prev.map(f => f.id === id ? { ...f, isPinned: !f.isPinned } : f));
   };
 
   const removeFrame = (id) => {
@@ -66,7 +69,12 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={COLUMNS}
           rowHeight={10}
-          draggableHandle=".drag-handle" // .grid-item-header 대신 실제 클래스인 .drag-handle로 수정
+          dragConfig={{
+            handle: '.drag-handle',    // 'draggableHandle' 대신 'handle'일 가능성이 큼
+            cancel: '.no-drag',        // 'draggableCancel' 대신 'cancel'
+            // 만약 위가 안된다면 아래처럼 시도해보세요.
+            // draggableHandle: '.drag-handle',
+          }}
           onLayoutChange={(newLayout) => setLayout(newLayout)}
           margin={[15, 15]}
           compactType="vertical"
@@ -90,11 +98,14 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
       )}
 
       <style>{`
-        .grid-item-overlay { opacity: 0; pointer-events: none; position: absolute; transition: opacity 0.2s; top: 10px; right: 10px; z-index: 10; }
-        .grid-item-card:hover .grid-item-overlay { opacity: 1; pointer-events: auto; }
-        .grid-item-card.pinned .grid-item-overlay { opacity: 1; pointer-events: auto; }
+        .grid-item-overlay { opacity: 0; pointer-events: none; position: absolute; transition: opacity 0.2s; z-index: 10; }
+        .drag-handle { pointer-events: auto; }
+        .grid-item-overlay.drag-handle:hover { opacity: 1; pointer-events: auto; }
+        .grid-item-card.pinned .grid-item-overlay, 
+        .grid-item-card.isSetting .grid-item-overlay { opacity: 1; pointer-events: auto; }
         .grid-item-card { overflow: hidden; display: flex; flex-direction: column; background: white; border-radius: 12px; border: 1px solid transparent; transition: border-color 0.2s; position: relative; }
         .grid-item-card:hover { border-color: #d1d9e6; }
+        .grid-item-card.isSetting .setting {opacity: 1;}
         .react-resizable-handle { z-index: 20 !important; }
       `}</style>
     </div>
@@ -120,6 +131,7 @@ const HtmlLoader = ({ config, fm, data, idx }) => {
 
   useEffect(() => {
     if (isLoaded.current && fm && data) {
+      console.log(data);
       fm.setData?.(data);
       fm.drawImageAt?.(idx);
     }
