@@ -106,7 +106,7 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
         .grid-item-card { overflow: hidden; display: flex; flex-direction: column; background: white; border-radius: 12px; border: 1px solid transparent; transition: border-color 0.2s; position: relative; }
         .grid-item-card:hover { border-color: #d1d9e6; }
         .grid-item-card.isSetting .setting {opacity: 1;}
-        .react-resizable-handle { z-index: 20 !important; }
+        .react-resizable-handle { z-index: 20 !important; color: white; }
       `}</style>
     </div>
   );

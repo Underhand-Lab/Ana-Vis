@@ -10,8 +10,8 @@ import { TrackBatData } from "../lib/cv-val/track-bat/track-bat-data.js";
 import * as BatDetector from '../lib/cv-val/track-bat/bat-detector/index.js';
 
 
-import TrackBatVideoContainer from "../components/frame-maker/track-bat/TrackBatVideoContainer.jsx"
-import { frameMakerDataToBlob } from "../lib/cv-val/common/frame-maker-export.js";
+import TrackBatVideoContainer from "../features/track-bat/components/TrackBatVideoContainer.jsx"
+import { frameMakerDataToBlob } from "../lib/cv-val-visualizer/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../lib/save-blob.js";
 
 // YOLO Bat Detector 설정

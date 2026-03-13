@@ -4,8 +4,8 @@ import VideoProcessorModal from '../components/VideoProcessorModal';
 import Modal from '../components/Modal';
 import Navigation from '../components/Navigation.jsx';
 
-import TrackBallVideoContainer from "../components/frame-maker/track-ball/TrackBallVideoContainer.jsx"
-import TrackBallTableContainer from "../components/frame-maker/track-ball/TrackBallTableContainer.jsx"
+import TrackBallVideoContainer from "../features/track-ball/components/TrackBallVideoContainer.jsx"
+import TrackBallTableContainer from "../features/track-ball/components/TrackBallTableContainer.jsx"
 
 // 라이브러리 import
 import { Processor } from '../lib/cv-val/processor.js';
@@ -13,7 +13,7 @@ import { TrackBallData } from "../lib/cv-val/track-ball/track-ball-data.js";
 import * as BallDetector from '../lib/cv-val/track-ball/ball-detector/index.js';
 //import * as FrameMaker from '../lib/cv-val-visualizer/track-ball/index.js';
 import * as Analysis from "../lib/cv-val/track-ball/calc/analysis.js";
-import { frameMakerDataToBlob } from "../lib/cv-val/common/frame-maker-export.js";
+import { frameMakerDataToBlob } from "../lib/cv-val-visualizer/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../lib/save-blob.js";
 
 // YOLO 탐지기 설정

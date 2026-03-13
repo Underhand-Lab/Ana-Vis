@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import DataTable from '../../DataTable'; // 위에서 만든 파일
+import DataTable from '../../../components/DataTable';
 
 function PoseTableContainer({ data, idx, analysisTools }) {
   const [selectedToolKey, setSelectedToolKey] = useState("angle");

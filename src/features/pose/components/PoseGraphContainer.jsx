@@ -30,8 +30,6 @@ function PoseGraphContainer({ data, idx, analysisTools }) {
     useEffect(() => {
         if (!data || !analysisTools) return;
 
-        console.log(data);
-
         const currentTool = analysisTools[selectedToolKey];
         // 분석 도구가 있으면 계산된 데이터를, 없으면 원본 데이터를 사용
         const graphData = currentTool ? currentTool.calc(data) : data;

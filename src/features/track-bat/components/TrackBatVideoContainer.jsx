@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useMemo } from 'react';
-import { useTrackBatFrame } from '../../../hooks/useTrackBatFrame';
+import { useTrackBatFrame } from '../hooks/useTrackBatFrame.jsx';
 import { CanvasRenderer } from "../../../lib/cv-val-visualizer/canvas-renderer.js"
 
 const TrackBatVideoContainer = ({ data, idx }) => {
@@ -18,9 +18,9 @@ const TrackBatVideoContainer = ({ data, idx }) => {
   }, [idx, drawImageAt, data]);
 
   return (
-    <div className="viewer_container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div>
       {/* 메인 출력 캔버스 */}
-      <canvas ref={canvasRef} style={{ width: '100%', flex: 1, display: 'block', backgroundColor: 'black' }} />
+      <canvas ref={canvasRef} style={{ width: '100%', height: "100%", display: 'block', backgroundColor: 'black', position:'absolute', top:0 }} />
 
       <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px', textAlign: 'left' }}>
         {/* 궤적 길이 조절 */}
@@ -29,6 +29,7 @@ const TrackBatVideoContainer = ({ data, idx }) => {
           <input style={{width: '60px'}} type="number" pattern="\d*"
                         inputMode="decimal"  step="1"
             value={trailLen}
+            max={data?.getFrameCnt() - 1 || 0}
             onChange={(e) => setTrailLen(parseInt(e.target.value))}
           />
         </div>

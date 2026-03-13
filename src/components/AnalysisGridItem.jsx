@@ -61,9 +61,9 @@ const AnalysisGridItem = forwardRef(({
       </div>
 
       {/* 오버레이 (디자인 수정 없음) */}
-      <div className="grid-item-overlay drag-handle frostedglassmorphism" style={{ width: '100%' }}>
+      <div className="grid-item-overlay drag-handle" style={{ width: '100%', backgroundColor: 'var(--secondary-color)', color: '#aaa' }}>
         <div style={{ display: 'flex', gap: '6px', padding: '5px 20px' }}>
-          <div style={{ flex: '1', textAlign: 'left' }}>
+          <div style={{ flex: '1', textAlign: 'left', pointerEvents: 'none' }}>
             {type}
           </div>
           
@@ -88,6 +88,6 @@ const AnalysisGridItem = forwardRef(({
   );
 });
 
-const iconBtnStyle = { border: 'none', background: 'none', cursor: 'pointer', fontSize: '12px', padding: '2px 5px', color: 'black' };
+const iconBtnStyle = { border: 'none', background: 'none', cursor: 'pointer', fontSize: '12px', padding: '2px 5px'};
 
 export default AnalysisGridItem;
