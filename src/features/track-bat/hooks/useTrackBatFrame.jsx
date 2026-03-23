@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react';
  * TrackBatFrameMaker의 복잡한 픽셀 조작 및 마스킹 로직을 
  * React 환경에서 사용할 수 있도록 변환한 Custom Hook입니다.
  */
-export const useTrackBatFrame = (trackData, renderer) => {
+export const useTrackBatFrame = (trackData) => {
   const [trailLen, setTrailLen] = useState(3);
   const [colors, setColors] = useState({
     batColor: '#ff8000',
@@ -85,12 +85,12 @@ export const useTrackBatFrame = (trackData, renderer) => {
     const validPoints = points.filter(p => p !== null);
     if (validPoints.length < 3) return;
 
-    const center = validPoints.reduce((acc, p) => ({ 
-      x: acc.x + p.x / validPoints.length, 
-      y: acc.y + p.y / validPoints.length 
+    const center = validPoints.reduce((acc, p) => ({
+      x: acc.x + p.x / validPoints.length,
+      y: acc.y + p.y / validPoints.length
     }), { x: 0, y: 0 });
 
-    const sortedPoints = validPoints.sort((a, b) => 
+    const sortedPoints = validPoints.sort((a, b) =>
       Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x)
     );
 
@@ -131,46 +131,40 @@ export const useTrackBatFrame = (trackData, renderer) => {
       }
     }
   };
+  // ... (상단 로직 동일)
 
-  const drawImageAt = useCallback((idx) => {
-    if (!trackData || idx < 0 || !renderer) return;
-    
+  const getTrailLayer = (idx) => {
+    if (!trackData || idx < 0) return null;
 
-    const rawImgList = trackData.getRawImgList(0);
-    const backgroundImage = rawImgList[idx];
-    if (!backgroundImage) return;
-
-    // 1. 적절한 마스크 데이터 샘플 찾기
+    // 1. 마스크 데이터 존재 여부 확인 및 크기 계산
     let sampleBat = null;
     for (let i = idx; i >= 0; i--) {
       sampleBat = trackData.getSelectedBatAt(i);
       if (sampleBat?.maskConfidenceMap) break;
     }
-    if (!sampleBat) return;
+    if (!sampleBat) return null;
 
     const maskW = sampleBat.maskConfidenceMap[0].length;
     const maskH = sampleBat.maskConfidenceMap.length;
 
-    // 오프스크린 캔버스 및 이미지 데이터 캐싱
     if (!offscreenRef.current) offscreenRef.current = document.createElement('canvas');
     const canvas = offscreenRef.current;
-    
+
     if (canvas.width !== maskW || canvas.height !== maskH) {
       canvas.width = maskW;
       canvas.height = maskH;
       cachedImageData.current = canvas.getContext('2d').createImageData(maskW, maskH);
-      renderer.updateLayout(maskW, maskH);
     }
 
     const ctx = canvas.getContext('2d');
     const pixelBuffer = cachedImageData.current.data;
-    pixelBuffer.fill(0); // 초기화
+    pixelBuffer.fill(0); // 매 프레임 투명하게 초기화
 
     const conf = trackData.getConf();
     const batRGBA = getRgba(colors.batColor, colors.batAlpha);
     const trailRGBA = getRgba(colors.trailColor, colors.trailAlpha);
 
-    // 2. 과거 궤적 및 사이 공간 채우기
+    // 2. 궤적 및 배트 마스킹 (픽셀 데이터 생성)
     const startIdx = Math.max(1, idx - trailLen + 1);
     for (let i = startIdx; i <= idx; i++) {
       const prev = trackData.getSelectedBatAt(i - 1);
@@ -178,7 +172,6 @@ export const useTrackBatFrame = (trackData, renderer) => {
       masking(pixelBuffer, prev, curr, conf, trailRGBA, maskW, maskH);
     }
 
-    // 3. 현재 프레임 배트 강조
     const nowBat = trackData.getSelectedBatAt(idx);
     if (nowBat?.maskConfidenceMap) {
       applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, conf, batRGBA, maskW, maskH);
@@ -186,17 +179,15 @@ export const useTrackBatFrame = (trackData, renderer) => {
 
     ctx.putImageData(cachedImageData.current, 0, 0);
 
-    // 4. 배경 이미지와 마스크 레이어 합성
-    const compositeCanvas = document.createElement('canvas');
-    compositeCanvas.width = backgroundImage.width;
-    compositeCanvas.height = backgroundImage.height;
-    const compositeCtx = compositeCanvas.getContext('2d');
-    
-    compositeCtx.drawImage(backgroundImage, 0, 0);
-    compositeCtx.drawImage(canvas, 0, 0, backgroundImage.width, backgroundImage.height);
+    // 3. ✅ 배경 없이 '마스크 레이어'만 있는 캔버스 반환
+    // (메모리 효율을 위해 새로운 캔버스를 복사해서 반환합니다)
+    const layerCanvas = document.createElement('canvas');
+    layerCanvas.width = maskW;
+    layerCanvas.height = maskH;
+    layerCanvas.getContext('2d').drawImage(canvas, 0, 0);
 
-    renderer.drawImage(compositeCanvas);
-  }, [trackData, renderer, trailLen, colors]);
+    return layerCanvas;
+  };
 
-  return { colors, setColors, trailLen, setTrailLen, drawImageAt };
+  return { colors, setColors, trailLen, setTrailLen, getTrailLayer };
 };

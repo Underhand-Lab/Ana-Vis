@@ -1,4 +1,4 @@
-import * as tf from 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/+esm'
+import * as tf from '@tensorflow/tfjs'
 
 export class YOLOBallDetector {
     constructor(weightURL, classId) {

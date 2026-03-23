@@ -10,6 +10,7 @@ function createWindow(): void {
     height: 640,
     show: false,
     autoHideMenuBar: true,
+    icon: path.join(__dirname, 'public/favicon.ico'),
     ...(process.platform === "linux" ? {} : {}), //app-icon
     webPreferences: {
       preload: preloadPath,

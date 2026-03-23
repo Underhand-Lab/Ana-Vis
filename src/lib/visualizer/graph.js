@@ -7,7 +7,7 @@ import {
     CategoryScale, // 오류의 원인인 category 스케일
     Legend,
     Tooltip
-} from 'https://cdn.jsdelivr.net/npm/chart.js@4.5.1/+esm';
+} from 'chart.js';
 
 // 필요한 구성 요소 등록
 Chart.register(

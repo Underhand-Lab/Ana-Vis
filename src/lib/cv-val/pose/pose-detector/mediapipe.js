@@ -1,5 +1,5 @@
 // media_pipe_pose_detector.js
-import { PoseLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+import { PoseLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
 const MEDIAPIPE_LANDMARK_NAMES = {
     0: 'NOSE', 1: 'L_EYE_INNER', 2: 'L_EYE', 3: 'L_EYE_OUTER',

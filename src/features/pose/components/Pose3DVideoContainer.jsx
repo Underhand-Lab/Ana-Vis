@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { CanvasRenderer } from "../../../lib/cv-val-visualizer/canvas-renderer.js"
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 import { usePoseVisualize } from "../hooks/usePoseVisualize.jsx"
 
-function PoseVideoContainer({ data, idx }) {
+function Pose3DVideoContainer({ data, idx }) {
     // 1. 캔버스 및 렌더링 인스턴스 관리
     const canvasRef = useRef(null);
     const renderer = useMemo(() => new CanvasRenderer(), []);
-    const { options, setOptions, getPoseLayer } = usePoseVisualize(data, renderer)
+    const { options, setOptions, drawImageAt } = usePoseVisualize(data, renderer)
 
     // 3. 색상 변경 핸들러
     const handleColorChange = (key, value) => {
@@ -28,40 +29,9 @@ function PoseVideoContainer({ data, idx }) {
         drawImageAt(idx);
     }, [data, renderer]);
 
-    const drawImageAt = useCallback(async (frameIdx) => {
-        if (!data) return null;
-
-        const rawImgList = data.getRawImgList(0);
-        const backgroundImage = rawImgList[frameIdx];
-        if (!backgroundImage) return null;
-
-        // 포즈 레이어 생성
-        const poseLayer = await getPoseLayer(frameIdx);
-
-        const compositeCanvas = document.createElement('canvas');
-        compositeCanvas.width = backgroundImage.width;
-        compositeCanvas.height = backgroundImage.height;
-        const ctx = compositeCanvas.getContext('2d');
-
-        // 합성: 배경 -> 포즈 스켈레톤
-        ctx.drawImage(backgroundImage, 0, 0);
-        if (poseLayer) {
-            ctx.drawImage(poseLayer, 0, 0);
-        }
-
-        return compositeCanvas;
-    }, [data, getPoseLayer]);
-
     useEffect(() => {
-        const updateFrame = async () => {
-            const composite = await drawImageAt(idx);
-            if (composite && renderer) {
-                renderer.updateLayout(composite.width, composite.height);
-                renderer.drawImage(composite);
-            }
-        };
-        updateFrame();
-    }, [idx, drawImageAt, renderer]);
+        drawImageAt(idx);
+    }, [idx, drawImageAt, data]);
 
     return (
         <div>
@@ -112,4 +82,4 @@ const colorMap = {
     JOINT_STROKE: "JOINT"
 };
 
-export default PoseVideoContainer;
+export default Pose3DVideoContainer;

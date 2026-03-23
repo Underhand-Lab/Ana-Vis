@@ -2,7 +2,7 @@ import {
     Output, Mp4OutputFormat, BufferTarget,
     VideoSampleSource, VideoSample
 }
-from 'https://cdn.jsdelivr.net/npm/mediabunny@1.32.2/+esm';
+from 'mediabunny';
 
 export class MediabunnyImageListToVideo {
     constructor() {

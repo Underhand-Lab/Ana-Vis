@@ -98,7 +98,7 @@ function drawJoint(ctx, landmarks, width, height, colorPalette) {
 
 }
 
-export const usePoseVisualize = (poseData, renderer) => {
+export const usePoseVisualize = (poseData) => {
     const [options, setOptions] = useState({
         COLOR_LEFT_ARM: "#ff0000",
         COLOR_RIGHT_ARM: "#0000ff",
@@ -107,52 +107,52 @@ export const usePoseVisualize = (poseData, renderer) => {
         COLOR_TORSO: "#00ff00",
         COLOR_HEAD_NECK: "#ffffff",
         JOINT_STROKE: "#ff0000"
-
-    })
+    });
 
     const offscreenRef = useRef(null);
 
-    useEffect(() => {
-        if (!offscreenRef.current) {
-            offscreenRef.current = document.createElement('canvas');
-        }
-    }, []);
+    // ✅ 포즈 스켈레톤 레이어만 생성하는 함수
+    const getPoseLayer = useCallback((idx) => {
+        if (!poseData || idx < 0) return null;
 
-
-    const drawImageAt = useCallback((idx) => {
-        if (!poseData || idx < 0 || !renderer) return;
-
-        const targetIdx = 0; // 컴포넌트 내부 설정값
+        const targetIdx = 0; 
         const rawImgList = poseData.getRawImgList(targetIdx);
         const landmark2dList = poseData.getLandmarks2dList(targetIdx);
-
 
         const image = rawImgList[idx];
         const landmarks = landmark2dList[idx];
 
-        if (!image) return;
+        if (!image) return null;
 
+        // 오프스크린 캔버스 준비 (배경 없이 투명한 레이어)
+        if (!offscreenRef.current) offscreenRef.current = document.createElement('canvas');
         const offCanvas = offscreenRef.current;
-        const offCtx = offCanvas.getContext('2d');
-        const { width, height } = offCanvas;
-        // 캔버스 크기 동기화
+        
         if (offCanvas.width !== image.width || offCanvas.height !== image.height) {
             offCanvas.width = image.width;
             offCanvas.height = image.height;
-            renderer.updateLayout(image.width, image.height);
         }
 
-        // 합성 그리기
+        const offCtx = offCanvas.getContext('2d');
+        const { width, height } = offCanvas;
+
+        // 레이어 초기화 (투명)
         offCtx.clearRect(0, 0, width, height);
-        offCtx.drawImage(image, 0, 0, width, height);
+
+        // 스켈레톤 그리기
         if (landmarks) {
             drawConnection(offCtx, landmarks, width, height, options);
             drawJoint(offCtx, landmarks, width, height, options);
         }
 
-        // 메인 캔버스에 출력
-        renderer.drawImage(offCanvas);
-    });
+        // 독립적인 캔버스 객체로 복사하여 반환
+        const layerCanvas = document.createElement('canvas');
+        layerCanvas.width = width;
+        layerCanvas.height = height;
+        layerCanvas.getContext('2d').drawImage(offCanvas, 0, 0);
 
-    return { options, setOptions, drawImageAt }
-}
+        return layerCanvas;
+    }, [poseData, options]);
+
+    return { options, setOptions, getPoseLayer };
+};

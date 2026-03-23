@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
-export const useTrackFrame = (trackData, renderer) => {
+export const useTrackFrame = (trackData) => {
   const [options, setOptions] = useState({
     trailColor: '#ff0000',
     boxColor: '#0000ff',
@@ -10,32 +10,29 @@ export const useTrackFrame = (trackData, renderer) => {
 
   const offscreenRef = useRef(null);
 
-  // 오프스크린 캔버스 초기화
-  useEffect(() => {
-    if (!offscreenRef.current) {
-      offscreenRef.current = document.createElement('canvas');
-    }
-  }, []);
+  /**
+   * ✅ 공의 궤적, 바운딩 박스, 신뢰도 정보가 담긴 투명 레이어 반환
+   */
+  const getTrackLayer = useCallback(async (idx) => {
+    if (!trackData || idx < 0) return null;
 
-  const drawImageAt = useCallback((idx) => {
-    if (!trackData || idx < 0 || !renderer) return;
+    const rawImgList = trackData.getRawImgList(0);
+    const image = rawImgList[idx];
+    if (!image) return null;
 
-    const image = trackData.getRawImgList(0)[idx];
-    if (!image) return;
-
+    // 오프스크린 캔버스 초기화 및 크기 설정
+    if (!offscreenRef.current) offscreenRef.current = document.createElement('canvas');
     const canvas = offscreenRef.current;
-    const ctx = canvas.getContext('2d');
 
-    // 캔버스 크기 동기화
     if (canvas.width !== image.width || canvas.height !== image.height) {
       canvas.width = image.width;
       canvas.height = image.height;
-      renderer.updateLayout(image.width, image.height);
     }
 
-    // 1. 배경 이미지 그리기
+    const ctx = canvas.getContext('2d');
+    
+    // ✅ 1. 레이어 초기화 (투명 배경)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
     const ballList = trackData.getBallList();
     if (ballList) {
@@ -47,6 +44,7 @@ export const useTrackFrame = (trackData, renderer) => {
       ctx.lineCap = 'round';
 
       let isDrawing = false;
+      // 0번 프레임부터 현재 프레임(idx)까지의 선 연결
       for (let i = 0; i <= idx; i++) {
         const ball = trackData.getSelectedBallAt(i);
         if (ball) {
@@ -66,7 +64,7 @@ export const useTrackFrame = (trackData, renderer) => {
       }
       ctx.stroke();
 
-      // 3. 바운딩 박스 및 신뢰도
+      // 3. 현재 프레임의 바운딩 박스 및 신뢰도
       const nowBall = trackData.getSelectedBallAt(idx);
       if (nowBall) {
         const [bx, by, bw, bh] = nowBall.bbox;
@@ -85,8 +83,14 @@ export const useTrackFrame = (trackData, renderer) => {
       }
     }
 
-    renderer.drawImage(canvas);
-  }, [trackData, renderer, options]);
+    // 결과 캔버스 복제 후 반환
+    const layerCanvas = document.createElement('canvas');
+    layerCanvas.width = canvas.width;
+    layerCanvas.height = canvas.height;
+    layerCanvas.getContext('2d').drawImage(canvas, 0, 0);
 
-  return { options, setOptions, drawImageAt };
+    return layerCanvas;
+  }, [trackData, options]);
+
+  return { options, setOptions, getTrackLayer };
 };

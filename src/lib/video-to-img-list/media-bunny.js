@@ -3,7 +3,7 @@ import {
     BlobSource,
     ALL_FORMATS,
     EncodedPacketSink
-} from "https://cdn.jsdelivr.net/npm/mediabunny@1.32.2/+esm";
+} from "mediabunny";
 
 export class MediaBunnyVideoConverter {
     constructor() {
@@ -11,7 +11,8 @@ export class MediaBunnyVideoConverter {
     }
 
     async convert(file) {
-        const imageList = [];
+        // 임시로 프레임과 타임스탬프를 함께 저장할 배열
+        const frameData = [];
 
         const input = new Input({
             source: new BlobSource(file),
@@ -23,11 +24,10 @@ export class MediaBunnyVideoConverter {
             throw new Error("비디오 트랙을 찾을 수 없습니다.");
         }
 
-        // 1. 회전 정보 및 해상도 파악
+        // 1. 메타데이터 파악
         const rotation = videoTrack.rotation || 0;
         const packetStats = await videoTrack.computePacketStats();
         
-        // Mediabunny의 displayWidth/Height가 이미 회전된 값을 준다면 그대로 사용합니다.
         const finalWidth = videoTrack.displayWidth;
         const finalHeight = videoTrack.displayHeight;
         
@@ -37,32 +37,26 @@ export class MediaBunnyVideoConverter {
             fps: packetStats.averagePacketRate,
         };
 
-        // 2. OffscreenCanvas 준비 (초기 크기 설정)
+        // 2. OffscreenCanvas 준비
         const canvas = new OffscreenCanvas(finalWidth, finalHeight);
         const ctx = canvas.getContext("2d");
 
         const decoder = new VideoDecoder({
-            output: async (frame) => {
-                // 3. 매 프레임마다 출력 캔버스 크기 재확인 (혹시 모를 가변 해상도 대응)
+            output: (frame) => {
+                // ✅ 중요: 프레임의 고유 타임스탬프 확보
+                const timestamp = frame.timestamp;
+
                 canvas.width = finalWidth;
                 canvas.height = finalHeight;
                 
                 ctx.clearRect(0, 0, finalWidth, finalHeight);
                 ctx.save();
 
-                // 4. 캔버스 중심점에서 회전 수행
+                // 3. 회전 처리 로직
                 ctx.translate(finalWidth / 2, finalHeight / 2);
                 ctx.rotate((rotation * Math.PI) / 180);
 
-                // 5. 그리기 로직
-                // 핵심: 회전 각도가 90, 270도인 경우 
-                // 그려지는 대상(frame)의 가로/세로는 '회전 전' 기준이어야 정확한 비율로 그려집니다.
-                const isRotated = rotation === 90 || rotation === 270;
-                const drawWidth = isRotated ? frame.displayHeight : frame.displayWidth;
-                const drawHeight = isRotated ? frame.displayWidth : frame.displayHeight;
-
-                // 이미 회전된 좌표계이므로, 원본 프레임의 가로세로를 그대로 넣어줍니다.
-                // translate로 중심이 이동되었으므로 음수 절반 값으로 원점을 잡습니다.
+                // 캔버스 중심점에서 원본 프레임을 그림
                 ctx.drawImage(
                     frame,
                     -frame.displayWidth / 2,
@@ -73,8 +67,12 @@ export class MediaBunnyVideoConverter {
 
                 ctx.restore();
 
+                // 4. 비트맵 추출 및 임시 저장 (타임스탬프 포함)
                 const rotatedBmp = canvas.transferToImageBitmap();
-                imageList.push(rotatedBmp);
+                frameData.push({
+                    timestamp: timestamp,
+                    bitmap: rotatedBmp
+                });
 
                 frame.close();
             },
@@ -87,13 +85,22 @@ export class MediaBunnyVideoConverter {
         const sink = new EncodedPacketSink(videoTrack);
         let packet = await sink.getKeyPacket(0);
 
+        // 5. 패킷 디코딩 루프
         while (packet) {
             const chunk = packet.toEncodedVideoChunk();
             decoder.decode(chunk);
             packet = await sink.getNextPacket(packet);
         }
 
+        // 모든 디코딩 작업이 완료될 때까지 대기
         await decoder.flush();
+
+        // 6. ✅ 핵심: 타임스탬프 순서대로 정렬
+        // 비동기적으로 push된 프레임들을 시간순으로 재배치합니다.
+        frameData.sort((a, b) => a.timestamp - b.timestamp);
+        
+        // 정렬된 데이터에서 ImageBitmap만 추출하여 최종 리스트 생성
+        const imageList = frameData.map(item => item.bitmap);
 
         return { imageList, metadata };
     }
