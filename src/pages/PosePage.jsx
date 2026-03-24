@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import AnalysisContainer from '../components/AnalysisGridContainer';
-import VideoProcessorModal from '../components/VideoProcessorModal';
-import Modal from '../components/Modal';
-import Navigation from '../components/Navigation.jsx';
+import AnalysisContainer from '../common/components/AnalysisGridContainer.jsx';
+import VideoProcessorModal from '../common/components/VideoProcessorModal.jsx';
+import Modal from '../common/components/Modal.jsx';
+import Navigation from '../common/components/Navigation.jsx';
 
 // 라이브러리 import
 import { PoseData } from '../lib/cv-val/pose/pose-data.js';

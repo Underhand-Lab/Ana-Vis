@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import MarkdownContainer from '../components/MarkdownContainer'
+import MarkdownContainer from '../common/components/MarkdownContainer'
 import { Link } from 'react-router-dom';
 
 const HomePage = () => {

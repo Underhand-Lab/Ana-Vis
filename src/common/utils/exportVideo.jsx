@@ -1,5 +1,5 @@
 import { MediabunnyImageListToVideo as ImageListToVideo }
-    from "../lib/image-list-to-video/media-bunny";
+    from "../../lib/image-list-to-video/media-bunny";
 
 
 export const exportVideo = async (drawFunc, frameCount, conf) => {

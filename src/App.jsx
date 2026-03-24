@@ -2,7 +2,7 @@
 import React from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-import Navigation from './components/Navigation';
+import Navigation from './common/components/Navigation';
 
 import HomePage from './pages/HomePage';
 import PosePage from './pages/PosePage';

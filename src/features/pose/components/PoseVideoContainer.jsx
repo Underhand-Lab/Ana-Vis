@@ -1,16 +1,32 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { CanvasRenderer } from "../../../lib/cv-val-visualizer/canvas-renderer.js"
 import { usePoseVisualize } from "../hooks/usePoseVisualize.jsx"
+import { exportVideo } from "../../../common/utils/exportVideo"
 
 function PoseVideoContainer({ data, idx }) {
     // 1. 캔버스 및 렌더링 인스턴스 관리
     const canvasRef = useRef(null);
+    const [isExporting, setIsExporting] = useState(false);
     const renderer = useMemo(() => new CanvasRenderer(), []);
     const { options, setOptions, getPoseLayer } = usePoseVisualize(data, renderer)
 
     // 3. 색상 변경 핸들러
     const handleColorChange = (key, value) => {
         setOptions(prev => ({ ...prev, [key]: value }));
+    };
+    // 비디오 내보내기 로직
+    const handleExportVideo = async () => {
+        if (!data || isExporting) return;
+
+        setIsExporting(true);
+
+        await exportVideo(drawImageAt, data.getFrameCnt(), {
+            fps: data.fps,
+            name: `pose_video_${Date.now()}.mp4`
+        });
+
+        setIsExporting(false);
+
     };
 
     // 4. 데이터 초기화 및 레이아웃 설정
@@ -25,10 +41,14 @@ function PoseVideoContainer({ data, idx }) {
         if (firstImg) {
             renderer.updateLayout(firstImg.width, firstImg.height);
         }
-        drawImageAt(idx);
+        const composite = drawImageAt(idx);
+        if (composite && renderer) {
+            renderer.updateLayout(composite.width, composite.height);
+            renderer.drawImage(composite);
+        }
     }, [data, renderer]);
 
-    const drawImageAt = useCallback(async (frameIdx) => {
+    const drawImageAt = (frameIdx) => {
         if (!data) return null;
 
         const rawImgList = data.getRawImgList(0);
@@ -36,7 +56,7 @@ function PoseVideoContainer({ data, idx }) {
         if (!backgroundImage) return null;
 
         // 포즈 레이어 생성
-        const poseLayer = await getPoseLayer(frameIdx);
+        const poseLayer = getPoseLayer(frameIdx);
 
         const compositeCanvas = document.createElement('canvas');
         compositeCanvas.width = backgroundImage.width;
@@ -50,18 +70,15 @@ function PoseVideoContainer({ data, idx }) {
         }
 
         return compositeCanvas;
-    }, [data, getPoseLayer]);
+    };
 
     useEffect(() => {
-        const updateFrame = async () => {
-            const composite = await drawImageAt(idx);
-            if (composite && renderer) {
-                renderer.updateLayout(composite.width, composite.height);
-                renderer.drawImage(composite);
-            }
-        };
-        updateFrame();
-    }, [idx, drawImageAt, renderer]);
+        const composite = drawImageAt(idx);
+        if (composite && renderer) {
+            renderer.updateLayout(composite.width, composite.height);
+            renderer.drawImage(composite);
+        }
+    }, [idx, renderer]);
 
     return (
         <div>
@@ -71,6 +88,13 @@ function PoseVideoContainer({ data, idx }) {
 
             <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px' }}>
 
+                <button
+                    onClick={handleExportVideo}
+                    disabled={isExporting}
+                    style={{ width: '100%', cursor: isExporting ? 'not-allowed' : 'pointer' }}
+                >
+                    {isExporting ? '저장중..' : '저장하기'}
+                </button>
                 <div className="flex-view"
                     style={{ justifyContent: 'left' }}>
                     {Object.entries(colorMap).map(([key, label]) => (

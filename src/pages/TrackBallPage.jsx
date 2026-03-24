@@ -1,8 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
-import AnalysisContainer from '../components/AnalysisGridContainer';
-import VideoProcessorModal from '../components/VideoProcessorModal';
-import Modal from '../components/Modal';
-import Navigation from '../components/Navigation.jsx';
+import AnalysisContainer from '../common/components/AnalysisGridContainer.jsx';
+import VideoProcessorModal from '../common/components/VideoProcessorModal.jsx';
+import Modal from '../common/components/Modal.jsx';
+import Navigation from '../common/components/Navigation.jsx';
 
 import TrackBallVideoContainer from "../features/track-ball/components/TrackBallVideoContainer.jsx"
 import TrackBallTableContainer from "../features/track-ball/components/TrackBallTableContainer.jsx"

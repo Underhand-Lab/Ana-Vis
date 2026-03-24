@@ -16,12 +16,35 @@ const VideoProcessorModal = ({
   const [hasFile, setHasFile] = useState(false);
   const videoInputRef = useRef(null);
 
+const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setHasFile(false);
+      setVideoUrl(null);
+      return;
+    }
+
+    setHasFile(true);
+    const fileSizeMB = file.size / (1024 * 1024);
+    
+    // 기기 메모리 정보 (단위: GB, 브라우저에 따라 제공 안 될 수 있음)
+    const deviceMemory = navigator.deviceMemory || 8; 
+    
+    // 모델별/메모리별 임계값 설정 (예시)
+    let limit = deviceMemory <= 4 ? 3 : 5; // 저사양 기기는 200MB, 일반은 500MB 기준
+    
+    console.log(deviceMemory);
+
+    if (fileSizeMB > limit) {
+      alert(`⚠️ 파일이 너무 큽니다(${Math.round(fileSizeMB)}MB). 처리 중 브라우저가 멈출 수 있습니다. 짧은 영상을 권장합니다.`);
+    }
+
+    // 미리보기 및 자르기 안내를 위한 URL 생성
+  };
+
   const handleStart = () => {
-    console.log("handleStart");
     const files = videoInputRef.current?.files;
     if (!files || files.length < 1) return;
-    console.log("handleStart");
-    console.log(selectedModel);
     onProcess(files, selectedModel);
   };
 
@@ -39,7 +62,7 @@ const VideoProcessorModal = ({
               ref={videoInputRef}
               accept="video/*"
               style={{ width: '100%' }}
-              onChange={(e) => setHasFile(e.target.files.length > 0)}
+              onChange={handleFileChange}
               disabled={isProcessing}
             />
           </div>

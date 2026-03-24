@@ -1,8 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
-import AnalysisContainer from '../components/AnalysisGridContainer';
-import VideoProcessorModal from '../components/VideoProcessorModal';
-import Modal from '../components/Modal';
-import Navigation from '../components/Navigation.jsx';
+import AnalysisContainer from '../common/components/AnalysisGridContainer.jsx';
+import VideoProcessorModal from '../common/components/VideoProcessorModal.jsx';
+import Modal from '../common/components/Modal.jsx';
+import Navigation from '../common/components/Navigation.jsx';
 
 // 라이브러리 import
 import { Processor } from '../lib/cv-val/processor.js';
@@ -167,7 +167,6 @@ const TrackBatPage = () => {
                 data={processedData}
                 toolConfigs={MAKER_CONFIG}
                 defaultTools={["video"]}
-                onUpdate={updateCandidateState}
             />
 
             <div className="slider">
@@ -181,7 +180,10 @@ const TrackBatPage = () => {
                             max={maxFrame}
                             step="1"
                             value={currentIdx}
-                            onChange={(e) => setCurrentIdx(parseInt(e.target.value, 10))}
+                            onChange={(e) => {
+                                setCurrentIdx(parseInt(e.target.value, 10));
+                                updateCandidateState(e.target.value);
+                            }}
                             style={{ flex: 1 }}
                         />
 

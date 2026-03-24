@@ -13,7 +13,7 @@ export const useTrackFrame = (trackData) => {
   /**
    * ✅ 공의 궤적, 바운딩 박스, 신뢰도 정보가 담긴 투명 레이어 반환
    */
-  const getTrackLayer = useCallback(async (idx) => {
+  const getTrackLayer = (idx) => {
     if (!trackData || idx < 0) return null;
 
     const rawImgList = trackData.getRawImgList(0);
@@ -90,7 +90,7 @@ export const useTrackFrame = (trackData) => {
     layerCanvas.getContext('2d').drawImage(canvas, 0, 0);
 
     return layerCanvas;
-  }, [trackData, options]);
+  }
 
   return { options, setOptions, getTrackLayer };
 };

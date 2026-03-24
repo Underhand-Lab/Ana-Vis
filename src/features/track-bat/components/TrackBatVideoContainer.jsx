@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
-import { useTrackBatFrame } from '../hooks/useTrackBatFrame.jsx';
+import { useTrackBatFrame } from '../hooks/useTrackBatFrame';
 import { CanvasRenderer } from "../../../lib/cv-val-visualizer/canvas-renderer.js"
-import { MediabunnyImageListToVideo } from '../../../lib/image-list-to-video/media-bunny.js';
-import { exportVideo } from '../../../hooks/useToVideo.jsx';
+import { exportVideo } from '../../../common/utils/exportVideo';
 
 const TrackBatVideoContainer = ({ data, idx }) => {
   const canvasRef = useRef(null);
@@ -60,7 +59,7 @@ const TrackBatVideoContainer = ({ data, idx }) => {
 
     await exportVideo(drawImageAt, data.getFrameCnt(), {
       fps: data.fps,
-      name: `tracked_video_${Date.now()}.mp4`
+      name: `track_bat_video_${Date.now()}.mp4`
     });
 
     setIsExporting(false);
@@ -77,7 +76,7 @@ const TrackBatVideoContainer = ({ data, idx }) => {
         <button
           onClick={handleExportVideo}
           disabled={isExporting}
-          style={{ padding: '10px', width: '100%', cursor: isExporting ? 'not-allowed' : 'pointer' }}
+          style={{ width: '100%', cursor: isExporting ? 'not-allowed' : 'pointer' }}
         >
           {isExporting ? '저장중..' : '저장하기'}
         </button>

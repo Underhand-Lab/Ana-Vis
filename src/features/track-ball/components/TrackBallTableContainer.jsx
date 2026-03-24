@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useMemo } from 'react';
-import DataTable from '../../../components/DataTable';
+import DataTable from '../../../common/components/DataTable';
 
 const TrackBallTableContainer = ({ data, idx, analysisTool }) => {
 

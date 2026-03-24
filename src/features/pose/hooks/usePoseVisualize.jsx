@@ -112,7 +112,7 @@ export const usePoseVisualize = (poseData) => {
     const offscreenRef = useRef(null);
 
     // ✅ 포즈 스켈레톤 레이어만 생성하는 함수
-    const getPoseLayer = useCallback((idx) => {
+    const getPoseLayer = (idx) => {
         if (!poseData || idx < 0) return null;
 
         const targetIdx = 0; 
@@ -152,7 +152,7 @@ export const usePoseVisualize = (poseData) => {
         layerCanvas.getContext('2d').drawImage(offCanvas, 0, 0);
 
         return layerCanvas;
-    }, [poseData, options]);
+    };
 
     return { options, setOptions, getPoseLayer };
 };
