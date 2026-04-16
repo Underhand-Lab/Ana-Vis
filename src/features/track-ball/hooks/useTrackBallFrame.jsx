@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export const useTrackFrame = (trackData) => {
   const [options, setOptions] = useState({
@@ -8,7 +8,24 @@ export const useTrackFrame = (trackData) => {
     trailWidth: 5,
   });
 
+  // 모바일 여부에 따른 스케일 계수 계산 (가독성 향상)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const uiScale = isMobile ? 1.5 : 1; // 모바일에서 선과 글자를 조금 더 크게 표시
+
   const offscreenRef = useRef(null);
+  
+  /** 
+   * 성능 최적화를 위한 캐싱 Ref: 
+   * 마지막으로 렌더링된 프레임 번호, 데이터, 옵션 객체의 참조를 저장합니다.
+   */
+  const lastRendered = useRef({ idx: -1, options: null, trackData: null });
 
   /**
    * ✅ 공의 궤적, 바운딩 박스, 신뢰도 정보가 담긴 투명 레이어 반환
@@ -16,8 +33,16 @@ export const useTrackFrame = (trackData) => {
   const getTrackLayer = (idx) => {
     if (!trackData || idx < 0) return null;
 
-    const rawImgList = trackData.getRawImgList(0);
-    const image = rawImgList[idx];
+    // 1. 성능 최적화: 동일한 조건(데이터, 프레임, 옵션)이라면 새로 그리지 않고 기존 캔버스 즉시 반환
+    if (
+      lastRendered.current.idx === idx && 
+      lastRendered.current.options === options &&
+      lastRendered.current.trackData === trackData
+    ) {
+      return offscreenRef.current;
+    }
+
+    const image = trackData.getRawImgList(0)[idx];
     if (!image) return null;
 
     // 오프스크린 캔버스 초기화 및 크기 설정
@@ -31,7 +56,7 @@ export const useTrackFrame = (trackData) => {
 
     const ctx = canvas.getContext('2d');
     
-    // ✅ 1. 레이어 초기화 (투명 배경)
+    // ✅ 2. 레이어 초기화 (투명 배경)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const ballList = trackData.getBallList();
@@ -39,7 +64,7 @@ export const useTrackFrame = (trackData) => {
       // 2. 궤적(Trail) 그리기
       ctx.beginPath();
       ctx.strokeStyle = options.trailColor;
-      ctx.lineWidth = options.trailWidth;
+      ctx.lineWidth = options.trailWidth * uiScale;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
 
@@ -69,27 +94,24 @@ export const useTrackFrame = (trackData) => {
       if (nowBall) {
         const [bx, by, bw, bh] = nowBall.bbox;
         ctx.strokeStyle = options.boxColor;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3 * uiScale;
         ctx.strokeRect(bx, by, bw, bh);
 
         if (options.showConfidence) {
           ctx.fillStyle = 'white';
-          ctx.font = 'bold 30px Arial';
+          ctx.font = `bold ${24 * uiScale}px Arial`;
           ctx.shadowColor = 'black';
-          ctx.shadowBlur = 4;
-          ctx.fillText(`Conf: ${nowBall.confidence.toFixed(2)}`, bx, by - 10);
+          ctx.shadowBlur = 4 * uiScale;
+          ctx.fillText(`Conf: ${nowBall.confidence.toFixed(2)}`, bx, by - (10 * uiScale));
           ctx.shadowBlur = 0;
         }
       }
     }
 
-    // 결과 캔버스 복제 후 반환
-    const layerCanvas = document.createElement('canvas');
-    layerCanvas.width = canvas.width;
-    layerCanvas.height = canvas.height;
-    layerCanvas.getContext('2d').drawImage(canvas, 0, 0);
+    // 3. 현재 렌더링 상태 기록 (다음 호출 시 비교용)
+    lastRendered.current = { idx, options, trackData };
 
-    return layerCanvas;
+    return canvas;
   }
 
   return { options, setOptions, getTrackLayer };

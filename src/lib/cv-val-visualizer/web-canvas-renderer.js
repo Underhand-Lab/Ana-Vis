@@ -1,5 +1,8 @@
-class CanvasRenderer {
+import { Renderer } from './renderer-interface.js';
+
+class WebCanvasRenderer extends Renderer {
     constructor() {
+        super(); // Renderer 추상 클래스의 생성자 호출
         this.canvas = null;
         this.ctx = null;
         this.sourceW = 0;
@@ -7,6 +10,7 @@ class CanvasRenderer {
         this.layout = null;
     }
 
+    /** @param {HTMLCanvasElement} canvas */
     setCanvas(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
@@ -19,10 +23,9 @@ class CanvasRenderer {
         this.sourceW = sourceW;
         this.sourceH = sourceH;
 
-        // 디바이스 픽셀 밀도를 고려한 실제 렌더링 크기 계산
-        const dpr = window.devicePixelRatio || 1;
-        const targetW = this.canvas.width / dpr;
-        const targetH = this.canvas.height / dpr;
+        // CSS에 의해 결정된 실제 캔버스 해상도 사용
+        const targetW = this.canvas.width;
+        const targetH = this.canvas.height;
 
         const sourceAspect = sourceW / sourceH;
         const targetAspect = targetW / targetH;
@@ -50,20 +53,19 @@ class CanvasRenderer {
         };
     }
 
+    /** @param {CanvasImageSource} source */
     drawImage(source) {
         if (!this.canvas || !source) return;
         
         const ctx = this.ctx;
 
-        // 1. 디바이스 픽셀 밀도(DPR)를 고려하여 캔버스 해상도 설정
+        // 1. 외부(RGL 등)에서 바뀐 캔버스의 CSS 크기를 내부 해상도에 동기화
+        // 이 부분이 있어야 리사이징 시 이미지가 깨지지 않습니다.
         const rect = this.canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        
-        if (this.canvas.width !== Math.floor(rect.width * dpr) || this.canvas.height !== Math.floor(rect.height * dpr)) {
-            this.canvas.width = Math.floor(rect.width * dpr);
-            this.canvas.height = Math.floor(rect.height * dpr);
-            ctx.scale(dpr, dpr); // 컨텍스트 스케일 조정
-            // 기기 회전 혹은 리사이징 시 레이아웃 재계산 강제
+        if (this.canvas.width !== Math.floor(rect.width) || this.canvas.height !== Math.floor(rect.height)) {
+            this.canvas.width = Math.floor(rect.width);
+            this.canvas.height = Math.floor(rect.height);
+            // 해상도가 바뀌었으므로 레이아웃 재계산
             this.updateLayout(this.sourceW, this.sourceH);
         }
 
@@ -97,4 +99,4 @@ class CanvasRenderer {
     }
 }
 
-export { CanvasRenderer };
+export { WebCanvasRenderer };

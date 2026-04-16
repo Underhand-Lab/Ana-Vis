@@ -1,18 +1,16 @@
-import React, { useState, useRef, useCallback } from 'react';
-import AnalysisContainer from '../common/components/AnalysisGridContainer.jsx';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import NewAnalysisGridContainer from '../common/components/NewAnalysisGridContainer.tsx';
 import VideoProcessorModal from '../common/components/VideoProcessorModal.jsx';
 import Modal from '../common/components/Modal.jsx';
 import Navigation from '../common/components/Navigation.jsx';
 
-// 라이브러리 import
+// 라이브러리 import (New modules)
 import { Processor } from '../lib/cv-val/processor.js';
 import { TrackBatData } from "../lib/cv-val/track-bat/track-bat-data.js";
 import * as BatDetector from '../lib/cv-val/track-bat/bat-detector/index.js';
 
-
-import TrackBatVideoContainer from "../features/track-bat/components/TrackBatVideoContainer.jsx"
-import { frameMakerDataToBlob } from "../lib/cv-val-visualizer/common/frame-maker-export.js";
-import { saveBlobWithPicker } from "../lib/save-blob.js";
+import TrackBatVideoModule from "../features/track-bat/modules/TrackBatVideoModule.jsx"
+import { saveBlobWithPicker } from "../lib/save-blob.js"; // This is already imported
 
 // YOLO Bat Detector 설정
 const DETECTORS = {
@@ -24,24 +22,16 @@ const DETECTORS = {
     /*"yolo26n": new BatDetector.YOLOBatDetector("/cv-val/external/models/yolo11/yolo11m-seg_web_model/model.json", 34)*/
 };
 
+const ANALYSIS_TOOLS = {
+    // Add any specific bat analysis tools here if needed, similar to PosePage
+    // For now, let's assume no specific analysis tool for bat tracking data itself,
+    // as the video container directly visualizes the raw bat data.
+};
 
-const MAKER_CONFIG = {
-    "video": {
-        Component: TrackBatVideoContainer,
-        bindUI: (box, frameMaker) => {
-            // batVideoUIBinder 로직 구현
-            const saveBtn = box.querySelector(".save");
-
-            saveBtn?.addEventListener('click', async () => {
-                const currentData = instance.data;
-                if (!currentData) return;
-                const blob = await frameMakerDataToBlob(frameMaker, currentData);
-                await saveBlobWithPicker(blob, "trackBatVideo.mp4", [{
-                    description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
-                }], true, "mp4");
-            });
-        }
-    }
+const AVAILABLE_MODULES = {
+    "video": TrackBatVideoModule,
+    // If there's a table for bat tracking, add it here
+    // "table": TrackBatTableModule, // Assuming a NewTrackBatTableContainer will be created
 };
 
 const TrackBatPage = () => {
@@ -51,6 +41,10 @@ const TrackBatPage = () => {
     const [statusKey, setStatusKey] = useState('label-before-process');
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.55); // 기본값 0.55
+    const [activeModules, setActiveModules] = useState([
+        { ...TrackBatVideoModule, id: 'bat-video-default' },
+        // { ...TrackBatTableModule, id: 'bat-table-default' } // Uncomment if TrackBatTableModule is available
+    ]);
 
     // 후보군(Candidate) 관련 상태
     const [candidates, setCandidates] = useState([]);
@@ -59,8 +53,6 @@ const TrackBatPage = () => {
 
     const [isProcessModalOpen, setProcessModalOpen] = useState(false);
     const [isToolModalOpen, setToolModalOpen] = useState(false);
-
-    const analysisBoxRef = useRef(null);
     const dataInputRef = useRef(null);
 
     // 프레임 변경 시 후보군 UI 업데이트 로직
@@ -119,13 +111,38 @@ const TrackBatPage = () => {
         }
     };
 
+    // 분석 도구(모듈) 추가 핸들러
+    const handleAddModule = (type) => {
+        const moduleBase = AVAILABLE_MODULES[type];
+        if (moduleBase) {
+            setActiveModules(prev => [
+                ...prev, 
+                { ...moduleBase, id: `${type}-${Date.now()}` }
+            ]);
+        }
+        setToolModalOpen(false);
+    };
+
+    // 분석 도구(모듈) 삭제 핸들러
+    const handleRemoveModule = (id) => {
+        setActiveModules(prev => prev.filter(m => m.id !== id));
+    };
+
+    // 데이터에 분석 도구 주입 (모듈 내 View에서 사용하기 위함)
+    // TrackBatPage는 현재 ANALYSIS_TOOLS가 비어있으므로, 이 useEffect는 큰 의미가 없을 수 있습니다.
+    // 하지만 일관성을 위해 유지합니다.
+    useEffect(() => {
+        if (processedData) {
+            processedData.analysisTools = ANALYSIS_TOOLS;
+        }
+    }, [processedData]);
+
     // CONF 변경
     const handleConfChange = (e) => {
         const val = parseFloat(e.target.value);
         setConfValue(val);
         if (processedData) {
             processedData.setConf(val);
-            analysisBoxRef.current?.updateImage();
         }
     };
 
@@ -135,7 +152,6 @@ const TrackBatPage = () => {
         setSelectedCandidateIdx(idx);
         if (processedData) {
             processedData.setSelectedIdx(currentFrameIdx, idx);
-            analysisBoxRef.current?.updateImage();
         }
     };
 
@@ -161,12 +177,11 @@ const TrackBatPage = () => {
                 }
             ]} />
 
-            <AnalysisContainer
-                ref={analysisBoxRef}
-                currentIdx={currentIdx}
+            <NewAnalysisGridContainer
+                modules={activeModules}
                 data={processedData}
-                toolConfigs={MAKER_CONFIG}
-                defaultTools={["video"]}
+                currentFrame={currentIdx}
+                onRemoveModule={handleRemoveModule}
             />
 
             <div className="slider">

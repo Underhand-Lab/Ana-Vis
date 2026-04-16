@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import AnalysisContainer from '../common/components/AnalysisGridContainer.jsx';
+import NewAnalysisGridContainer from '../common/components/NewAnalysisGridContainer.tsx';
 import VideoProcessorModal from '../common/components/VideoProcessorModal.jsx';
 import Modal from '../common/components/Modal.jsx';
 import Navigation from '../common/components/Navigation.jsx';
@@ -9,12 +9,12 @@ import { PoseData } from '../lib/cv-val/pose/pose-data.js';
 import { Processor } from '../lib/cv-val/processor.js';
 import * as PoseDetector from '../lib/cv-val/pose/pose-detector/index.js';
 import * as PoseAnalysisTool from "../lib/cv-val/pose/analysis-tool/index.js";
-import { frameMakerDataToBlob } from "../lib/cv-val-visualizer/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../lib/save-blob.js";
 
-import PoseVideoContainer from '../features/pose/components/PoseVideoContainer.jsx';
-import PoseGraphContainer from '../features/pose/components/PoseGraphContainer.jsx';
-import PoseTableContainer from '../features/pose/components/PoseTableContainer.jsx';
+import PoseVideoModule from '../features/pose/modules/PoseVideoModule.jsx';
+import PoseGraphModule from '../features/pose/modules/PoseGraphModule.jsx';
+import PoseTableModule from '../features/pose/modules/PoseTableModule.jsx';
+import Pose3DVideoModule from '../features/pose/modules/Pose3DVideoModule.jsx';
 
 
 // 정적 설정값
@@ -31,36 +31,11 @@ const ANALYSIS_TOOLS = {
   "height": new PoseAnalysisTool.HeightAnalysisTool(),
 };
 
-const MAKER_CONFIG = {
-  "video": {
-    Component: PoseVideoContainer,
-    bindUI: (box, frameMaker) => {
-      box.querySelector(".save")?.addEventListener('click', async () => {
-        // 주의: 여기서 instance.data 대신 현재 컴포넌트의 processedData를 참조해야 함
-        // 이 부분은 보통 frameMaker 내부나 bind 시점에 처리됩니다.
-        const blob = await frameMakerDataToBlob(frameMaker, frameMaker.data);
-        await saveBlobWithPicker(blob, "poseVideo.mp4", [{
-          description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
-        }], true, "mp4");
-      });
-    }
-  },
-  "graph": {
-    Component: (props) => (
-      <PoseGraphContainer 
-        {...props} 
-        analysisTools={ANALYSIS_TOOLS} 
-      />
-    ),
-  },
-  "table": {
-    Component: (props) => (
-      <PoseTableContainer 
-        {...props} 
-        analysisTools={ANALYSIS_TOOLS} 
-      />
-    ),
-  }
+const AVAILABLE_MODULES = {
+  "동영상": PoseVideoModule,
+  "3D 동영상": Pose3DVideoModule,
+  "그래프": PoseGraphModule,
+  "표": PoseTableModule
 };
 
 const PosePage = () => {
@@ -69,6 +44,10 @@ const PosePage = () => {
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [statusKey, setStatusKey] = useState('label-before-process');
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [activeModules, setActiveModules] = useState([
+    { ...PoseVideoModule, id: 'video-default' },
+    { ...PoseGraphModule, id: 'graph-default' }
+  ]);
 
   const [isProcessModalOpen, setProcessModalOpen] = useState(false);
   const [isToolModalOpen, setToolModalOpen] = useState(false);
@@ -87,6 +66,7 @@ const PosePage = () => {
     try {
       const data = new PoseData();
       await data.loadFromFile(file);
+      data.analysisTools = ANALYSIS_TOOLS; // 데이터 로드 즉시 도구 주입
       setProcessedData(data);
       setCurrentIdx(0); // 데이터 로드 시 인덱스 초기화
       e.target.value = "";
@@ -111,6 +91,7 @@ const PosePage = () => {
       });
 
       const result = await processor.processVideo(files, new PoseData());
+      result.analysisTools = ANALYSIS_TOOLS; // 처리 완료 즉시 도구 주입
       setProcessedData(result);
       setCurrentIdx(0); // 처리 완료 시 인덱스 초기화
       setProcessModalOpen(false);
@@ -120,6 +101,23 @@ const PosePage = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // 분석 도구(모듈) 추가 핸들러
+  const handleAddModule = (type) => {
+    const moduleBase = AVAILABLE_MODULES[type];
+    if (moduleBase) {
+      setActiveModules(prev => [
+        ...prev, 
+        { ...moduleBase, id: `${type}-${Date.now()}` }
+      ]);
+    }
+    setToolModalOpen(false);
+  };
+
+  // 분석 도구(모듈) 삭제 핸들러
+  const handleRemoveModule = (id) => {
+    setActiveModules(prev => prev.filter(m => m.id !== id));
   };
 
   return (
@@ -157,12 +155,11 @@ const PosePage = () => {
       ]} />
 
       {/* 그리드 컨테이너: currentIdx와 data를 prop으로 직접 전달 */}
-      <AnalysisContainer
-        ref={analysisBoxRef}
-        currentIdx={currentIdx}
+      <NewAnalysisGridContainer
+        modules={activeModules}
         data={processedData}
-        toolConfigs={MAKER_CONFIG}
-        defaultTools={["video", "graph"]}
+        currentFrame={currentIdx}
+        onRemoveModule={handleRemoveModule}
       />
 
       {/* 하단 컨트롤러 영역 */}
@@ -209,14 +206,10 @@ const PosePage = () => {
         title="분석 도구 추가"
       >
         <div>
-          {Object.keys(MAKER_CONFIG).map(key => (
+          {Object.keys(AVAILABLE_MODULES).map(key => (
             <div key={key}>
-            <button onClick={() => {
-                analysisBoxRef.current?.addTool(key);
-                setToolModalOpen(false);
-              }}
-            >
-              {key}
+            <button onClick={() => handleAddModule(key)}>
+              {key.toUpperCase()}
             </button>
             <br/></div>
           ))}

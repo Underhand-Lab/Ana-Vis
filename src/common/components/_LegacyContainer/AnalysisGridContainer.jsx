@@ -8,9 +8,10 @@ import '/node_modules/react-resizable/css/styles.css';
 
 const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdate, currentIdx = 0 }, ref) => {
   const [frames, setFrames] = useState([]);
-  const [layout, setLayout] = useState([]);
+  const [layouts, setLayouts] = useState({ lg: [], md: [], sm: [], xs: [], xxs: [] });
   const [containerWidth, setContainerWidth] = useState(0);
   const gridWrapperRef = useRef(null);
+  const isInitialized = useRef(false);
 
   const COLUMNS = { lg: 24, md: 20, sm: 12, xs: 8, xxs: 8 };
 
@@ -36,13 +37,22 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
     const config = toolConfigs[type];
     if (!config) return;
 
-    const id = `${type}-${Date.now()}`;
+    // 고유한 ID 생성을 위해 랜덤 값 추가 (중복 키 방지)
+    const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const fm = config.Component ? null : config.create?.();
     const itemWidth = 8;
-    const centerX = Math.max(0, Math.floor((COLUMNS.lg / 2) - (itemWidth / 2)));
+    const centerX = 0;
 
     setFrames(prev => [...prev, { id, type, config, fm, Component: config.Component, isPinned: false }]);
-    setLayout(prev => [...prev, { i: id, x: centerX, y: Infinity, w: itemWidth, h: 18, minW: 4, minH: 10 }]);
+    
+    // 모든 breakpoint의 레이아웃에 새 아이템 추가하여 초기 렌더링 시 레이아웃 깨짐 방지
+    setLayouts(prev => {
+      const nextLayouts = { ...prev };
+      Object.keys(COLUMNS).forEach(bp => {
+        nextLayouts[bp] = [...(nextLayouts[bp] || []), { i: id, x: centerX, y: Infinity, w: itemWidth, h: 18, minW: 4, minH: 10 }];
+      });
+      return nextLayouts;
+    });
   };
 
   const togglePin = (id) => {
@@ -51,21 +61,31 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
 
   const removeFrame = (id) => {
     setFrames(prev => prev.filter(f => f.id !== id));
-    setLayout(prev => prev.filter(l => l.i !== id));
+    
+    // 모든 중단점 레이아웃에서 해당 아이템 삭제
+    setLayouts(prev => {
+      const nextLayouts = { ...prev };
+      Object.keys(nextLayouts).forEach(bp => {
+        nextLayouts[bp] = (nextLayouts[bp] || []).filter(l => l.i !== id);
+      });
+      return nextLayouts;
+    });
   };
 
   useEffect(() => {
-    if (defaultTools && frames.length === 0) {
+    // 초기화가 이미 진행되었거나 데이터가 없는 경우 방지
+    if (!isInitialized.current && defaultTools && toolConfigs) {
+      isInitialized.current = true;
       defaultTools.forEach((type) => addNewFrame(type));
     }
-  }, [defaultTools, toolConfigs]);
+  }, [defaultTools, toolConfigs]); // frames.length 의존성 제거
 
   return (
     <div ref={gridWrapperRef} style={{ width: '100%', flex: 1, }}>
       {containerWidth > 0 && (
         <Responsive
           width={containerWidth}
-          layouts={{ lg: layout, md: layout, sm: layout, xs: layout, xxs: layout }}
+          layouts={layouts}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={COLUMNS}
           rowHeight={10}
@@ -75,7 +95,12 @@ const AnalysisContainer = forwardRef(({ data, toolConfigs, defaultTools, onUpdat
             // 만약 위가 안된다면 아래처럼 시도해보세요.
             // draggableHandle: '.drag-handle',
           }}
-          onLayoutChange={(newLayout) => setLayout(newLayout)}
+          onLayoutChange={(current, all) => {
+            // 실제 데이터가 변경되었을 때만 상태를 업데이트하여 무한 루프 방지
+            setLayouts(prev => {
+              return JSON.stringify(prev) === JSON.stringify(all) ? prev : all;
+            });
+          }}
           margin={[15, 15]}
           compactType="vertical"
           resizeConfig={{

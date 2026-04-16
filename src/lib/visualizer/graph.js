@@ -45,29 +45,42 @@ export class GraphVisualizer {
         this.chart = null;
         this.data = null;
         this.customColors = {};
-        //chartJs.Chart.defaults.font.family = 'KBO-Dia-Gothic_medium', 'Arial', 'sans-serif';
+        Chart.defaults.font.family = 'KBO-Dia-Gothic_medium', 'Arial', 'sans-serif';
     }
     setCanvas(canvas) {
         this.canvas = canvas;
     }
 
-    // 데이터셋 생성 (저장된 색상 우선 적용)
-    getDataSet() {
+    getRandomColor() {
+        const r = Math.floor(Math.random() * 255);
+        const g = Math.floor(Math.random() * 255);
+        const b = Math.floor(Math.random() * 255);
+        return `rgba(${r}, ${g}, ${b}, 1)`;
+    }
+
+    // 데이터셋 생성 (settings에서 색상 및 기타 옵션 적용)
+    getDataSet(settings = {}) {
         if (!this.data) return [[], []];
 
         let maxLen = 0;
         const datasets = [];
-
         for (let key in this.data) {
-            const color = this.customColors[key] || getRandomColor();
-            this.customColors[key] = color; // 색상 고정
+            // 1. settings에 설정된 색상 사용
+            // 2. 없으면 기존에 할당된 커스텀(랜덤) 색상 사용
+            // 3. 둘 다 없으면 새로운 랜덤 색상 생성 후 저장
+            if (!this.customColors[key]) this.customColors[key] = this.getRandomColor();
+            const color = settings[key] || this.customColors[key];
+            
+            const visibility = settings.datasetVisibility || {};
+            const isVisible = visibility[key] !== false;
 
             datasets.push({
                 label: key,
                 data: this.data[key],
                 borderColor: color,
                 backgroundColor: color,
-                borderWidth: 3,
+                hidden: !isVisible, // 초기 가시성 설정
+                borderWidth: settings.lineWidth || 3, // 선 굵기 적용
                 pointRadius: 0,
                 tension: 0.2 // 곡선미 살짝 추가
             });
@@ -79,11 +92,11 @@ export class GraphVisualizer {
     }
 
     // 차트 초기화 및 업데이트
-    setDefault(idx = 0) {
+    setDefault(idx = 0, settings = {}) {
         const ctx = this.canvas.getContext('2d');
         if (this.chart) this.chart.destroy();
 
-        const [datasets, labels] = this.getDataSet();
+        const [datasets, labels] = this.getDataSet(settings); // settings를 getDataSet에 전달
 
         this.chart = new Chart(ctx, {
             type: 'line',
@@ -105,97 +118,52 @@ export class GraphVisualizer {
         });
     }
 
-    renderCustomLegend(container) {
-        if (!container || !this.chart) return;
-        container.innerHTML = "";
+    // 범례를 React에서 관리하므로, 이 함수는 제거됩니다.
+    // renderCustomLegend(container) { ... }
 
-        this.chart.data.datasets.forEach((dataset, index) => {
-            const wrapper = document.createElement("div");
-            wrapper.style["text-wrap"] = "nowrap";
-            wrapper.style.display = "inline-block";
-
-            function rgb2Hex(_rgbColor) {
-                let rgbNums = _rgbColor.match(/rgb[a]{0,1}\((\d+)\,[\s]{0,}(\d+)\,[\s]{0,}(\d+)/);
-                if (rgbNums != null) {
-                    let _hexColor = "#";
-                    for (let i = 1; i <= 3; i++) _hexColor += parseInt(rgbNums[i]).toString(16);
-                    return _hexColor.toUpperCase();
-                }
-                else return _rgbColor;
-            }
-
-
-            // 1. 투박한 색상 선택 상자 (의도하신 대로 노출)
-            const colorInput = document.createElement('input');
-            colorInput.type = 'color';
-            colorInput.value = rgb2Hex(dataset.borderColor);
-            colorInput.className = "visible-color-input";
-
-            // 2. 메인 버튼 (On/Off 토글용)
-            const toggleBtn = document.createElement("label");
-            toggleBtn.className = "legend-btn";
-            if (!this.chart.isDatasetVisible(index)) toggleBtn.classList.add("is-hidden");
-
-            toggleBtn.innerHTML = `
-            <span class="label-text"><e-text key="${dataset.label}"></span>
-        `;
-
-            // 색상 변경 로직
-            colorInput.onchange = (e) => {
-                const newColor = e.target.value;
-                const currentLabel = dataset.label; // dataset 객체에서 직접 참조
-
-                this.customColors[currentLabel] = newColor;
-                this.chart.data.datasets[index].borderColor = newColor;
-                this.chart.data.datasets[index].backgroundColor = newColor;
-
-                this.chart.update();
-            };
-
-            // 토글 버튼 클릭 로직
-            toggleBtn.onclick = () => {
-                const isVisible = this.chart.isDatasetVisible(index);
-                this.chart.setDatasetVisibility(index, !isVisible);
-                toggleBtn.classList.toggle("is-hidden", isVisible);
-                toggleBtn.style["text-decoration"] = isVisible ? "line-through" : null;
-                this.chart.update();
-            };
-
-            // 순서대로 추가: 색상상자 + 토글버튼
-            wrapper.appendChild(colorInput);
-            wrapper.appendChild(toggleBtn);
-            container.appendChild(wrapper);
-        });
-    }
-
-    openColorPicker(label, index, btnElement) {
-        const input = document.createElement('input');
-        input.type = 'color';
-        input.value = this.chart.data.datasets[index].borderColor;
-
-        input.onchange = (e) => {
-            const newColor = e.target.value;
-            this.customColors[label] = newColor;
-            this.chart.data.datasets[index].borderColor = newColor;
-            this.chart.data.datasets[index].backgroundColor = newColor;
-
-            // 버튼 아이콘 색상도 즉시 변경
-            btnElement.querySelector('.color-chip').style.background = newColor;
+    // 외부에서 데이터셋 가시성을 제어할 수 있는 메서드
+    setDatasetVisibility(index, visible) {
+        if (this.chart && this.chart.data.datasets[index]) {
+            this.chart.setDatasetVisibility(index, visible);
             this.chart.update();
-        };
-        input.click();
+        }
     }
 
-    setData(data, legendContainer) {
+    // 외부에서 데이터셋 가시성 상태를 확인할 수 있는 메서드
+    isDatasetVisible(index) {
+        if (this.chart && this.chart.data.datasets[index]) {
+            return this.chart.isDatasetVisible(index);
+        }
+        return false; // 차트가 없거나 데이터셋이 없으면 false 반환
+    }
+
+    setData(data, settings = {}) {
         
         this.data = data;
-        const [datasets, labels] = this.getDataSet();
-
+        const [datasets, labels] = this.getDataSet(settings); // settings를 getDataSet에 전달
+        
         if (this.chart) {
+            // 레이블 업데이트
             this.chart.data.labels = labels;
-            this.chart.data.datasets = datasets;
-            this.chart.update();
-            if (legendContainer) this.renderCustomLegend(legendContainer);
+            
+            // 기존 데이터셋 인스턴스를 유지하면서 속성만 업데이트 (색상 반영 보장)
+            const existingDatasets = this.chart.data.datasets;
+            const updatedDatasets = datasets.map((newDs) => {
+                const existing = existingDatasets.find(d => d.label === newDs.label);
+                if (existing) {
+                    // 기존 객체에 새로운 데이터와 스타일(색상, 가시성 등)을 복사
+                    Object.assign(existing, newDs);
+                    return existing;
+                }
+                return newDs;
+            });
+
+            this.chart.data.datasets.splice(0, existingDatasets.length, ...updatedDatasets); // 배열 내용 업데이트
+            
+            this.chart.update('none'); // 애니메이션 없이 즉시 업데이트
+        } else {
+            // 차트가 아직 초기화되지 않았다면, settings를 사용하여 초기화
+            this.setDefault(0, settings); // settings를 setDefault에 전달
         }
     }
 
@@ -204,11 +172,4 @@ export class GraphVisualizer {
         this.chart.options.plugins.hideAfterIndex.idx = idx;
         this.chart.update('none'); // 성능을 위해 애니메이션 없이 업데이트
     }
-}
-
-function getRandomColor() {
-    const r = Math.floor(Math.random() * 200 + 55); // 너무 어둡지 않게
-    const g = Math.floor(Math.random() * 200 + 55);
-    const b = Math.floor(Math.random() * 200 + 55);
-    return `rgb(${r}, ${g}, ${b})`;
 }

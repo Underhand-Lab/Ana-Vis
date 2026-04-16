@@ -19,7 +19,12 @@ const DataTable = ({ data }) => {
           <tr key={key}>
             {/* 기존 e-text 구조 유지 */}
             <th><span data-key={key}>{key}</span></th>
-            <td>{data[key] !== null ? data[key] : "?"}</td>
+            <td>
+              {typeof data[key] === 'object' && data[key] !== null 
+                ? JSON.stringify(data[key]) 
+                : (data[key] !== null && data[key] !== undefined ? data[key] : "?")
+              }
+            </td>
           </tr>
         ))}
       </tbody>

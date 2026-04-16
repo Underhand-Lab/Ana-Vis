@@ -35,6 +35,47 @@ const CONNECTIONS_COLORS_KEY = {
     "NOSE,R_SHOULDER": "COLOR_HEAD_NECK"
 };
 
+// Helper function to convert various color formats to rgba string
+// NOTE: For better reusability, this function should ideally be in a shared utility file.
+const normalizeColorToRgba = (colorStr) => {
+    // Handle named colors (basic support)
+    const namedColors = {
+        "red": "rgba(255,0,0,1)", "green": "rgba(0,128,0,1)", "blue": "rgba(0,0,255,1)",
+        "white": "rgba(255,255,255,1)", "black": "rgba(0,0,0,1)", "yellow": "rgba(255,255,0,1)",
+        "cyan": "rgba(0,255,255,1)", "magenta": "rgba(255,0,255,1)", "transparent": "rgba(0,0,0,0)"
+    };
+    if (namedColors[colorStr.toLowerCase()]) {
+        return namedColors[colorStr.toLowerCase()];
+    }
+
+    // Handle hex colors #RRGGBB or #RGB
+    const hexMatch = colorStr.match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+    if (hexMatch) {
+        let hex = hexMatch[1];
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return `rgba(${r},${g},${b},1)`;
+    }
+
+    // Handle rgb(r,g,b) or rgba(r,g,b,a)
+    const rgbaMatch = colorStr.match(/rgba?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:,\s*(0?\.\d+|1|0))?\)/i);
+    if (rgbaMatch) {
+        const r = parseInt(rgbaMatch[1], 10);
+        const g = parseInt(rgbaMatch[2], 10);
+        const b = parseInt(rgbaMatch[3], 10);
+        let a = rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 1;
+        a = Math.max(0, Math.min(1, a)); // Clamp alpha between 0 and 1
+        return `rgba(${r},${g},${b},${a})`;
+    }
+
+    // Fallback for invalid input
+    return "rgba(255,255,255,1)"; // Default to white opaque
+};
+
 const renderOrder = {
     "COLOR_TORSO": 1,
     "COLOR_HEAD_NECK": 1,
@@ -59,7 +100,7 @@ export function drawConnection(ctx, landmarks, width, height, colorPalette) {
     });
 
     // 2. 정렬된 순서대로 뼈대(선) 그리기
-    ctx.lineWidth = 4;
+    ctx.lineWidth = colorPalette.lineWidth || 4;
     ctx.lineCap = 'round';
 
     sortedConnections.forEach(([start, end]) => {
@@ -68,7 +109,7 @@ export function drawConnection(ctx, landmarks, width, height, colorPalette) {
 
         if (p1 && p2) {
             const colorKey = CONNECTIONS_COLORS_KEY[`${start},${end}`] || CONNECTIONS_COLORS_KEY[`${end},${start}`];
-            ctx.strokeStyle = colorPalette[colorKey] || "white";
+            ctx.strokeStyle = colorPalette[colorKey] || "rgba(255,255,255,1)"; // Use normalized color string directly
 
             ctx.beginPath();
             ctx.moveTo(p1[0] * width, p1[1] * height);
@@ -81,9 +122,13 @@ export function drawConnection(ctx, landmarks, width, height, colorPalette) {
 
 function drawJoint(ctx, landmarks, width, height, colorPalette) {
 
-    ctx.fillStyle = colorPalette["COLOR_HEAD_NECK"];
-    ctx.strokeStyle = colorPalette["JOINT_STROKE"];
-    ctx.lineWidth = 2;
+    const radius = colorPalette.jointRadius !== undefined ? colorPalette.jointRadius : 4;
+    const strokeWidth = colorPalette.jointStrokeWidth !== undefined ? colorPalette.jointStrokeWidth : 2;
+    const shape = colorPalette.jointShape || 'circle';
+
+    ctx.fillStyle = colorPalette["COLOR_JOINT"] || "rgba(255,255,255,1)";
+    ctx.strokeStyle = colorPalette["JOINT_STROKE"] || "rgba(255,255,255,1)";
+    ctx.lineWidth = strokeWidth;
 
     for (let key in landmarks) {
         const [nx, ny] = landmarks[key];
@@ -91,7 +136,11 @@ function drawJoint(ctx, landmarks, width, height, colorPalette) {
         const y = ny * height;
 
         ctx.beginPath();
-        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+        if (shape === 'rect') {
+            ctx.rect(x - radius, y - radius, radius * 2, radius * 2);
+        } else {
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        }
         ctx.fill();
         ctx.stroke();
     }
@@ -100,13 +149,18 @@ function drawJoint(ctx, landmarks, width, height, colorPalette) {
 
 export const usePoseVisualize = (poseData) => {
     const [options, setOptions] = useState({
-        COLOR_LEFT_ARM: "#ff0000",
-        COLOR_RIGHT_ARM: "#0000ff",
-        COLOR_LEFT_LEG: "#ffff00",
-        COLOR_RIGHT_LEG: "#00ffff",
-        COLOR_TORSO: "#00ff00",
-        COLOR_HEAD_NECK: "#ffffff",
-        JOINT_STROKE: "#ff0000"
+        COLOR_LEFT_ARM: "rgba(255,0,0,1)",
+        COLOR_RIGHT_ARM: "rgba(0,255,0,1)",
+        COLOR_LEFT_LEG: "rgba(0,0,255,1)",
+        COLOR_RIGHT_LEG: "rgba(255,255,0,1)",
+        COLOR_TORSO: "rgba(255,0,255,1)",
+        COLOR_HEAD_NECK: "rgba(0,255,255,1)",
+        COLOR_JOINT: "rgba(255,255,255,1)",
+        JOINT_STROKE: "rgba(255,255,255,1)",
+        lineWidth: 2,
+        jointShape: 'circle',
+        jointRadius: 4,
+        jointStrokeWidth: 2,
     });
 
     const offscreenRef = useRef(null);

@@ -1,19 +1,18 @@
-import React, { useState, useRef, useCallback } from 'react';
-import AnalysisContainer from '../common/components/AnalysisGridContainer.jsx';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import NewAnalysisGridContainer from '../common/components/NewAnalysisGridContainer.tsx';
 import VideoProcessorModal from '../common/components/VideoProcessorModal.jsx';
 import Modal from '../common/components/Modal.jsx';
 import Navigation from '../common/components/Navigation.jsx';
 
-import TrackBallVideoContainer from "../features/track-ball/components/TrackBallVideoContainer.jsx"
-import TrackBallTableContainer from "../features/track-ball/components/TrackBallTableContainer.jsx"
+import TrackBallVideoModule from "../features/track-ball/modules/TrackBallVideoModule.jsx"
+import TrackBallTableModule from "../features/track-ball/modules/TrackBallTableModule.jsx"
 
 // 라이브러리 import
 import { Processor } from '../lib/cv-val/processor.js';
 import { TrackBallData } from "../lib/cv-val/track-ball/track-ball-data.js";
 import * as BallDetector from '../lib/cv-val/track-ball/ball-detector/index.js';
-//import * as FrameMaker from '../lib/cv-val-visualizer/track-ball/index.js';
+
 import * as Analysis from "../lib/cv-val/track-ball/calc/analysis.js";
-import { frameMakerDataToBlob } from "../lib/cv-val-visualizer/common/frame-maker-export.js";
 import { saveBlobWithPicker } from "../lib/save-blob.js";
 
 // YOLO 탐지기 설정
@@ -25,24 +24,13 @@ const DETECTORS = {
     "yolo11n": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11n_web_model/model.json", 32),
 };
 
-const MAKER_CONFIG = {
-    "video": {
-        Component: TrackBallVideoContainer
-    },
-    "table": {
-        Component: (props) => (
-            <TrackBallTableContainer 
-                {...props} 
-                analysisTool={new Analysis.BallAnalysisTool()} 
-            />
-        ),
-        src: "./template/track-ball/table.html",
-        create: () => {
-            const fm = new FrameMaker.CustomTableFrameMaker();
-            fm.changeAnalysisTool(new Analysis.BallAnalysisTool());
-            return fm;
-        }
-    }
+const ANALYSIS_TOOLS = {
+    "default": new Analysis.BallAnalysisTool(),
+};
+
+const AVAILABLE_MODULES = {
+    "video": TrackBallVideoModule,
+    "table": TrackBallTableModule
 };
 
 const TrackBallPage = () => {
@@ -52,6 +40,10 @@ const TrackBallPage = () => {
     const [statusKey, setStatusKey] = useState('label-before-process');
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.01);
+    const [activeModules, setActiveModules] = useState([
+        { ...TrackBallVideoModule, id: 'video-default' },
+        { ...TrackBallTableModule, id: 'table-default' }
+    ]);
 
     // 후보군(Candidate) UI 상태 관리
     const [candidates, setCandidates] = useState([]);
@@ -89,6 +81,7 @@ const TrackBallPage = () => {
         try {
             const data = new TrackBallData();
             await data.loadFromFile(file);
+            data.analysisTools = ANALYSIS_TOOLS;
             setProcessedData(data);
             setCurrentIdx(0);
             e.target.value = "";
@@ -114,6 +107,8 @@ const TrackBallPage = () => {
             });
 
             const result = await processor.processVideo(files, new TrackBallData());
+
+            data.analysisTools = ANALYSIS_TOOLS;
             setProcessedData(result);
             setCurrentIdx(0);
             setProcessModalOpen(false);
@@ -125,13 +120,29 @@ const TrackBallPage = () => {
         }
     };
 
+    // 분석 도구(모듈) 추가 핸들러
+    const handleAddModule = (type) => {
+        const moduleBase = AVAILABLE_MODULES[type];
+        if (moduleBase) {
+            setActiveModules(prev => [
+                ...prev, 
+                { ...moduleBase, id: `${type}-${Date.now()}` }
+            ]);
+        }
+        setToolModalOpen(false);
+    };
+
+    // 분석 도구(모듈) 삭제 핸들러
+    const handleRemoveModule = (id) => {
+        setActiveModules(prev => prev.filter(m => m.id !== id));
+    };
+
     // CONF 변경 핸들러
     const handleConfChange = (e) => {
         const val = parseFloat(e.target.value);
         setConfValue(val);
         if (processedData) {
             processedData.setConf(val);
-            analysisBoxRef.current?.updateImage();
         }
     };
 
@@ -141,7 +152,6 @@ const TrackBallPage = () => {
         setSelectedCandidateIdx(idx);
         if (processedData) {
             processedData.setSelectedIdx(currentFrameIdx, idx);
-            analysisBoxRef.current?.updateImage();
         }
     };
 
@@ -183,12 +193,11 @@ const TrackBallPage = () => {
                 }
             ]} />
 
-            <AnalysisContainer
-                ref={analysisBoxRef}
-                currentIdx={currentIdx}
+            <NewAnalysisGridContainer
+                modules={activeModules}
                 data={processedData}
-                toolConfigs={MAKER_CONFIG}
-                defaultTools={["video", "table"]}
+                currentFrame={currentIdx}
+                onRemoveModule={handleRemoveModule}
             />
 
             <div className="slider">
@@ -274,12 +283,9 @@ const TrackBallPage = () => {
                 title="분석 도구 추가"
             >
                 <div>
-                    {['video', 'table'].map(key => (
+                    {Object.keys(AVAILABLE_MODULES).map(key => (
                         <div key={key}>
-                            <button onClick={() => {
-                                analysisBoxRef.current?.addTool(key);
-                                setToolModalOpen(false);
-                            }}>
+                            <button onClick={() => handleAddModule(key)}>
                                 {key.toUpperCase()}
                             </button>
                             <br />
