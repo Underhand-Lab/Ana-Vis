@@ -42,9 +42,9 @@ const ColorPickerItem = ({ label, value, onChange }) => {
 };
 
 const defaultSettings = {
-    batColor: "rgba(255,128,0,1)", // Orange
+    batColor: "rgba(255,128,0,0.4)", // Orange
     // batAlpha: 100, // Removed
-    trailColor: "rgba(0,255,0,1)", // Green
+    trailColor: "rgba(0,255,0,0.4)", // Green
     // trailAlpha: 100, // Removed
     trailLen: 10
 };
@@ -55,9 +55,11 @@ const defaultSettings = {
 export const TrackBatVideoView = ({ data, currentFrame, settings }) => {
     const canvasRef = useRef(null);
     const renderer = useMemo(() => new CanvasRenderer(), []);
-    // useTrackBatFrame 훅은 data와 renderer를 받지 않고, 내부적으로 data를 사용하며,
-    // setColors, setTrailLen을 통해 시각화 옵션을 업데이트합니다.
-    const { setColors, setTrailLen, getTrailLayer } = useTrackBatFrame(data, renderer);
+    // TrackBatVideoContainer.jsx와 동일하게 data만 전달합니다.
+    const { setColors, setTrailLen, getTrailLayer } = useTrackBatFrame(data);
+
+    // 설정 반영 후 그리기를 강제하기 위한 로컬 상태
+    const [drawTick, setDrawTick] = useState(0);
 
     // 렌더러에 캔버스 바인딩
     useEffect(() => {
@@ -66,15 +68,18 @@ export const TrackBatVideoView = ({ data, currentFrame, settings }) => {
         }
     }, [renderer]);
 
-    // settings 변경 시 useTrackBatFrame의 시각화 옵션 업데이트
+    // 1. 설정값 동기화: 설정이 변경되면 훅의 상태를 업데이트하고 drawTick을 올려 다음 렌더링을 유도합니다.
     useEffect(() => {
         if (settings) {
             setColors({ batColor: settings.batColor, trailColor: settings.trailColor });
             setTrailLen(settings.trailLen);
+            // setTimeout(0)을 통해 hook 내부의 상태가 업데이트된 후 그리기가 발생하도록 함
+            const timerId = setTimeout(() => setDrawTick(t => t + 1), 0);
+            return () => clearTimeout(timerId);
         }
     }, [settings, setColors, setTrailLen]);
 
-    // 원본 이미지와 레이어를 합성하는 공통 함수
+    // 원본 이미지와 레이어를 합성하는 함수 (useCallback으로 최적화)
     const drawImageAt = useCallback((frameIdx) => {
         if (!data) return null;
 
@@ -97,17 +102,16 @@ export const TrackBatVideoView = ({ data, currentFrame, settings }) => {
         return compositeCanvas;
     }, [data, getTrailLayer]);
 
-    // 화면 렌더링 로직
+    // 2. 실제 그리기: currentFrame 또는 drawTick(설정 변경 완료)이 바뀔 때 수행합니다.
     useEffect(() => {
-        const updateFrame = async () => {
-            const composite = await drawImageAt(currentFrame);
-            if (composite && renderer) {
-                renderer.updateLayout(composite.width, composite.height);
-                renderer.drawImage(composite);
-            }
-        };
-        updateFrame();
-    }, [currentFrame, drawImageAt, renderer]);
+        if (!data || !canvasRef.current) return;
+
+        const composite = drawImageAt(currentFrame);
+        if (composite && renderer) {
+            renderer.updateLayout(composite.width, composite.height);
+            renderer.drawImage(composite);
+        }
+    }, [data, currentFrame, drawTick, renderer]);
 
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -123,7 +127,7 @@ export const TrackBatVideoSettings = ({ settings, onSettingsChange, data }) => {
     const [isExporting, setIsExporting] = useState(false);
     const renderer = useMemo(() => new CanvasRenderer(), []);
     // Settings 컴포넌트도 자체적으로 useTrackBatFrame 인스턴스를 가집니다.
-    const { setColors, setTrailLen, getTrailLayer } = useTrackBatFrame(data, renderer);
+    const { setColors, setTrailLen, getTrailLayer } = useTrackBatFrame(data);
 
     // settings 변경 시 useTrackBatFrame의 시각화 옵션 업데이트
     useEffect(() => {

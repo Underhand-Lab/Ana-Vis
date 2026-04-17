@@ -16,12 +16,32 @@ export const useTrackBatFrame = (trackData) => {
   const offscreenRef = useRef(null);
   const cachedImageData = useRef(null);
 
-  // Hex 색상과 Alpha 값을 RGBA 배열로 변환
-  const getRgba = (hex, alpha) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return [r, g, b, parseInt(alpha)];
+  // 색상 문자열(Hex 또는 RGBA)을 [R, G, B, A(0-255)] 배열로 변환
+  const getRgba = (colorStr, alphaOverride) => {
+    if (!colorStr) return [0, 0, 0, 0];
+
+    // 1. RGBA 문자열 케이스 (rgba(255, 255, 255, 1.0))
+    const rgbaMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    if (rgbaMatch) {
+      const r = parseInt(rgbaMatch[1]);
+      const g = parseInt(rgbaMatch[2]);
+      const b = parseInt(rgbaMatch[3]);
+      // alphaOverride가 있으면 우선 사용(0-255), 없으면 문자열 내 alpha(0-1)를 255 스케일로 변환
+      const a = alphaOverride !== undefined ? parseInt(alphaOverride) : 
+               (rgbaMatch[4] ? Math.round(parseFloat(rgbaMatch[4]) * 255) : 255);
+      return [r, g, b, a];
+    }
+
+    // 2. Hex 문자열 케이스 (#ffffff)
+    if (colorStr.startsWith('#')) {
+      const r = parseInt(colorStr.slice(1, 3), 16);
+      const g = parseInt(colorStr.slice(3, 5), 16);
+      const b = parseInt(colorStr.slice(5, 7), 16);
+      const a = alphaOverride !== undefined ? parseInt(alphaOverride) : 255;
+      return [r, g, b, a];
+    }
+
+    return [255, 255, 255, 255];
   };
 
   // 마스크 맵을 픽셀 버퍼에 적용
@@ -161,6 +181,7 @@ export const useTrackBatFrame = (trackData) => {
     pixelBuffer.fill(0); // 매 프레임 투명하게 초기화
 
     const conf = trackData.getConf();
+    // colors 객체 내에 이미 rgba 정보가 포함되어 있으므로 alphaOverride 없이 호출 가능
     const batRGBA = getRgba(colors.batColor, colors.batAlpha);
     const trailRGBA = getRgba(colors.trailColor, colors.trailAlpha);
 
