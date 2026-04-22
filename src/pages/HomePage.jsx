@@ -16,13 +16,11 @@ const HomePage = () => {
             <ul>
               <li>
                 {/* Pose Estimation 페이지로 이동 */}
-                <Link to="/pose">
-                  <span>Pose Estimation</span>
-                </Link>
+                <Link to="/pose">자세</Link>
               </li>
               {/* 나머지 메뉴들도 동일하게 Link로 변경 */}
-              <li><Link to="/track-ball">Track Ball</Link></li>
-              <li><Link to="/track-bat">Track Bat</Link></li>
+              <li><Link to="/track-ball">공 추적</Link></li>
+              <li><Link to="/track-bat">배트 궤적</Link></li>
             </ul>
           </div>
         </nav>

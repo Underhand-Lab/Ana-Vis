@@ -70,6 +70,11 @@ const TrackBatPage = () => {
         setSelectedCandidateIdx(currentSelected);
     }, [processedData]);
 
+    // 데이터나 프레임 인덱스가 변경될 때 후보군 상태를 자동으로 동기화
+    useEffect(() => {
+        updateCandidateState(currentIdx);
+    }, [currentIdx, updateCandidateState]);
+
     const maxFrame = processedData ? (processedData.getFrameCnt() - 1) : 0;
 
     // 데이터 불러오기 (.cvbt)
@@ -143,16 +148,23 @@ const TrackBatPage = () => {
         setConfValue(val);
         if (processedData) {
             processedData.setConf(val);
+            // 참조를 변경하여 하위 모듈의 리렌더링을 유도합니다.
+            setProcessedData(Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData));
         }
     };
 
-    // 후보군 선택 변경
-    const handleCandidateChange = (e) => {
-        const idx = parseInt(e.target.value);
+    // 후보군 선택 변경 로직 분리
+    const updateCandidateSelection = (idx) => {
         setSelectedCandidateIdx(idx);
         if (processedData) {
             processedData.setSelectedIdx(currentFrameIdx, idx);
+            // 참조를 변경하여 하위 모듈의 리렌더링을 유도합니다.
+            setProcessedData(Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData));
         }
+    };
+
+    const handleCandidateChange = (e) => {
+        updateCandidateSelection(parseInt(e.target.value));
     };
 
     return (
@@ -197,7 +209,6 @@ const TrackBatPage = () => {
                             value={currentIdx}
                             onChange={(e) => {
                                 setCurrentIdx(parseInt(e.target.value, 10));
-                                updateCandidateState(e.target.value);
                             }}
                             style={{ flex: 1 }}
                         />
@@ -226,18 +237,40 @@ const TrackBatPage = () => {
                         {/* 후보군 선택 UI (Candidate Select) */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                             <label>선택: </label>
-                            <select
-                                value={selectedCandidateIdx}
-                                onChange={handleCandidateChange}
-                                className="neumorphism-select"
-                            >
-                                <option value="-1">none</option>
-                                {candidates.map((cand, i) => (
-                                    <option key={i} value={i}>
-                                        {`${i + 1} (${(cand.confidence * 100).toFixed(0)}%)`}
-                                    </option>
-                                ))}
-                            </select>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                <button 
+                                    className="neumorphism-button" 
+                                    style={{ padding: '0 8px', height: '30px', minWidth: '30px' }}
+                                    onClick={() => {
+                                        const nextIdx = selectedCandidateIdx <= -1 ? candidates.length - 1 : selectedCandidateIdx - 1;
+                                        updateCandidateSelection(nextIdx);
+                                    }}
+                                >
+                                    &lt;
+                                </button>
+                                <select
+                                    value={selectedCandidateIdx}
+                                    onChange={handleCandidateChange}
+                                    className="neumorphism-select"
+                                >
+                                    <option value="-1">none</option>
+                                    {candidates.map((cand, i) => (
+                                        <option key={i} value={i}>
+                                            {`${i + 1} (${(cand.confidence * 100).toFixed(0)}%)`}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button 
+                                    className="neumorphism-button" 
+                                    style={{ padding: '0 8px', height: '30px', minWidth: '30px' }}
+                                    onClick={() => {
+                                        const nextIdx = selectedCandidateIdx >= candidates.length - 1 ? -1 : selectedCandidateIdx + 1;
+                                        updateCandidateSelection(nextIdx);
+                                    }}
+                                >
+                                    &gt;
+                                </button>
+                            </div>
                         </div>
 
                     </div>
@@ -258,19 +291,20 @@ const TrackBatPage = () => {
                 statusKey={statusKey}
             />
 
-            <Modal isOpen={isToolModalOpen} onClose={() => setToolModalOpen(false)} title="분석 도구 추가">
+            <Modal
+                isOpen={isToolModalOpen}
+                onClose={() => setToolModalOpen(false)}
+                title="분석 도구 추가"
+            >
                 <div>
-                    <button onClick={() => { analysisBoxRef.current?.addTool("video"); setToolModalOpen(false); }}>VIDEO</button>
-                    <br />
-                    <label className="label-for-btn">
-                        Plugin
-                        <input type="file" style={{ display: 'none' }} accept=".js" onChange={async (e) => {
-                            if (e.target.files[0]) {
-                                await analysisBoxRef.current?.registerPlugin(e.target.files[0]);
-                                setToolModalOpen(false);
-                            }
-                        }} />
-                    </label>
+                    {Object.keys(AVAILABLE_MODULES).map(key => (
+                        <div key={key}>
+                            <button onClick={() => handleAddModule(key)}>
+                                {key.toUpperCase()}
+                            </button>
+                            <br />
+                        </div>
+                    ))}
                 </div>
             </Modal>
         </div>
