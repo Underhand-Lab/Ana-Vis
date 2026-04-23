@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import DataTable from '../../../common/components/DataTable';
+import { Div } from '../../../common/components/ui/UI.jsx';
 
 function PoseTableContainer({ data, idx, analysisTools }) {
   const [selectedToolKey, setSelectedToolKey] = useState("angle");
@@ -29,15 +30,15 @@ function PoseTableContainer({ data, idx, analysisTools }) {
   };
 
   return (
-    <div className="viewer_container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Div className="viewer_container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-      <div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
+      <Div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
         {/* 분리한 테이블 컴포넌트에 데이터만 주입 */}
         <DataTable data={currentFrameData()} />
-      </div>
+      </Div>
 
-      <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px' }}>
-        <div>
+      <Div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px' }}>
+        <Div>
           <select
             value={selectedToolKey}
             onChange={(e) => setSelectedToolKey(e.target.value)}
@@ -48,8 +49,8 @@ function PoseTableContainer({ data, idx, analysisTools }) {
             <option value="angle-velocity">관절 회전 속도</option>
             <option value="height">관절 높이</option>
           </select>
-        </div></div>
-    </div>
+        </Div></Div>
+    </Div>
   );
 }
 

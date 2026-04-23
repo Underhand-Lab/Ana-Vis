@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import NewAnalysisGridContainer from '../common/components/NewAnalysisGridContainer.tsx';
 import VideoProcessorModal from '../common/components/VideoProcessorModal.jsx';
 import Modal from '../common/components/Modal.jsx';
@@ -16,6 +17,7 @@ import PoseGraphModule from '../features/pose/modules/PoseGraphModule.jsx';
 import PoseTableModule from '../features/pose/modules/PoseTableModule.jsx';
 import Pose3DVideoModule from '../features/pose/modules/Pose3DVideoModule.jsx';
 
+import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button } from '../common/components/ui/UI.jsx';
 
 // 정적 설정값
 const DETECTORS = {
@@ -39,6 +41,8 @@ const AVAILABLE_MODULES = {
 };
 
 const PosePage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [processedData, setProcessedData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -58,21 +62,39 @@ const PosePage = () => {
   // 데이터의 총 프레임 수를 계산 (processedData.length 가 존재한다고 가정)
   const maxFrame = processedData ? (processedData.getFrameCnt() - 1) : 0;
 
-  // 파일 불러오기 핸들러 (.cvp)
-  const handleLoadFile = async (e) => {
-    const file = e.target.files[0];
+  // 공통 로드 로직 분리
+  const loadPoseData = useCallback(async (file) => {
     if (!file) return;
-
     try {
       const data = new PoseData();
       await data.loadFromFile(file);
       data.analysisTools = ANALYSIS_TOOLS; // 데이터 로드 즉시 도구 주입
       setProcessedData(data);
       setCurrentIdx(0); // 데이터 로드 시 인덱스 초기화
-      e.target.value = "";
     } catch (err) {
       console.error("파일 로드 실패:", err);
       alert("데이터 파일을 불러오는 데 실패했습니다.");
+    }
+  }, []);
+
+  // 외부에서 파일이 전달된 경우 (더블 클릭 등) 감지
+  useEffect(() => {
+    if (location.state?.externalFile) {
+      const file = location.state.externalFile;
+      
+      // 파일 로드 전 state를 즉시 비워 중복 실행 방지
+      navigate(location.pathname, { replace: true, state: {} });
+      
+      loadPoseData(file);
+    }
+  }, [location.state, loadPoseData, navigate, location.pathname]);
+
+  // 파일 불러오기 핸들러 (.cvp)
+  const handleLoadFile = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      await loadPoseData(file);
+      e.target.value = "";
     }
   };
 
@@ -121,38 +143,43 @@ const PosePage = () => {
   };
 
   return (
-    <div id="wrapper">
-      <input
-        type="file"
+    <Div id="wrapper">
+      <InputFile
         ref={dataInputRef}
         style={{ display: 'none' }}
         accept=".cvp"
         onChange={handleLoadFile}
       />
 
-      <Navigation buttons={[
-        {
-          name: "새 분석", action: () => {
-            setProcessModalOpen(true);
-          }
-        },
-        { name: "불러오기", action: () => dataInputRef.current?.click() },
-        {
-          name: "저장",
-          action: async () => {
-            if (!processedData) return;
-            try {
-              const blob = await processedData.toBlob();
-              await saveBlobWithPicker(blob, "pose.cvp", [{
-                description: 'Pose Data File',
-                accept: { 'application/cvp': ['.cvp'] },
-              }], true, ".cvp");
-            } catch (error) {
-              console.error(error);
+      <Navigation 
+        fileButtons={[
+          {
+            name: "새 분석", action: () => {
+              setProcessModalOpen(true);
+            }
+          },
+          { name: "불러오기", action: () => dataInputRef.current?.click() },
+          {
+            name: "저장",
+            action: async () => {
+              if (!processedData) return;
+              try {
+                const blob = await processedData.toBlob();
+                await saveBlobWithPicker(blob, "pose.cvp", [{
+                  description: 'Pose Data File',
+                  accept: { 'application/cvp': ['.cvp'] },
+                }], true, ".cvp");
+              } catch (error) {
+                console.error(error);
+              }
             }
           }
-        }
-      ]} />
+        ]} 
+        toolButtons={Object.keys(AVAILABLE_MODULES).map(key => ({
+          name: `${key} 추가`,
+          action: () => handleAddModule(key)
+        }))}
+      />
 
       {/* 그리드 컨테이너: currentIdx와 data를 prop으로 직접 전달 */}
       <NewAnalysisGridContainer
@@ -163,10 +190,10 @@ const PosePage = () => {
       />
 
       {/* 하단 컨트롤러 영역 */}
-      <div className="slider">
-        <div className="container neumorphism">
-          <div className="divide" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '15px' }}>
+      <FixedFooter>
+        <Box className="container">
+          <Div className="Divide" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <Div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '15px' }}>
               <input 
                 type="range" 
                 id="frameSlider" 
@@ -177,17 +204,17 @@ const PosePage = () => {
                 onChange={(e) => setCurrentIdx(parseInt(e.target.value, 10))} 
                 style={{ flex: 1 }}
               />
-            </div>
+            </Div>
             
-            <button 
-              className="neumorphism-button"
+            <Button 
+              className="neumorphism-Button"
               onClick={() => setToolModalOpen(true)}
             >
               도구 추가
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </Div>
+        </Box>
+      </FixedFooter>
 
       <VideoProcessorModal
         isOpen={isProcessModalOpen}
@@ -205,17 +232,17 @@ const PosePage = () => {
         onClose={() => setToolModalOpen(false)}
         title="분석 도구 추가"
       >
-        <div>
+        <Div>
           {Object.keys(AVAILABLE_MODULES).map(key => (
-            <div key={key}>
-            <button onClick={() => handleAddModule(key)}>
+            <Div key={key}>
+            <Button onClick={() => handleAddModule(key)}>
               {key.toUpperCase()}
-            </button>
-            <br/></div>
+            </Button>
+            </Div>
           ))}
-        </div>
+        </Div>
       </Modal>
-    </div>
+    </Div>
   );
 };
 

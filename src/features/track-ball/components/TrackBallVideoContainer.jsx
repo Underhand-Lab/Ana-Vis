@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { useTrackFrame } from '../hooks/useTrackBallFrame.jsx';
 import { CanvasRenderer } from "../../../lib/cv-val-visualizer/canvas-renderer.js"
 import { exportVideo } from '../../../common/utils/exportVideo';
+import { Div, Button } from '../../../common/components/ui/UI.jsx';
 
 const TrackBallVideoContainer = ({ data, idx }) => {
   const canvasRef = useRef(null);
@@ -69,19 +70,19 @@ const TrackBallVideoContainer = ({ data, idx }) => {
   };
 
   return (
-    <div>
+    <Div>
       {/* 메인 출력 캔버스 */}
       <canvas ref={canvasRef} style={{ width: '100%', height: "100%", display: 'block', backgroundColor: 'black', position: 'absolute', top: 0 }} />
 
-      <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px', textAlign: 'left' }}>
+      <Div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px', textAlign: 'left' }}>
 
-        <button
+        <Button
           onClick={handleExportVideo}
           disabled={isExporting}
           style={{ width: '100%', cursor: isExporting ? 'not-allowed' : 'pointer' }}
         >
           {isExporting ? '저장중..' : '저장하기'}
-        </button>
+        </Button>
         <label>
           <input
             type="checkbox"
@@ -108,8 +109,8 @@ const TrackBallVideoContainer = ({ data, idx }) => {
             onChange={(e) => handleOptionChange('trailColor', e.target.value)}
           />
         </label>
-      </div>
-    </div>
+      </Div>
+    </Div>
   );
 };
 

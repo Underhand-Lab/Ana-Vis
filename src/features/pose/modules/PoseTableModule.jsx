@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import DataTable from '../../../common/components/DataTable';
+import { Div, InputCheckbox } from '../../../common/components/ui/UI.jsx';
 
 /**
  * 모듈의 기본 설정값
@@ -44,11 +45,11 @@ export const PoseTableView = ({ data, currentFrame, settings }) => {
     }, [data, settings, currentFrame]);
 
     return (
-        <div className="viewer_container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
+        <Div className="viewer_container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+            <Div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
                 <DataTable data={currentFrameData} />
-            </div>
-        </div>
+            </Div>
+        </Div>
     );
 };
 
@@ -65,8 +66,8 @@ export const PoseTableSettings = ({ settings, onSettingsChange, data }) => {
     const availableKeys = useMemo(() => (currentTool ? Object.keys(currentTool.calc(data)) : []), [data, currentTool]);
 
     return (
-        <div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
-            <div>
+        <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
+            <Div>
                 <label style={{ marginRight: '10px' }}>
                     <strong>도구</strong>:
                 </label>
@@ -80,29 +81,27 @@ export const PoseTableSettings = ({ settings, onSettingsChange, data }) => {
                     <option value="angle-velocity">관절 회전 속도</option>
                     <option value="height">관절 높이</option>
                 </select>
-            </div>
+            </Div>
 
             {/* 행 선택(가시성) 설정 영역 */}
-            <div>
+            <Div>
                 <h4 style={{ fontSize: '13px', marginBottom: '8px' }}>표시할 데이터 선택</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {availableKeys.map((key) => (
-                        <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer' }}>
-                            <input
-                                type="checkbox"
-                                checked={settings.visibility?.[key] !== false}
-                                onChange={(e) => {
-                                    const newVisibility = { ... (settings.visibility || {}) };
-                                    newVisibility[key] = e.target.checked;
-                                    onSettingsChange({ ...settings, visibility: newVisibility });
-                                }}
-                            />
-                            {key}
-                        </label>
+                        <InputCheckbox
+                            key={key}
+                            label={key}
+                            checked={settings.visibility?.[key] !== false}
+                            onChange={(e) => {
+                                const newVisibility = { ... (settings.visibility || {}) };
+                                newVisibility[key] = e.target.checked;
+                                onSettingsChange({ ...settings, visibility: newVisibility });
+                            }}
+                        />
                     ))}
-                </div>
-            </div>
-        </div>
+                </Div>
+            </Div>
+        </Div>
     );
 };
 

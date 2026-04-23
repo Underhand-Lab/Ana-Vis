@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 import { usePoseVisualize } from "../hooks/usePoseVisualize.jsx"
+import { Div, Button } from '../../../common/components/ui/UI.jsx';
 
 function Pose3DVideoContainer({ data, idx }) {
     // 1. 캔버스 및 렌더링 인스턴스 관리
@@ -34,40 +35,40 @@ function Pose3DVideoContainer({ data, idx }) {
     }, [idx, drawImageAt, data]);
 
     return (
-        <div>
+        <Div>
 
             {/* 메인 출력 캔버스 */}
             <canvas ref={canvasRef} style={{ flex: 1, background: 'black', width: '100%', height: '100%', position: 'absolute', top: 0 }} />
 
-            <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px' }}>
+            <Div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{ top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px' }}>
 
-                <div className="flex-view"
+                <Div className="flex-view"
                     style={{ justifyContent: 'left' }}>
                     {Object.entries(colorMap).map(([key, label]) => (
-                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Div key={key} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                             <input
                                 type="color"
                                 value={options[key]}
                                 onChange={(e) => handleColorChange(key, e.target.value)}
                             />
                             <span style={{ fontSize: '12px' }}>{label}</span>
-                        </div>
+                        </Div>
                     ))}
-                </div>
+                </Div>
                 {/* 
-                <div style={{ textAlign: 'right' }}>
-                    <button className="neumorphism-button" style={{ padding: '5px 15px' }} onClick={
+                <Div style={{ textAlign: 'right' }}>
+                    <Button className="neumorphism-Button" style={{ padding: '5px 15px' }} onClick={
                         async () => {
                             const blob = await frameMakerDataToBlob(frameMaker, frameMaker.data);
                             await saveBlobWithPicker(blob, "poseVideo.mp4", [{
                                 description: 'Video File', accept: { 'video/mp4': ['.mp4'] }
                             }], true, "mp4");
                         }
-                    }>SAVE</button>
-                </div>
+                    }>SAVE</Button>
+                </Div>
                 */}
-            </div>
-        </div>
+            </Div>
+        </Div>
     );
 }
 

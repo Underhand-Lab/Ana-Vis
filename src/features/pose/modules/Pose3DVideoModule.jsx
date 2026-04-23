@@ -2,67 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { usePose3DVisualize } from "../hooks/usePose3DVisualize.jsx"
-import { RgbaColorPicker } from "react-colorful";
-
-/**
- * RGBA 문자열 파싱 및 변환 헬퍼
- */
-const parseRgba = (rgbaStr) => {
-    if (!rgbaStr || typeof rgbaStr !== 'string') return { r: 255, g: 255, b: 255, a: 1 };
-
-    if (rgbaStr.startsWith('#')) {
-        const r = parseInt(rgbaStr.slice(1, 3), 16);
-        const g = parseInt(rgbaStr.slice(3, 5), 16);
-        const b = parseInt(rgbaStr.slice(5, 7), 16);
-        return { r, g, b, a: 1 };
-    }
-
-    const match = rgbaStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    if (!match) return { r: 255, g: 255, b: 255, a: 1 };
-
-    return {
-        r: parseInt(match[1], 10),
-        g: parseInt(match[2], 10),
-        b: parseInt(match[3], 10),
-        a: match[4] ? parseFloat(match[4]) : 1
-    };
-};
-
-const ColorPickerItem = ({ label, value, onChange }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [localColor, setLocalColor] = useState(value);
-
-    useEffect(() => {
-        setLocalColor(value);
-    }, [value]);
-
-    const handleColorChange = (color) => {
-        const newRgba = `rgba(${color.r},${color.g},${color.b},${color.a})`;
-        setLocalColor(newRgba);
-        onChange(newRgba);
-    };
-
-    return (
-        <div style={{ position: 'relative', marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                    onClick={() => setIsOpen(!isOpen)}
-                    style={{
-                        width: '30px', height: '30px', borderRadius: '4px', border: '2px solid white',
-                        boxShadow: '0 0 0 1px #ddd', background: localColor, cursor: 'pointer'
-                    }}
-                />
-                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{label}</span>
-            </div>
-            {isOpen && (
-                <div style={{ position: 'absolute', zIndex: 100, top: '35px', left: 0 }}>
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }} onClick={() => setIsOpen(false)} />
-                    <RgbaColorPicker color={parseRgba(localColor)} onChange={handleColorChange} />
-                </div>
-            )}
-        </div>
-    );
-};
+import { Div, InputColor } from '../../../common/components/ui/UI.jsx';
 
 /**
  * 모듈 설정 및 기본값
@@ -114,9 +54,9 @@ export const Pose3DVideoView = ({ data, currentFrame, settings }) => {
     }, [data, currentFrame, drawPose]);
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <Div style={{ width: '100%', height: '100%', position: 'relative' }}>
             <canvas ref={canvasRef} style={{ width: '100%', height: '100%', background: 'black', position: 'absolute', top: 0, left: 0 }} />
-        </div>
+        </Div>
     );
 };
 
@@ -125,19 +65,19 @@ export const Pose3DVideoView = ({ data, currentFrame, settings }) => {
  */
 export const Pose3DVideoSettings = ({ settings, onSettingsChange, data }) => {
     return (
-        <div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
+        <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {Object.entries(colorMap).map(([key, label]) => (
-                    <ColorPickerItem
+            <Div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {Object.entries(colorMap).map(([key, label]) => ( // eslint-disable-line react-hooks/exhaustive-deps
+                    <InputColor
                         key={key}
                         label={label}
                         value={settings[key] || defaultSettings[key]}
                         onChange={(newColor) => onSettingsChange({ ...settings, [key]: newColor })}
                     />
                 ))}
-            </div>
-        </div>
+            </Div>
+        </Div>
     );
 };
 

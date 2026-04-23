@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import DataTable from '../../../common/components/DataTable';
+import { Div } from '../../../common/components/ui/UI.jsx';
 
 const TrackBallTableContainer = ({ data, idx, analysisTool }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -31,11 +32,11 @@ const TrackBallTableContainer = ({ data, idx, analysisTool }) => {
   };
 
   return (
-    <div className="viewer_container" style={containerStyle}>
-      <div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '5px' : 'var(--table-padding, 10px)' }}>
+    <Div className="viewer_container" style={containerStyle}>
+      <Div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '5px' : 'var(--table-padding, 10px)' }}>
         <DataTable data={currentFrameData()} isMobile={isMobile} />
-      </div>
-    </div>
+      </Div>
+    </Div>
   );
 };
 

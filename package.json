@@ -9,13 +9,45 @@
   "scripts": {
     "dev": "vite dev",
     "dev:electron": "electron-vite dev",
-    "build:web": "vite build",
-    "build:electron": "electron-vite build",
+    "build:web": "vite build --mode web",
+    "build:electron": "vite build --mode desktop && electron-vite build",
     "dist": "electron-vite build && electron-builder",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "electron-vite preview",
     "prebuild": "electron-vite build"
+  },
+  "build": {
+    "appId": "com.underland-lab.cvval",
+    "productName": "CV-Val",
+    "directories": {
+      "output": "release",
+      "buildResources": "public"
+    },
+    "files": [
+      "out/**"
+    ],
+    "icon": "desktop-ico.png",
+    "win": {
+      "icon": "desktop-ico.png"
+    },
+    "fileAssociations": [
+      {
+        "ext": "cvp",
+        "name": "Pose Data File",
+        "role": "Editor"
+      },
+      {
+        "ext": "cvbl",
+        "name": "Track Ball Data File",
+        "role": "Editor"
+      },
+      {
+        "ext": "cvbt",
+        "name": "Track Bat Data File",
+        "role": "Editor"
+      }
+    ]
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

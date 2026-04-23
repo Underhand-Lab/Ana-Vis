@@ -1,80 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { GraphVisualizer } from "../../../lib/visualizer/graph.js";
-import { RgbaColorPicker } from "react-colorful";
-
-const parseRgba = (rgbaStr) => {
-    if (!rgbaStr || typeof rgbaStr !== 'string') return { r: 255, g: 255, b: 255, a: 1 };
-
-    // Hex 지원 (#RRGGBB)
-    if (rgbaStr.startsWith('#')) {
-        const r = parseInt(rgbaStr.slice(1, 3), 16);
-        const g = parseInt(rgbaStr.slice(3, 5), 16);
-        const b = parseInt(rgbaStr.slice(5, 7), 16);
-        return { r, g, b, a: 1 };
-    }
-
-    // RGBA 정규식 개선 (공백 유무에 유연하게 대응)
-    const match = rgbaStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    if (!match) return { r: 255, g: 255, b: 255, a: 1 };
-
-    return {
-        r: parseInt(match[1], 10),
-        g: parseInt(match[2], 10),
-        b: parseInt(match[3], 10),
-        a: match[4] ? parseFloat(match[4]) : 1
-    };
-};
-
-const ColorPickerItem = ({ label, value, onChange }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    // 로컬 상태를 두어 드래그 시 즉각적인 반응을 보장합니다.
-    const [localColor, setLocalColor] = useState(value);
-
-    // 외부에서 들어오는 value가 바뀌면 로컬 상태 동기화
-    useEffect(() => {
-        if (value && value !== localColor) {
-            setLocalColor(value);
-        }
-    }, [value]);
-
-    const handleColorChange = useCallback((color) => {
-        const newRgba = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
-        setLocalColor(newRgba);
-        onChange(newRgba);
-    }, [onChange]);
-
-    return (
-        <div style={{ position: 'relative', marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                    onClick={() => setIsOpen(!isOpen)}
-                    style={{
-                        width: '36px', height: '36px', borderRadius: '4px', border: '2px solid white',
-                        boxShadow: '0 0 0 1px #ddd', background: localColor, cursor: 'pointer'
-                    }}
-                />
-                {label && <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{label}</span>}
-            </div>
-            {isOpen && (
-                <div style={{ position: 'absolute', zIndex: 100, top: '40px', left: 0 }}>
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }} onClick={() => setIsOpen(false)} />
-                    <RgbaColorPicker color={parseRgba(localColor)} onChange={handleColorChange} />
-                </div>
-            )}
-        </div>
-    );
-};
+import { Div, InputColor, InputNumber, InputCheckbox } from '../../../common/components/ui/UI.jsx';
 
 const LegendItem = ({ label, color, isVisible, onToggleVisibility, onColorChange }) => {
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' }}>
-            <input
-                type="checkbox"
+        <Div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' }}>
+            <InputCheckbox
                 checked={isVisible}
                 onChange={onToggleVisibility}
-                style={{ cursor: 'pointer' }}
-            />
-            <ColorPickerItem
+            /> 
+            <InputColor
                 value={color}
                 onChange={onColorChange}
             />
@@ -83,7 +18,7 @@ const LegendItem = ({ label, color, isVisible, onToggleVisibility, onColorChange
             >
                 {label}
             </span>
-        </div>
+        </Div>
     );
 };
 
@@ -144,14 +79,14 @@ export const PoseGraphView = ({ data, currentFrame, settings, isSettingsOpen, mo
     }, [data, resolvedSettings, currentFrame, visualizer, settings.selectedToolKey]);
 
     return (
-        <div className="viewer_container" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ flex: 1, minHeight: 0 }}>
+        <Div className="viewer_container" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <Div style={{ flex: 1, minHeight: 0 }}>
                 <canvas
                     ref={canvasRef}
                     style={{ width: '100%', height: '100%' }}
                 />
-            </div>
-        </div>
+            </Div>
+        </Div>
     );
 };
 
@@ -173,9 +108,9 @@ export const PoseGraphSettings = ({ settings, onSettingsChange, data, moduleId, 
     }, [data, settings.selectedToolKey]);
 
     return (
-        <div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
+        <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
             {/* 도구 선택 영역 */}
-            <div>
+            <Div>
                 <label style={{ marginRight: '10px' }}>
                     <strong>도구</strong>:
                 </label>
@@ -189,13 +124,12 @@ export const PoseGraphSettings = ({ settings, onSettingsChange, data, moduleId, 
                     <option value="angle-velocity">관절 회전 속도</option>
                     <option value="height">관절 높이</option>
                 </select>
-            </div>
+            </Div>
 
             {/* 선 굵기 설정 추가 */}
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center' }}>
+            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center' }}>
                 <label style={{ fontSize: '12px', fontWeight: 'bold' }}>선 굵기</label>
-                <input
-                    type="number"
+                <InputNumber
                     min="1"
                     value={settings.lineWidth || 2}
                     onChange={(e) => {
@@ -210,12 +144,12 @@ export const PoseGraphSettings = ({ settings, onSettingsChange, data, moduleId, 
                     }}
                     style={{ maxWidth: '70px', padding: '4px', borderRadius: '4px', border: '1px solid #d1d9e6' }}
                 />
-            </div>
+            </Div>
 
             {/* 그래프 범례 및 색상 선택 영역 (React로 직접 렌더링) */}
-            <div>
+            <Div>
                 <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>그래프 범례</h4>
-                <div
+                <Div
                     className="custom-legend-container flex-view"
                     style={{ textAlign: 'left' }}
                 >
@@ -247,9 +181,9 @@ export const PoseGraphSettings = ({ settings, onSettingsChange, data, moduleId, 
                             />
                         );
                     })}
-                </div>
-            </div>
-        </div>
+                </Div>
+            </Div>
+        </Div>
     );
 };
 

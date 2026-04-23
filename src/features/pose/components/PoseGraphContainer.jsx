@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GraphVisualizer } from "../../../lib/visualizer/graph.js";
+import { Div } from '../../../common/components/ui/UI.jsx';
 
 function PoseGraphContainer({ data, idx, analysisTools }) {
     const canvasRef = useRef(null);
@@ -48,19 +49,19 @@ function PoseGraphContainer({ data, idx, analysisTools }) {
     }, [idx, data, visualizer]);
 
     return (
-        <div className="viewer_container" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Div className="viewer_container" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
             {/* 그래프 캔버스 영역 */}
-            <div style={{ flex: 1, minHeight: 0 }}>
+            <Div style={{ flex: 1, minHeight: 0 }}>
                 <canvas 
                     ref={canvasRef} 
                     style={{ width: '100%', height: '100%' }} 
                 />
-            </div>
+            </Div>
 
-            <div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px'}}>
+            <Div className="grid-item-overlay setting frostedglassmorphism flex-view" style={{top: '40px', right: 0, overflowY: 'auto', bottom: 0, padding: '20px'}}>
                 {/* 상단 도구 선택 영역 */}
-                <div>
+                <Div>
                     <label style={{ marginRight: '10px' }}>
                         <strong>도구</strong>:
                     </label>
@@ -74,21 +75,21 @@ function PoseGraphContainer({ data, idx, analysisTools }) {
                         <option value="angle-velocity">관절 회전 속도</option>
                         <option value="height">관절 높이</option>
                     </select>
-                </div>
+                </Div>
 
                 {/* 범례 컨테이너 영역 */}
-                <div>
-                    <div 
+                <Div>
+                    <Div 
                         ref={legendRef} 
                         className="custom-legend-container flex-view"
                         style={{ textAlign: 'left'}}
                     >
                         {/* GraphVisualizer.setData에 의해 내부 DOM이 동적으로 생성됩니다 */}
-                    </div>
-                </div>
+                    </Div>
+                </Div>
 
-            </div>
-        </div>
+            </Div>
+        </Div>
     );
 }
 

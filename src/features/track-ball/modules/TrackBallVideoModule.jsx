@@ -2,44 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTrackFrame } from '../hooks/useTrackBallFrame.jsx';
 import { CanvasRenderer } from "../../../lib/cv-val-visualizer/canvas-renderer.js";
 import { exportVideo } from "../../../common/utils/exportVideo.jsx";
-import { RgbaColorPicker } from "react-colorful";
-
-const parseRgba = (rgbaStr) => {
-    if (!rgbaStr || typeof rgbaStr !== 'string') return { r: 255, g: 255, b: 255, a: 1 };
-    const match = rgbaStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    if (!match) return { r: 255, g: 255, b: 255, a: 1 };
-    return {
-        r: parseInt(match[1], 10), g: parseInt(match[2], 10), b: parseInt(match[3], 10),
-        a: match[4] ? parseFloat(match[4]) : 1
-    };
-};
-
-const ColorPickerItem = ({ label, value, onChange }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div style={{ position: 'relative', marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div 
-                    onClick={() => setIsOpen(!isOpen)}
-                    style={{ 
-                        width: '36px', height: '36px', borderRadius: '4px', border: '2px solid white',
-                        boxShadow: '0 0 0 1px #ddd', background: value, cursor: 'pointer' 
-                    }} 
-                />
-                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{label}</span>
-            </div>
-            {isOpen && (
-                <div style={{ position: 'absolute', zIndex: 100, top: '40px', left: 0 }}>
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }} onClick={() => setIsOpen(false)} />
-                    <RgbaColorPicker 
-                        color={parseRgba(value)} 
-                        onChange={(c) => onChange(`rgba(${c.r},${c.g},${c.b},${c.a})`)} 
-                    />
-                </div>
-            )}
-        </div>
-    );
-};
+import { Div, Button, InputColor, InputCheckbox } from '../../../common/components/ui/UI.jsx';
 
 const defaultSettings = {
     showConfidence: false,
@@ -99,9 +62,9 @@ export const TrackBallVideoView = ({ data, currentFrame, settings }) => {
     }, [currentFrame, drawImageAt, renderer, drawTick]);
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <Div style={{ width: '100%', height: '100%', position: 'relative' }}>
             <canvas ref={canvasRef} style={{ width: '100%', height: '100%', background: 'black', position: 'absolute', top: 0, left: 0 }} />
-        </div>
+        </Div>
     );
 };
 
@@ -145,31 +108,32 @@ export const TrackBallVideoSettings = ({ settings, onSettingsChange, data }) => 
     };
 
     return (
-        <div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
-            <button onClick={handleExport} disabled={isExporting || !data} style={{ width: '100%', padding: '10px' }}>
+        <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
+            <Button onClick={handleExport} disabled={isExporting || !data} style={{ width: '100%', padding: '10px' }}>
                 {isExporting ? '저장중..' : '비디오 저장'}
-            </button>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input type="checkbox" checked={settings.showConfidence} onChange={e => onSettingsChange({...settings, showConfidence: e.target.checked})} />
-                Confidence 표시
-            </label>
-            <ColorPickerItem 
+            </Button>
+            <InputCheckbox
+                label="Confidence 표시"
+                checked={settings.showConfidence}
+                onChange={e => onSettingsChange({...settings, showConfidence: e.target.checked})}
+            />
+            <InputColor
                 label="Box 색상" 
                 value={settings.boxColor} 
                 onChange={(c) => onSettingsChange({ ...settings, boxColor: c })} 
             />
-            <ColorPickerItem 
+            <InputColor
                 label="Trail 색상" 
                 value={settings.trailColor} 
                 onChange={(c) => onSettingsChange({ ...settings, trailColor: c })} 
             />
-        </div>
+        </Div>
     );
 };
 
 export const TrackBallVideoModule = {
     id: 'track-ball-video',
-    title: '공 추적 비디오',
+    title: '동영상',
     View: TrackBallVideoView,
     Settings: TrackBallVideoSettings,
     defaultSettings

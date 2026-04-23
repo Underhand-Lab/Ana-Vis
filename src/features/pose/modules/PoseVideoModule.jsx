@@ -3,55 +3,7 @@ import { CanvasRenderer } from "../../../lib/cv-val-visualizer/canvas-renderer.j
 import { usePoseVisualize } from "../hooks/usePoseVisualize.jsx";
 import { exportVideo } from "../../../common/utils/exportVideo.jsx";
 import { RgbaColorPicker } from "react-colorful";
-
-/**
- * RGBA 문자열을 { r, g, b, a } 객체로 변환
- */
-const parseRgba = (rgbaStr) => {
-    if (!rgbaStr || typeof rgbaStr !== 'string') return { r: 255, g: 255, b: 255, a: 1 };
-    const match = rgbaStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    if (!match) return { r: 255, g: 255, b: 255, a: 1 };
-    return {
-        r: parseInt(match[1], 10),
-        g: parseInt(match[2], 10),
-        b: parseInt(match[3], 10),
-        a: match[4] ? parseFloat(match[4]) : 1
-    };
-};
-
-/**
- * { r, g, b, a } 객체를 rgba 문자열로 변환
- */
-const stringifyRgba = (obj) => `rgba(${obj.r},${obj.g},${obj.b},${obj.a})`;
-
-/**
- * 개별 색상 피커 컴포넌트
- */
-const ColorPickerItem = ({ label, value, onChange }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const pickerRef = useRef(null);
-
-    return (
-        <div style={{ position: 'relative', marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                    onClick={() => setIsOpen(!isOpen)}
-                    style={{
-                        width: '36px', height: '36px', borderRadius: '4px', border: '2px solid white',
-                        boxShadow: '0 0 0 1px #ddd', background: value, cursor: 'pointer'
-                    }}
-                />
-                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{label}</span>
-            </div>
-            {isOpen && (
-                <div style={{ position: 'absolute', zIndex: 100, top: '40px', left: 0 }}>
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }} onClick={() => setIsOpen(false)} />
-                    <RgbaColorPicker color={parseRgba(value)} onChange={(color) => onChange(`rgba(${color.r},${color.g},${color.b},${color.a})`)} />
-                </div>
-            )}
-        </div>
-    );
-};
+import { Div, Button, InputNumber, InputColor, InputCheckbox } from '../../../common/components/ui/UI.jsx';
 
 /**
  * 모듈에서 사용할 색상 매핑 및 기본 설정값
@@ -102,7 +54,7 @@ export const PoseVideoView = ({ data, currentFrame, settings }) => {
         if (settings) {
             setOptions(settings);
             const timerId = setTimeout(() => setDrawTick(t => t + 1), 0);
-            return () => clearTimeout(timerId);
+            return () => clearTimeout(timerId); // eslint-disable-line react-hooks/exhaustive-deps
         }
     }, [settings, setOptions]);
 
@@ -143,9 +95,9 @@ export const PoseVideoView = ({ data, currentFrame, settings }) => {
     // 의존성에서 settings를 drawTick으로 대체하여 설정 적용 후 그리기가 보장되도록 함
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <Div style={{ width: '100%', height: '100%', position: 'relative' }}>
             <canvas ref={canvasRef} style={{ width: '100%', height: '100%', background: 'black', position: 'absolute', top: 0, left: 0 }} />
-        </div>
+        </Div>
     );
 };
 
@@ -198,29 +150,26 @@ export const PoseVideoSettings = ({ settings, onSettingsChange, data, currentFra
     };
 
     return (
-        <div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
+        <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
 
 
-            <button
+            <Button
                 onClick={handleExport}
                 disabled={isExporting || !data}
                 style={{ margin: 0, padding: '8px 15px', width: '100%', cursor: isExporting || !data ? 'not-allowed' : 'pointer' }}
             >
                 {isExporting ? '저장 중...' : '비디오 저장'}
-            </button>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 'bold' }}>
-                <input
-                    type="checkbox"
-                    checked={settings.showBackground !== false}
-                    onChange={(e) => onSettingsChange({ ...settings, showBackground: e.target.checked })}
-                />
-                배경 이미지 표시
-            </label>
+            </Button>
+            <InputCheckbox
+                label="배경 이미지 표시"
+                checked={settings.showBackground !== false}
+                onChange={(e) => onSettingsChange({ ...settings, showBackground: e.target.checked })}
+                style={{ fontWeight: 'bold' }}
+            />
             {/* 선 굵기 설정 추가 */}
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 'bold', alignContent: 'center' }}>선 굵기</label> {/* Display current value */}
-                <input
-                    type="number" // 'range'에서 'number'로 변경
+                <InputNumber
                     min="1"
                     // 'max'와 'step' 속성은 무제한 양수 입력을 위해 제거
                     value={settings.lineWidth || 2}
@@ -236,9 +185,9 @@ export const PoseVideoSettings = ({ settings, onSettingsChange, data, currentFra
                     }}
                     style={{ maxWidth: '70px', cursor: 'pointer' }}
                 />
-            </div>
+            </Div>
             {/* 관절 모양 설정 추가 */}
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 'bold', alignContent: 'center' }}>관절 모양</label>
                 <select
                     value={settings.jointShape || 'circle'}
@@ -248,12 +197,11 @@ export const PoseVideoSettings = ({ settings, onSettingsChange, data, currentFra
                     <option value="circle">원형 (Circle)</option>
                     <option value="rect">사각형 (Square)</option>
                 </select>
-            </div>
+            </Div>
             {/* 관절 크기 설정 추가 */}
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 'bold', alignContent: 'center' }}>관절 크기</label>
-                <input
-                    type="number"
+                <InputNumber
                     min="0"
                     value={settings.jointRadius !== undefined ? settings.jointRadius : 4}
                     onChange={(e) => {
@@ -268,12 +216,11 @@ export const PoseVideoSettings = ({ settings, onSettingsChange, data, currentFra
                     }}
                     style={{ maxWidth: '70px', cursor: 'pointer' }}
                 />
-            </div>
+            </Div>
             {/* 관절 테두리 설정 추가 */}
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 'bold', alignContent: 'center' }}>관절 테두리</label>
-                <input
-                    type="number"
+                <InputNumber
                     min="0"
                     value={settings.jointStrokeWidth !== undefined ? settings.jointStrokeWidth : 2}
                     onChange={(e) => {
@@ -288,18 +235,18 @@ export const PoseVideoSettings = ({ settings, onSettingsChange, data, currentFra
                     }}
                     style={{ maxWidth: '70px', cursor: 'pointer' }}
                 />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {Object.entries(colorMap).map(([key, label]) => (
-                    <ColorPickerItem
+            </Div>
+            <Div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {Object.entries(colorMap).map(([key, label]) => ( // eslint-disable-line react-hooks/exhaustive-deps
+                    <InputColor
                         key={key}
                         label={label}
                         value={settings[key] || defaultSettings[key]}
                         onChange={(newColor) => onSettingsChange({ ...settings, [key]: newColor })}
                     />
                 ))}
-            </div>
-        </div>
+            </Div>
+        </Div>
     );
 };
 

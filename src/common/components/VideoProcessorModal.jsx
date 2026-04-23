@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Modal from './Modal';
+import { InputFile, Div, Select, Button } from './ui/UI';
 
 const VideoProcessorModal = ({ 
   isOpen, 
@@ -12,7 +13,7 @@ const VideoProcessorModal = ({
   progress,    // { current: 0, total: 0 }
   statusKey 
 }) => {
-  const [selectedModel, setSelectedModel] = useState(defaultModel || models[0] || '');
+  const [SelectedModel, setSelectedModel] = useState(defaultModel || models[0] || '');
   const [hasFile, setHasFile] = useState(false);
   const videoInputRef = useRef(null);
 
@@ -45,7 +46,7 @@ const handleFileChange = (e) => {
   const handleStart = () => {
     const files = videoInputRef.current?.files;
     if (!files || files.length < 1) return;
-    onProcess(files, selectedModel);
+    onProcess(files, SelectedModel);
   };
 
   return (
@@ -54,55 +55,54 @@ const handleFileChange = (e) => {
       onClose={() => !isProcessing && onClose()}
       title={title}
     >
-      <div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <div style={{ flex: '1' }}>
-            <input
-              type="file"
+      <Div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
+        <Div style={{ display: 'flex', gap: '15px' }}>
+          <Div style={{ flex: '1' }}>
+            <InputFile
               ref={videoInputRef}
               accept="video/*"
               style={{ width: '100%' }}
               onChange={handleFileChange}
               disabled={isProcessing}
             />
-          </div>
+          </Div>
           {models.length > 0 && (
-            <div style={{ whiteSpace: 'nowrap' }}>
-              <label htmlFor="model-select">모델 선택 </label>
-              <select
-                id="model-select"
-                value={selectedModel}
+            <Div style={{ whiteSpace: 'nowrap' }}>
+              <label htmlFor="model-Select">모델 선택 </label>
+              <Select
+                id="model-Select"
+                value={SelectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
-                className="neumorphism-select"
+                className="neumorphism-Select"
                 disabled={isProcessing}
               >
                 {models.map(m => (
                   <option key={m} value={m}>{m}</option>
                 ))}
-              </select>
-            </div>
+              </Select>
+            </Div>
           )}
-        </div>
+        </Div>
 
-        <div>
-          <button
+        <Div>
+          <Button
             style={{ width: '100%', margin: '0px', padding: '12px 24px', fontSize: '16px' }}
             onClick={handleStart}
             disabled={!hasFile || isProcessing}
           >
             {isProcessing ? '처리 중...' : '분석 시작'}
-          </button>
+          </Button>
 
-          <div id="status-section" style={{ marginTop: '15px' }}>
+          <Div id="status-section" style={{ marginTop: '15px' }}>
             <p style={{ fontSize: '14px', color: '#666' }}>
               {statusKey}
               {isProcessing && progress.total > 0 && ` : ${progress.current} / ${progress.total}`}
             </p>
 
-            <div id="progress-bar-container" style={{ 
+            <Div id="progress-bar-container" style={{ 
               width: '100%', height: '10px', background: '#eee', borderRadius: '5px', overflow: 'hidden' 
             }}>
-              <div
+              <Div
                 id="progress-bar"
                 style={{ 
                   width: `${(progress.current / Math.max(progress.total, 1)) * 100}%`,
@@ -110,11 +110,11 @@ const handleFileChange = (e) => {
                   background: '#4CAF50',
                   transition: 'width 0.3s ease'
                 }}
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
+              ></Div>
+            </Div>
+          </Div>
+        </Div>
+      </Div>
     </Modal>
   );
 };

@@ -1,8 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import NewAnalysisGridContainer from '../common/components/NewAnalysisGridContainer.tsx';
 import VideoProcessorModal from '../common/components/VideoProcessorModal.jsx';
 import Modal from '../common/components/Modal.jsx';
 import Navigation from '../common/components/Navigation.jsx';
+
+import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button } from '../common/components/ui/UI.jsx';
 
 import TrackBallVideoModule from "../features/track-ball/modules/TrackBallVideoModule.jsx"
 import TrackBallTableModule from "../features/track-ball/modules/TrackBallTableModule.jsx"
@@ -34,6 +37,8 @@ const AVAILABLE_MODULES = {
 };
 
 const TrackBallPage = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [processedData, setProcessedData] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -78,22 +83,38 @@ const TrackBallPage = () => {
 
     const maxFrame = processedData ? (processedData.getFrameCnt() - 1) : 0;
 
-    // 파일 불러오기 핸들러 (.cvbl)
-    const handleLoadFile = async (e) => {
-        const file = e.target.files[0];
+    // 공통 로드 로직 분리
+    const loadTrackBallData = useCallback(async (file) => {
         if (!file) return;
-
         try {
             const data = new TrackBallData();
             await data.loadFromFile(file);
             data.analysisTools = ANALYSIS_TOOLS;
             setProcessedData(data);
             setCurrentIdx(0);
-            e.target.value = "";
         } catch (err) {
             console.error(err);
             alert("데이터 파일을 불러오는 데 실패했습니다.");
         }
+    }, []);
+
+    // 외부 파일 전달 감지
+    useEffect(() => {
+        if (location.state?.externalFile) {
+            const file = location.state.externalFile;
+
+            // 상태 소모 후 즉시 초기화
+            navigate(location.pathname, { replace: true, state: {} });
+
+            loadTrackBallData(file);
+        }
+    }, [location.state, loadTrackBallData, navigate, location.pathname]);
+
+    // 수동 파일 불러오기 핸들러
+    const handleLoadFile = async (e) => {
+        const file = e.target.files[0];
+        await loadTrackBallData(file);
+        if (file) e.target.value = "";
     };
 
     // 비디오 처리 실행
@@ -168,42 +189,47 @@ const TrackBallPage = () => {
     };
 
     return (
-        <div id="wrapper">
+        <Div id="wrapper">
             {/* 데이터 불러오기용 숨겨진 input */}
-            <input
-                type="file"
+            <InputFile
                 ref={dataInputRef}
                 style={{ display: 'none' }}
                 accept=".cvbl"
                 onChange={handleLoadFile}
             />
 
-            <Navigation buttons={[
-                {
-                    name: "새 분석",
-                    action: () => {
-                        setProgress({ current: 0, total: 0 }); // 진행도 초기화
-                        setStatusKey('label-before-process'); // 상태 메시지 초기화
-                        setProcessModalOpen(true);
-                    }
-                },
-                { name: "불러오기", action: () => dataInputRef.current?.click() },
-                {
-                    name: "저장",
-                    action: async () => {
-                        if (!processedData) return;
-                        try {
-                            const blob = await processedData.toBlob();
-                            await saveBlobWithPicker(blob, "trackBall.cvbl", [{
-                                description: 'Track Ball Data File',
-                                accept: { 'application/cvbl': ['.cvbl'] },
-                            }], true, "cvbl");
-                        } catch (error) {
-                            console.error(error);
+            <Navigation 
+                fileButtons={[
+                    {
+                        name: "새 분석",
+                        action: () => {
+                            setProgress({ current: 0, total: 0 }); // 진행도 초기화
+                            setStatusKey('label-before-process'); // 상태 메시지 초기화
+                            setProcessModalOpen(true);
+                        }
+                    },
+                    { name: "불러오기", action: () => dataInputRef.current?.click() },
+                    {
+                        name: "저장",
+                        action: async () => {
+                            if (!processedData) return;
+                            try {
+                                const blob = await processedData.toBlob();
+                                await saveBlobWithPicker(blob, "trackBall.cvbl", [{
+                                    description: 'Track Ball Data File',
+                                    accept: { 'application/cvbl': ['.cvbl'] },
+                                }], true, "cvbl");
+                            } catch (error) {
+                                console.error(error);
+                            }
                         }
                     }
-                }
-            ]} />
+                ]} 
+                toolButtons={Object.keys(AVAILABLE_MODULES).map(key => ({
+                    name: `${key} 추가`,
+                    action: () => handleAddModule(key)
+                }))}
+            />
 
             <NewAnalysisGridContainer
                 modules={activeModules}
@@ -212,9 +238,9 @@ const TrackBallPage = () => {
                 onRemoveModule={handleRemoveModule}
             />
 
-            <div className="slider">
-                <div className="container neumorphism">
-                    <div className="divide">
+            <FixedFooter>
+                <Box className="container">
+                    <Div className="Divide" style={{display: 'flex', flexDirection: 'row', gap: '20px',}}>
                         <input
                             type="range"
                             id="frameSlider"
@@ -229,33 +255,30 @@ const TrackBallPage = () => {
                             style={{ flex: 1 }}
                         />
 
-                        <button style={{ whiteSpace: "nowrap" }} onClick={() => setToolModalOpen(true)}>
+                        <Button style={{ whiteSpace: "nowrap" }} onClick={() => setToolModalOpen(true)}>
                             도구 추가
-                        </button>
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                        </Button>
+                    </Div>
+                    <Div style={{ display: 'flex', gap: '10px' }}>
 
                         {/* CONF 입력 UI */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                             <label htmlFor="confInput">CONF: </label>
-                            <input
-                                type="number"
+                            <InputNumber
                                 id="confInput"
                                 value={confValue}
                                 step="0.01"
                                 min="0" max="1"
                                 onChange={handleConfChange}
-                                className="neumorphism-input"
                                 style={{ width: '60px' }}
                             />
-                        </div>
+                        </Div>
 
                         {/* 후보군 선택 UI (Candidate Select) */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                             <label>선택: </label>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                <button 
-                                    className="neumorphism-button" 
+                            <Div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                <Button 
                                     style={{ padding: '0 8px', height: '30px', minWidth: '30px' }}
                                     onClick={() => {
                                         const nextIdx = selectedCandidateIdx <= -1 ? candidates.length - 1 : selectedCandidateIdx - 1;
@@ -263,11 +286,10 @@ const TrackBallPage = () => {
                                     }}
                                 >
                                     &lt;
-                                </button>
-                                <select
+                                </Button>
+                                <Select
                                     value={selectedCandidateIdx}
                                     onChange={handleCandidateChange}
-                                    className="neumorphism-select"
                                 >
                                     <option value="-1">none</option>
                                     {candidates.map((cand, i) => (
@@ -275,9 +297,8 @@ const TrackBallPage = () => {
                                             {`${i + 1} (${(cand.confidence * 100).toFixed(0)}%)`}
                                         </option>
                                     ))}
-                                </select>
-                                <button 
-                                    className="neumorphism-button" 
+                                </Select>
+                                <Button 
                                     style={{ padding: '0 8px', height: '30px', minWidth: '30px' }}
                                     onClick={() => {
                                         const nextIdx = selectedCandidateIdx >= candidates.length - 1 ? -1 : selectedCandidateIdx + 1;
@@ -285,16 +306,16 @@ const TrackBallPage = () => {
                                     }}
                                 >
                                     &gt;
-                                </button>
-                            </div>
-                        </div>
+                                </Button>
+                            </Div>
+                        </Div>
 
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    </Div>
+                    <Div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
 
-                    </div>
-                </div>
-            </div>
+                    </Div>
+                </Box>
+            </FixedFooter>
 
             {/* 모달: 비디오 분석 */}
 
@@ -315,18 +336,17 @@ const TrackBallPage = () => {
                 onClose={() => setToolModalOpen(false)}
                 title="분석 도구 추가"
             >
-                <div>
+                <Div>
                     {Object.keys(AVAILABLE_MODULES).map(key => (
-                        <div key={key}>
-                            <button onClick={() => handleAddModule(key)}>
+                        <Div key={key}>
+                            <Button onClick={() => handleAddModule(key)}>
                                 {key.toUpperCase()}
-                            </button>
-                            <br />
-                        </div>
+                            </Button>
+                        </Div>
                     ))}
-                </div>
+                </Div>
             </Modal>
-        </div>
+        </Div>
     );
 };
 

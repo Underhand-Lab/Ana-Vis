@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import DataTable from '../../../common/components/DataTable';
+import { Div, InputCheckbox } from '../../../common/components/ui/UI.jsx';
 
 const defaultSettings = {
     selectedToolKey: "default",
@@ -52,11 +53,11 @@ export const TrackBallTableView = ({ data, currentFrame, settings }) => {
     };
 
     return (
-        <div className="viewer_container" style={containerStyle}>
-            <div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '5px' : 'var(--table-padding, 10px)' }}>
+        <Div className="viewer_container" style={containerStyle}>
+            <Div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '5px' : 'var(--table-padding, 10px)' }}>
                 <DataTable data={currentFrameData} isMobile={isMobile} />
-            </div>
-        </div>
+            </Div>
+        </Div>
     );
 };
 
@@ -77,8 +78,8 @@ export const TrackBallTableSettings = ({ settings, onSettingsChange, data, curre
     }, [data, settings.selectedToolKey, currentFrame]);
 
     return (
-        <div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
-            <div>
+        <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
+            <Div>
                 <label style={{ marginRight: '10px' }}>
                     <strong>도구</strong>:
                 </label>
@@ -92,35 +93,33 @@ export const TrackBallTableSettings = ({ settings, onSettingsChange, data, curre
                         <option key={key} value={key}>{key}</option>
                     ))}
                 </select>
-            </div>
+            </Div>
 
             {/* 행 선택(가시성) 설정 영역 */}
-            <div>
+            <Div>
                 <h4 style={{ fontSize: '13px', marginBottom: '8px' }}>표시할 데이터 선택</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {availableKeys.map((key) => (
-                        <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer' }}>
-                            <input
-                                type="checkbox"
-                                checked={settings.visibility?.[key] !== false}
-                                onChange={(e) => {
-                                    const newVisibility = { ... (settings.visibility || {}) };
-                                    newVisibility[key] = e.target.checked;
-                                    onSettingsChange({ ...settings, visibility: newVisibility });
-                                }}
-                            />
-                            {key}
-                        </label>
+                        <InputCheckbox
+                            key={key}
+                            label={key}
+                            checked={settings.visibility?.[key] !== false}
+                            onChange={(e) => {
+                                const newVisibility = { ... (settings.visibility || {}) };
+                                newVisibility[key] = e.target.checked;
+                                onSettingsChange({ ...settings, visibility: newVisibility });
+                            }}
+                        />
                     ))}
-                </div>
-            </div>
-        </div>
+                </Div>
+            </Div>
+        </Div>
     );
 };
 
 export const TrackBallTableModule = {
     id: 'track-ball-table',
-    title: '공 추적 데이터 테이블',
+    title: '표',
     View: TrackBallTableView,
     Settings: TrackBallTableSettings,
     defaultSettings

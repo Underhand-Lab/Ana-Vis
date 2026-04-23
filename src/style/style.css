@@ -1,9 +1,10 @@
+@import url("./main.css");
 
 @import url("./frostedglassmorphism.css");
-
 @import url("./input.css");
-@import url("./main.css");
 @import url("./nav.css");
+
+/*
 @import url("./neumorphism.css");
 @import url("./panel.css");
 @import url("./slider.css");
@@ -11,4 +12,4 @@
 
 @import url("./ui/box.css");
 @import url("./ui/pop-up.css");
-@import url("./ui/bottom-sheet.css");
+@import url("./ui/bottom-sheet.css");*/
