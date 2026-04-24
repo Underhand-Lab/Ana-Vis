@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron";
+import { app, shell, BrowserWindow, ipcMain, Menu } from "electron";
 const path = require("node:path");
 const fs = require("node:fs");
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
@@ -93,6 +93,65 @@ ipcMain.on("request-initial-file", (event) => {
   if (win && windowFileMap.has(win.id)) {
     const filePath = windowFileMap.get(win.id)!;
     sendFileToRenderer(win, filePath);
+  }
+});
+
+// 5. 렌더러로부터 메뉴 업데이트 요청 처리
+ipcMain.on('update-native-menu', (event, menuData) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win) return;
+
+  const { features, fileActions, toolActions, currentPath } = menuData;
+
+  const fileSubmenu: any[] = [
+    ...fileActions.map((action: any) => ({
+      label: action.label,
+      click: () => win.webContents.send('menu-command', 'fileAction', action.index)
+    }))
+  ];
+
+  // toolActions가 있을 경우 파일 메뉴 내부에 구분선과 함께 추가
+  if (toolActions && toolActions.length > 0) {
+    fileSubmenu.push({ type: 'separator' });
+    toolActions.forEach((action: any) => {
+      fileSubmenu.push({
+        label: action.label,
+        click: () => win.webContents.send('menu-command', 'toolAction', action.index)
+      });
+    });
+  }
+
+  fileSubmenu.push({ type: 'separator' });
+  fileSubmenu.push({ role: 'quit', label: '종료' });
+
+  const template: any[] = [
+    {
+      label: '파일',
+      submenu: fileSubmenu
+    },
+    {
+      label: '보기',
+      submenu: features.map((f: any) => ({
+        label: f.label,
+        type: 'radio',
+        checked: currentPath === f.path,
+        click: () => win.webContents.send('menu-command', 'navigate', f.path)
+      }))
+    },
+    {
+      label: '편집',
+      role: 'editMenu'
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+
+  if (process.platform === 'darwin') {
+    // macOS는 애플리케이션 전체 메뉴를 공유함
+    Menu.setApplicationMenu(menu);
+  } else {
+    // Windows/Linux는 창별로 메뉴 설정 가능
+    win.setMenu(menu);
   }
 });
 

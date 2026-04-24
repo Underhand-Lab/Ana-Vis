@@ -1,18 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-import MarkdownContainer from '../common/components/MarkdownContainer'
+import MarkdownContainer from '../../common/components/MarkdownContainer.jsx'
 import { Link } from 'react-router-dom';
+import { Div, Box } from '../../common/components/ui/UI.jsx'
 
-const HomePage = () => {
+const WebHomePage = () => {
 
   return (
     <>
       <main id="wrapper">
 
         <nav>
-          <div>
+          <Div>
             <Link to="/">CV-Val</Link>
-          </div>
-          <div>
+          </Div>
+          <Div>
             <ul>
               <li>
                 {/* Pose Estimation 페이지로 이동 */}
@@ -22,28 +23,28 @@ const HomePage = () => {
               <li><Link to="/track-ball">공 추적</Link></li>
               <li><Link to="/track-bat">배트 궤적</Link></li>
             </ul>
-          </div>
+          </Div>
         </nav>
-        <div id="boxes">
+        <Div id="boxes">
           {/* 기존 container neumorphism 구조들 */}
-          <div className="container neumorphism">
+          <Box className="container">
             <MarkdownContainer file="./goal.md" />
-          </div>
-          <div className="container neumorphism">
+          </Box>
+          <Box className="container">
             <MarkdownContainer file="./feature.md" />
-          </div>
+          </Box>
 
-          <div className="container neumorphism">
+          <Box className="container">
             <details>
               <summary><h1>🔗 참고</h1></summary>
               <hr />
               <MarkdownContainer file="./ref.md" />
             </details>
-          </div>
-        </div>
+          </Box>
+        </Div>
       </main>
     </>
   );
 };
 
-export default HomePage;
+export default WebHomePage;
