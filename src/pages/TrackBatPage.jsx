@@ -129,6 +129,7 @@ const TrackBatPage = () => {
                 onProgress: (current, total) => setProgress({ current, total })
             });
             const result = await processor.processVideo(files, new TrackBatData());
+            result.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
             setProcessedData(result);
             setCurrentIdx(0);
             setProcessModalOpen(false);

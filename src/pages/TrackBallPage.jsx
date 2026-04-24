@@ -25,6 +25,7 @@ const DETECTORS = {
     "yolo11m": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11m_web_model/model.json", 32),
     "yolo11s": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11s_web_model/model.json", 32),
     "yolo11n": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11n_web_model/model.json", 32),
+    //"mediapipe": new BallDetector.MediaPipeBallDetector("./external/models/mediapipe/efficientdet_lite0.tflite")
 };
 
 const ANALYSIS_TOOLS = {
@@ -135,6 +136,7 @@ const TrackBallPage = () => {
             const result = await processor.processVideo(files, new TrackBallData());
 
             result.analysisTools = ANALYSIS_TOOLS;
+            result.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
             setProcessedData(result);
             setCurrentIdx(0);
             setProcessModalOpen(false);

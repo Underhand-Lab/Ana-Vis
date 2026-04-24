@@ -29,7 +29,6 @@ function AppContent() {
   return (
     <Routes>
       {/* 외부 파일 감지 핸들러 등록 */}
-      <Route path="*" element={<ExternalFileBridge />} />
       
       {/* web일 때는 HomePage를 보여주고, 아니면 마지막 접속 페이지로 리다이렉트 */}
       <Route 
@@ -49,6 +48,7 @@ function AppContent() {
 function App() {
   return (
     <HashRouter>
+      <ExternalFileBridge />
       <AppContent />
     </HashRouter>
   );

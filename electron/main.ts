@@ -23,11 +23,11 @@ function sendFileToRenderer(win: BrowserWindow, filePath: string) {
   if (!win || win.isDestroyed() || !filePath) return;
   try {
     const fileName = path.basename(filePath);
-    const content = fs.readFileSync(filePath); // 바이너리 데이터 읽기
+    const content = fs.readFileSync(filePath); 
     win.webContents.send("open-external-file", {
       name: fileName,
       path: filePath,
-      content: content
+      content: content // 렌더러에서 Uint8Array로 수신됨
     });
   } catch (err) {
     console.error("파일 읽기 실패:", err);
@@ -90,8 +90,9 @@ function createWindow(filePath?: string): void {
 // 4. 렌더러(App.jsx)의 초기 파일 요청 응답
 ipcMain.on("request-initial-file", (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
-  if (win && windowFileMap.has(win.id)) {
-    const filePath = windowFileMap.get(win.id)!;
+  if (!win) return;
+  const filePath = windowFileMap.get(win.id);
+  if (filePath) {
     sendFileToRenderer(win, filePath);
   }
 });

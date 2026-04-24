@@ -100,7 +100,7 @@ const handleFileChange = (e) => {
             </p>
 
             <Div id="progress-bar-container" style={{ 
-              width: '100%', height: '10px', background: '#eee', borderRadius: '5px', overflow: 'hidden' 
+              width: 'calc(100% - 20px)', height: '10px', background: '#eee', borderRadius: '5px', overflow: 'hidden' 
             }}>
               <Div
                 id="progress-bar"

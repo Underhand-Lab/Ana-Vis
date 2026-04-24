@@ -24,15 +24,20 @@ export class MediaPipePoseDetector {
 
     async initialize() {
         console.log("MediaPipe Pose 초기화 중...");
+        console.log(this.option);
         try {
             const vision = await FilesetResolver.forVisionTasks(
-                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+                "./external/models/mediapipe/wasm"
             );
 
             this.poseDetector = await PoseLandmarker.createFromOptions(
                 vision,
                 {
-                    baseOptions: { modelAssetPath: this.option },
+                    baseOptions: { 
+                        modelAssetPath: this.option,
+                        delegate: "GPU" // GPU 가속을 사용하여 성능 및 정확도가 높은 모델 구동 지원
+                    },
+                    numPoses: 1, 
                     runningMode: "VIDEO", // ImageBitmap을 VIDEO 모드 타임스탬프와 함께 사용
                     minPoseDetectionConfidence: 0.3,
                     minTrackingConfidence: 0.3
