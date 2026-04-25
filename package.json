@@ -7,8 +7,8 @@
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "vite dev",
-    "dev:electron": "electron-vite dev",
+    "dev": "vite dev --mode web",
+    "dev:electron": "electron-vite dev --mode desktop",
     "build:web": "vite build --mode web",
     "build:electron": "vite build --mode desktop && electron-vite build",
     "dist": "electron-vite build && electron-builder",
