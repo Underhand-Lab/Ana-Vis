@@ -1,19 +1,33 @@
 import { MediaBunnyVideoConverter } from '../video-to-img-list/media-bunny.js';
 
+export interface OnProgressCallback {
+    onState: (state: string) => void;
+    onProgress: (current: number, total: number) => void;
+}
+
+export interface Detector {
+    initialize(): Promise<void>;
+    process(image: any): Promise<any>;
+}
+
 export class Processor {
+    private detector: Detector | null = null;
+    private onProgressCallback: OnProgressCallback | null = null;
+    private videoConverter: any; // MediaBunnyVideoConverter의 정확한 타입을 알 수 없는 경우 any 혹은 별도 정의
 
     constructor() {
-        this.ballposeDetector = null;
-        this.onProgressCallback = null;
         this.videoConverter = new MediaBunnyVideoConverter();
     }
 
-    setting(ballDetector, onProgress) {
+    setting(ballDetector: Detector, onProgress: OnProgressCallback): void {
         this.detector = ballDetector;
         this.onProgressCallback = onProgress;
     }
 
-    async processVideo(videoList, data) {
+    async processVideo(videoList: FileList | Blob[], data: any): Promise<any> {
+        if (!this.detector) {
+            throw new Error("Detector is not set. Call setting() before processVideo().");
+        }
 
         if (this.onProgressCallback) {
             this.onProgressCallback.onState("model-loading");
@@ -32,15 +46,16 @@ export class Processor {
             this.onProgressCallback.onState("on-process");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
+        
         let frameIndex = 0;
-
         data.initialize([metadata]);
 
         for (const image of imageList) {
-
             if (this.onProgressCallback) {
-                this.onProgressCallback.onProgress
-                    (frameIndex + 1, imageList.length);
+                this.onProgressCallback.onProgress(
+                    frameIndex + 1, 
+                    imageList.length
+                );
             }
             
             const frameData = await this.detector.process(image);
@@ -57,7 +72,5 @@ export class Processor {
         }
         
         return data;
-
     }
-
 }
