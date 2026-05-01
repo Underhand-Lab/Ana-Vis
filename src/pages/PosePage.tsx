@@ -10,15 +10,15 @@ import { PoseData } from '../lib/cv-val/pose/pose-data';
 import { Processor } from '../lib/cv-val/processor';
 import * as PoseDetector from '../lib/cv-val/pose/pose-detector/index';
 import * as PoseAnalysisTool from "../lib/cv-val/pose/analysis-tool/index";
-import { saveBlobWithPicker } from "../_legacy/save-blob.js";
-import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../common/types/analysis';
+import { saveBlobWithPicker } from "../common/save-blob.ts";
+import { AnalysisModule } from '../common/types/analysis';
 
 import PoseVideoModule from '../features/pose/modules/PoseVideoModule';
 import PoseGraphModule from '../features/pose/modules/PoseGraphModule';
 import PoseTableModule from '../features/pose/modules/PoseTableModule';
 import Pose3DVideoModule from '../features/pose/modules/Pose3DVideoModule';
 
-import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button } from '../common/components/ui/UI';
+import { Div, InputFile, FixedFooter, Box, Button } from '../common/components/ui/UI';
 
 interface LocationState {
 	externalFile?: File;
@@ -69,6 +69,7 @@ const PosePage: React.FC = () => {
 
 	const analysisBoxRef = useRef<HTMLDivElement>(null);
 	const dataInputRef = useRef<HTMLInputElement>(null);
+	const pluginInputRef = useRef<HTMLInputElement>(null);
 
 	// 데이터의 총 프레임 수를 계산 (processedData.length 가 존재한다고 가정)
 	const maxFrame = processedData ? (processedData.getFrameCnt() - 1) : 0;
@@ -105,6 +106,32 @@ const PosePage: React.FC = () => {
 		const file = e.target.files?.[0];
 		if (file) {
 			await loadPoseData(file);
+			e.target.value = "";
+		}
+	};
+
+	// 플러그인 파일 불러오기 핸들러 (.js)
+	const handleLoadPlugin = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (event) => {
+				try {
+					const content = event.target?.result as string;
+					// 외부 파일로부터 모듈 객체 생성 (React와 정적 도구들을 인자로 전달)
+					// eslint-disable-next-line no-new-func
+					const plugin = new Function('React', 'AnalysisTools', `return ${content}`)(React, ANALYSIS_TOOLS);
+					
+					if (plugin && plugin.View && plugin.title) {
+						setActiveModules(prev => [...prev, { ...plugin, id: `plugin-${Date.now()}` }]);
+					} else {
+						throw new Error("Invalid module format");
+					}
+				} catch (err) {
+					alert("플러그인 파일 형식이 잘못되었거나 호환되지 않습니다.");
+				}
+			};
+			reader.readAsText(file);
 			e.target.value = "";
 		}
 	};
@@ -160,6 +187,12 @@ const PosePage: React.FC = () => {
 				style={{ display: 'none' }}
 				accept=".cvp"
 				onChange={handleLoadFile}
+			/>
+			<InputFile
+				ref={pluginInputRef}
+				style={{ display: 'none' }}
+				accept=".js"
+				onChange={handleLoadPlugin}
 			/>
 
 			<Navigation
@@ -243,17 +276,22 @@ const PosePage: React.FC = () => {
 				onClose={() => setToolModalOpen(false)}
 				title="분석 도구 추가"
 			>
-				<Div style={{
-					display: 'flex', flexDirection: 'row',
-					gap: '5px', justifyContent: 'center'
-				}}>
-					{Object.keys(AVAILABLE_MODULES).map(key => (
-						<Div key={key}>
-							<Button onClick={() => handleAddModule(key)}>
-								{key.toUpperCase()}
-							</Button>
-						</Div>
-					))}
+				<Div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+					<Div style={{
+						display: 'flex', flexDirection: 'row',
+						gap: '5px', justifyContent: 'center', flexWrap: 'wrap'
+					}}>
+						{Object.keys(AVAILABLE_MODULES).map(key => (
+							<Div key={key}>
+								<Button onClick={() => handleAddModule(key)}>
+									{key.toUpperCase()}
+								</Button>
+							</Div>
+						))}
+						<Button onClick={() => { setToolModalOpen(false); pluginInputRef.current?.click(); }}>
+							플러그인 파일 불러오기 (.js)
+						</Button>
+					</Div>
 				</Div>
 			</Modal>
 		</Div>

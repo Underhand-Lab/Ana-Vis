@@ -60,7 +60,7 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
         margin: 0,
         zIndex: 2000,
         transition: 'transform 0.5s ease',
-        padding: '4px 0',
+        padding: '5px 0 2px',
         WebkitAppRegion: 'drag',
         borderBottom: '1px solid #333',
     };

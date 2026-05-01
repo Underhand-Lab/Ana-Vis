@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Menu } from "electron";
+import { app, shell, BrowserWindow, ipcMain, Menu, dialog } from "electron";
 const path = require("node:path");
 const fs = require("node:fs");
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
@@ -99,6 +99,29 @@ ipcMain.on("request-initial-file", (event) => {
     // 이전의 파일 정보가 다시 전달되어 내비게이션을 방해하는 것을 막습니다.
     windowFileMap.delete(win.id);
   }
+});
+
+// 6. 파일 저장 대화상자 처리 (Safari/Firefox 제약 해결용)
+ipcMain.handle('save-file-dialog', async (_event, { content, suggestedName }) => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (!win) return;
+
+  const { filePath, canceled } = await dialog.showSaveDialog(win, {
+    title: '파일 저장 위치 선택',
+    defaultPath: suggestedName,
+    buttonLabel: '저장',
+  });
+
+  if (!canceled && filePath) {
+    try {
+      fs.writeFileSync(filePath, Buffer.from(content));
+      return { success: true, path: filePath };
+    } catch (err) {
+      console.error('파일 저장 중 오류:', err);
+      throw err;
+    }
+  }
+  return { success: false };
 });
 
 // 5. 렌더러로부터 메뉴 업데이트 요청 처리

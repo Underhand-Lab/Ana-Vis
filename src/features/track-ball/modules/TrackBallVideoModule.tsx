@@ -118,7 +118,7 @@ export const TrackBallVideoSettings: React.FC<AnalysisSettingsProps<TrackBallDat
         if (!data || isExporting) return;
         setIsExporting(true);
         await exportVideo(drawImageAt, data.getFrameCnt(), {
-            fps: data.getFrameCnt(),
+            fps: data.getVideoMetadata(0).fps,
             name: `track_ball_${Date.now()}.mp4`
         });
         setIsExporting(false);

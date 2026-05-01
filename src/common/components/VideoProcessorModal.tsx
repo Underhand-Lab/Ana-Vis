@@ -72,7 +72,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
             <InputFile
               ref={videoInputRef}
               accept="video/*"
-              style={{ width: '100%' }}
+              style={{ width: '100%', margin: '0px' }}
               onChange={handleFileChange}
               disabled={isProcessing}
             />

@@ -15,7 +15,7 @@ import { AnalysisModule } from '../common/types/analysis';
 import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button } from '../common/components/ui/UI';
 
 import TrackBatVideoModule from "../features/track-bat/modules/TrackBatVideoModule";
-import { saveBlobWithPicker } from "../_legacy/save-blob.js";
+import { saveBlobWithPicker } from "../common/save-blob.ts";
 
 interface LocationState {
     externalFile?: File;
@@ -67,6 +67,7 @@ const TrackBatPage: React.FC = () => {
     const [isProcessModalOpen, setProcessModalOpen] = useState(false);
     const [isToolModalOpen, setToolModalOpen] = useState(false);
     const dataInputRef = useRef<HTMLInputElement>(null);
+    const pluginInputRef = useRef<HTMLInputElement>(null);
 
     // 프레임 변경 시 후보군 UI 업데이트 로직
     const updateCandidateState = useCallback((frameIdx: number) => {
@@ -121,6 +122,31 @@ const TrackBatPage: React.FC = () => {
         const file = e.target.files?.[0];
         if (file) {
             await loadTrackBatData(file);
+            e.target.value = "";
+        }
+    };
+
+    // 플러그인 파일 불러오기 핸들러 (.js)
+    const handleLoadPlugin = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const content = event.target?.result as string;
+                    // eslint-disable-next-line no-new-func
+                    const plugin = new Function('React', 'AnalysisTools', `return ${content}`)(React, ANALYSIS_TOOLS);
+                    
+                    if (plugin && plugin.View && plugin.title) {
+                        setActiveModules(prev => [...prev, { ...plugin, id: `plugin-${Date.now()}` }]);
+                    } else {
+                        throw new Error("Invalid format");
+                    }
+                } catch (err) {
+                    alert("플러그인 로드 실패");
+                }
+            };
+            reader.readAsText(file);
             e.target.value = "";
         }
     };
@@ -183,7 +209,8 @@ const TrackBatPage: React.FC = () => {
         if (processedData) {
             processedData.setConf(val);
             // 참조를 변경하여 하위 모듈의 리렌더링을 유도합니다.
-            setProcessedData({ ...processedData } as TrackBatDataWithAnalysis);
+            const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
+            setProcessedData(newData);
         }
     };
 
@@ -193,7 +220,8 @@ const TrackBatPage: React.FC = () => {
         if (processedData) {
             processedData.setSelectedIdx(currentFrameIdx, idx);
             // 참조를 변경하여 하위 모듈의 리렌더링을 유도합니다.
-            setProcessedData({ ...processedData } as TrackBatDataWithAnalysis);
+            const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
+            setProcessedData(newData);
         }
     };
 
@@ -212,6 +240,12 @@ const TrackBatPage: React.FC = () => {
     return (
         <Div id="wrapper">
             <InputFile ref={dataInputRef} style={{ display: 'none' }} accept=".cvbt" onChange={handleLoadFile} />
+            <InputFile 
+                ref={pluginInputRef} 
+                style={{ display: 'none' }} 
+                accept=".js" 
+                onChange={handleLoadPlugin} 
+            />
 
             <Navigation
                 fileButtons={[
@@ -332,17 +366,22 @@ const TrackBatPage: React.FC = () => {
                 onClose={() => setToolModalOpen(false)}
                 title="분석 도구 추가"
             >
-                <Div style={{
-                    display: 'flex', flexDirection: 'row',
-                    gap: '5px', justifyContent: 'center'
-                }}>
-                    {Object.keys(AVAILABLE_MODULES).map(key => (
-                        <Div key={key}>
-                            <Button onClick={() => handleAddModule(key)}>
-                                {key.toUpperCase()}
-                            </Button>
-                        </Div>
-                    ))}
+                <Div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <Div style={{
+                        display: 'flex', flexDirection: 'row',
+                        gap: '5px', justifyContent: 'center', flexWrap: 'wrap'
+                    }}>
+                        {Object.keys(AVAILABLE_MODULES).map(key => (
+                            <Div key={key}>
+                                <Button onClick={() => handleAddModule(key)}>
+                                    {key.toUpperCase()}
+                                </Button>
+                            </Div>
+                        ))
+                        }<Button onClick={() => { setToolModalOpen(false); pluginInputRef.current?.click(); }}>
+                            플러그인 파일 불러오기 (.js)
+                        </Button>
+                    </Div>
                 </Div>
             </Modal>
         </Div>
