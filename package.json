@@ -10,8 +10,8 @@
     "dev": "vite dev --mode web",
     "dev:electron": "electron-vite dev --mode desktop",
     "build:web": "vite build --mode web",
-    "build:electron": "vite build --mode desktop && electron-vite build",
-    "dist": "electron-vite build && electron-builder",
+    "build:electron": "vite build --mode desktop && electron-vite build --mode desktop",
+    "dist": "electron-vite build --mode desktop && electron-builder",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "electron-vite preview",
@@ -71,8 +71,9 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/node": "^25.4.0",
-    "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@types/three": "^0.170.0",
     "@vitejs/plugin-react": "^5.1.1",
     "electron": "^40.8.0",
     "electron-builder": "^26.8.1",
@@ -81,6 +82,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "typescript": "^5.7.3",
     "vite": "^7.3.1"
   }
 }

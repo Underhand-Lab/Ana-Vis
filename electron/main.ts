@@ -94,6 +94,10 @@ ipcMain.on("request-initial-file", (event) => {
   const filePath = windowFileMap.get(win.id);
   if (filePath) {
     sendFileToRenderer(win, filePath);
+    // ✅ 파일을 한 번 전송한 후에는 맵에서 제거합니다.
+    // 이로써 렌더러가 이후에 다른 분석으로 이동하거나 새로고침했을 때 
+    // 이전의 파일 정보가 다시 전달되어 내비게이션을 방해하는 것을 막습니다.
+    windowFileMap.delete(win.id);
   }
 });
 
