@@ -67,7 +67,8 @@ jobs:
       - name: Build Electron App
         # 설치 파일(.exe, .dmg)을 생성하기 위해 dist 스크립트를 실행합니다.
         run: npm run dist
-
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }}
       - name: Upload Desktop Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -95,3 +96,5 @@ jobs:
             release-files/*.dmg
             release-files/*.zip
           generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
