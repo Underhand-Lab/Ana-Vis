@@ -1,7 +1,7 @@
 {
   "name": "cv-val",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Computer Vision Validation Tool",
   "author": "underhand-lab <skysea001010@gmail.com>",
   "type": "module",
@@ -21,7 +21,7 @@
     "appId": "com.underland-lab.cvval",
     "productName": "CV-Val",
     "directories": {
-      "output": "release",
+      "output": "dist",
       "buildResources": "public"
     },
     "files": [

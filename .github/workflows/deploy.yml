@@ -65,8 +65,8 @@ jobs:
         run: npm install
 
       - name: Build Electron App
-        # package.json에 정의된 electron-builder 실행 스크립트를 사용한다고 가정합니다.
-        run: npm run build
+        # 설치 파일(.exe, .dmg)을 생성하기 위해 dist 스크립트를 실행합니다.
+        run: npm run dist
 
       - name: Upload Desktop Artifacts
         uses: actions/upload-artifact@v4
