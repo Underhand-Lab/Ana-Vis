@@ -43,7 +43,7 @@ function createWindow(filePath?: string): void {
     show: false,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#2f3241', // Navigation 배경색과 맞추면 좋습니다.
+      color: '#00000000', // Navigation 배경색과 맞추면 좋습니다.
       symbolColor: '#74b1be',
       height: 38 // Navigation의 height와 맞춤
     },

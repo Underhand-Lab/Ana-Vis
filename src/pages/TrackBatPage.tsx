@@ -12,7 +12,7 @@ import * as BatDetector from '../lib/cv-val/track-bat/bat-detector/index';
 import { BatDetectedObject } from '../lib/cv-val/track-bat/bat-detector/yolo';
 import { AnalysisModule } from '../common/types/analysis';
 
-import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button } from '../common/components/ui/UI';
+import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper } from '../common/components/ui/UI';
 
 import TrackBatVideoModule from "../features/track-bat/modules/TrackBatVideoModule";
 import { saveBlobWithPicker } from "../common/save-blob.ts";
@@ -238,7 +238,7 @@ const TrackBatPage: React.FC = () => {
     ], [candidates]);
 
     return (
-        <Div id="wrapper">
+        <Wrapper>
             <InputFile ref={dataInputRef} style={{ display: 'none' }} accept=".cvbt" onChange={handleLoadFile} />
             <InputFile 
                 ref={pluginInputRef} 
@@ -384,7 +384,7 @@ const TrackBatPage: React.FC = () => {
                     </Div>
                 </Div>
             </Modal>
-        </Div>
+        </Wrapper>
     );
 };
 

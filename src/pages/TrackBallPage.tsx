@@ -5,7 +5,8 @@ import VideoProcessorModal from '../common/components/VideoProcessorModal';
 import Modal from '../common/components/Modal';
 import Navigation from '../common/components/Navigation';
 
-import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button } from '../common/components/ui/UI';
+import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper }
+    from '../common/components/ui/UI';
 
 import TrackBallVideoModule from "../features/track-ball/modules/TrackBallVideoModule"
 import TrackBallTableModule from "../features/track-ball/modules/TrackBallTableModule"
@@ -245,7 +246,7 @@ const TrackBallPage: React.FC = () => {
     ], [candidates]);
 
     return (
-        <Div id="wrapper">
+        <Wrapper>
             {/* 데이터 불러오기용 숨겨진 input */}
             <InputFile
                 ref={dataInputRef}
@@ -410,7 +411,7 @@ const TrackBallPage: React.FC = () => {
                     </Div>
                 </Div>
             </Modal>
-        </Div>
+        </Wrapper>
     );
 };
 

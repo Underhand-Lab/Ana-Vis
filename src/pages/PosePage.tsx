@@ -18,7 +18,7 @@ import PoseGraphModule from '../features/pose/modules/PoseGraphModule';
 import PoseTableModule from '../features/pose/modules/PoseTableModule';
 import Pose3DVideoModule from '../features/pose/modules/Pose3DVideoModule';
 
-import { Div, InputFile, FixedFooter, Box, Button } from '../common/components/ui/UI';
+import { Div, InputFile, FixedFooter, Box, Button, Wrapper } from '../common/components/ui/UI';
 
 interface LocationState {
 	externalFile?: File;
@@ -181,7 +181,7 @@ const PosePage: React.FC = () => {
 	};
 
 	return (
-		<Div id="wrapper">
+		<Wrapper>
 			<InputFile
 				ref={dataInputRef}
 				style={{ display: 'none' }}
@@ -294,7 +294,7 @@ const PosePage: React.FC = () => {
 					</Div>
 				</Div>
 			</Modal>
-		</Div>
+		</Wrapper>
 	);
 };
 
