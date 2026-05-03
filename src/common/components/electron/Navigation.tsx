@@ -70,7 +70,7 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
     return (
         <nav style={navStyle}>
             <div style={{
-                padding: '0px 120px',
+                padding: '0px 140px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',

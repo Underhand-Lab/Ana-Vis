@@ -44,8 +44,8 @@ function createWindow(filePath?: string): void {
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#00000000', // Navigation 배경색과 맞추면 좋습니다.
-      symbolColor: '#74b1be',
-      height: 38 // Navigation의 height와 맞춤
+      symbolColor: '#aaa',
+      height: 36 // Navigation의 height와 맞춤
     },
     autoHideMenuBar: true,
     icon: path.join(__dirname, 'public/favicon.ico'),
