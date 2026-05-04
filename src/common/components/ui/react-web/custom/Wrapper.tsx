@@ -30,6 +30,11 @@ const styles: { [key: string]: React.CSSProperties } = {
         minHeight: '100vh',
         maxHeight: '100vh',
         wordBreak: 'keep-all',
+        // iOS Notch 및 Android 시스템 바 대응
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
     },
 };
 
