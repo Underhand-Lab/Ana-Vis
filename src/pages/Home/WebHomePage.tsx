@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import MarkdownContainer from '../../common/components/MarkdownContainer'
 import { Link } from 'react-router-dom';
-import { Div, Box } from '../../common/components/ui/UI'
+import { Div, Box } from '../../common/bridges/UIBridge'
 
 const WebHomePage = () => {
 

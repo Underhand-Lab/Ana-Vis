@@ -1,12 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NewAnalysisGridContainer from '../common/components/NewAnalysisGridContainer';
+import NewAnalysisGridContainer from '../common/components/AnalysisContainer/NewAnalysisGridContainer.tsx';
 import VideoProcessorModal from '../common/components/VideoProcessorModal';
 import Modal from '../common/components/Modal';
-import Navigation from '../common/components/Navigation';
+import Navigation from '../common/bridges/NavigationBridge.tsx';
 
 import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper }
-    from '../common/components/ui/UI';
+    from '../common/bridges/UIBridge.ts';
 
 import TrackBallVideoModule from "../features/track-ball/modules/TrackBallVideoModule"
 import TrackBallTableModule from "../features/track-ball/modules/TrackBallTableModule"

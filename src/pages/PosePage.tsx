@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NewAnalysisGridContainer from '../common/components/NewAnalysisGridContainer';
+import NewAnalysisGridContainer from '../common/components/AnalysisContainer/NewAnalysisGridContainer.tsx';
 import VideoProcessorModal from '../common/components/VideoProcessorModal';
 import Modal from '../common/components/Modal';
-import Navigation from '../common/components/Navigation';
+import Navigation from '../common/bridges/NavigationBridge.tsx';
 
 // 라이브러리 import
 import { PoseData } from '../lib/cv-val/pose/pose-data';
@@ -18,7 +18,7 @@ import PoseGraphModule from '../features/pose/modules/PoseGraphModule';
 import PoseTableModule from '../features/pose/modules/PoseTableModule';
 import Pose3DVideoModule from '../features/pose/modules/Pose3DVideoModule';
 
-import { Div, InputFile, FixedFooter, Box, Button, Wrapper } from '../common/components/ui/UI';
+import { Div, InputFile, FixedFooter, Box, Button, Wrapper } from '../common/bridges/UIBridge.ts';
 
 interface LocationState {
 	externalFile?: File;

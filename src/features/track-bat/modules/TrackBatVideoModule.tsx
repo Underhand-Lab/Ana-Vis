@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import { useTrackBatFrame } from '../hooks/useTrackBatFrame';
 import { TrackBatData } from '../../../lib/cv-val/track-bat/track-bat-data';
-import CanvasRenderer, { CanvasRendererHandle } from "../../../common/components/ui/CanvasRenderer.tsx";
+import CanvasRenderer, { CanvasRendererHandle } from "../../../common/components/ui/react-web/custom/CanvasRenderer.tsx";
 import { exportVideo } from '../../../common/utils/exportVideo';
-import { Div, Button, InputColor, InputNumber } from '../../../common/components/ui/UI';
+import { Div, Button, InputColor, InputNumber } from '../../../common/bridges/UIBridge.ts';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
 
 export interface TrackBatSettings {

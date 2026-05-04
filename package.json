@@ -29,7 +29,11 @@
     ],
     "icon": "desktop-ico.png",
     "win": {
-      "icon": "desktop-ico.png"
+      "icon": "desktop-ico.png",
+      "artifactName": "${productName}.${ext}"
+    },
+    "mac": {
+      "artifactName": "${productName}.${ext}"
     },
     "fileAssociations": [
       {

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 import HomeBridge from './pages/Home/HomeBridge';
-import ExternalFileBridge from './common/components/ExternalFileBridge';
+import ExternalFileBridge from './common/bridges/ExternalFileBridge';
 
 import PosePage from './pages/PosePage';
 import TrackBallPage from './pages/TrackBallPage';

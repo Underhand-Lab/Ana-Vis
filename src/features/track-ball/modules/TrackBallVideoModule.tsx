@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTrackFrame } from '../hooks/useTrackBallFrame';
 import { TrackBallData } from '../../../lib/cv-val/track-ball/track-ball-data';
-import CanvasRenderer, { CanvasRendererHandle } from "../../../common/components/ui/CanvasRenderer.tsx";
+import CanvasRenderer, { CanvasRendererHandle } from "../../../common/components/ui/react-web/custom/CanvasRenderer.tsx";
 import { exportVideo } from "../../../common/utils/exportVideo";
-import { Div, Button, InputColor, InputCheckbox } from '../../../common/components/ui/UI';
+import { Div, Button, InputColor, InputCheckbox } from '../../../common/bridges/UIBridge.ts';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
 
 export interface TrackBallSettings {

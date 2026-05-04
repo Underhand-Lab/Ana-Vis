@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import TableRenderer from '../../../common/components/ui/TableRenderer';
-import { Div, InputCheckbox } from '../../../common/components/ui/UI';
+import TableRenderer from '../../../common/components/ui/react-web/common/TableRenderer';
+import { Div, InputCheckbox } from '../../../common/bridges/UIBridge';
 import { PoseData } from '../../../lib/cv-val/pose/pose-data';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
 

@@ -1,7 +1,7 @@
 import React, { useEffect, ChangeEvent } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { NavButton } from '../not-electron/Navigation';
-import Select from '../ui/Select';
+import { NavButton } from './WebNavigation';
+import Select from '../ui/react-web/common/Select';
 
 export const FEATURES = [
     { label: '자세', value: '/pose' },

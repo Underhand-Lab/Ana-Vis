@@ -7,7 +7,7 @@ interface ContentProps extends HTMLAttributes<HTMLDivElement> {
 const Content = forwardRef<HTMLDivElement, ContentProps>(({ children, style, ...props }, ref) => (
     <div 
         ref={ref} 
-        style={{ ...styles.container, ...style }}
+        style={{ ...styles.content, ...style }}
         {...props}
     >
         {children}
@@ -15,22 +15,11 @@ const Content = forwardRef<HTMLDivElement, ContentProps>(({ children, style, ...
 ));
 
 const styles: { [key: string]: React.CSSProperties } = {
-    wrapper: {
+    content: {
+        flex: 1,
         width: '100%',
-        height: '100%',
-        fontFamily: "'KBO-Dia-Gothic_medium', Arial, sans-serif",
-        backgroundColor: '#f0f2f5',
-        color: '#333',
-        alignItems: 'center',
-        margin: 0,
-        textAlign: 'center',
-        lineHeight: '180%',
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        maxHeight: '100vh',
-        wordBreak: 'keep-all',
-    },
+        overflowY: 'auto',
+    }
 };
 
 Content.displayName = 'Content';

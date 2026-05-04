@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { usePose3DVisualize } from "../hooks/usePose3DVisualize"
-import { Div, InputColor } from '../../../common/components/ui/UI';
+import { Div, InputColor } from '../../../common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
 import { PoseData } from '../../../lib/cv-val/pose/pose-data';
 

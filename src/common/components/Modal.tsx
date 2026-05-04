@@ -1,6 +1,6 @@
 import React, { ReactNode, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Div, Box, Button } from './ui/UI';
+import { Div, Box, Button } from '../bridges/UIBridge';
 
 interface ModalProps {
   isOpen: boolean;

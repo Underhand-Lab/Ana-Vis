@@ -1,5 +1,5 @@
 import React, { forwardRef, useState, ButtonHTMLAttributes, ReactNode } from 'react';
-import vars from './Variables'
+import vars from '../../Variables'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     children?: ReactNode;

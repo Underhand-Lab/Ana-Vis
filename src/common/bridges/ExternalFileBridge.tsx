@@ -1,5 +1,5 @@
 import React from 'react';
-import ElectronFileHandler from './electron/ExternalFileHandler';
+import ElectronFileHandler from '../utils/ExternalFileHandler';
 
 const ExternalFileBridge: React.FC = () => {
   // 빌드 타임 상수를 사용하여 '전처리기'처럼 작동하게 합니다.

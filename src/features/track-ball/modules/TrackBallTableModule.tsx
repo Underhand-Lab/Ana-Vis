@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, CSSProperties } from 'react';
-import TableRenderer from '../../../common/components/ui/TableRenderer';
-import { Div, InputCheckbox, Select } from '../../../common/components/ui/UI';
+import TableRenderer from '../../../common/components/ui/react-web/common/TableRenderer';
+import { Div, InputCheckbox, Select } from '../../../common/bridges/UIBridge';
 import { TrackBallData } from '../../../lib/cv-val/track-ball/track-ball-data'; // TrackBallData 타입 임포트
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
 

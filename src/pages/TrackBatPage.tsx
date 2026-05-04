@@ -1,9 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo, ChangeEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NewAnalysisGridContainer from '../common/components/NewAnalysisGridContainer';
+import NewAnalysisGridContainer from '../common/components/AnalysisContainer/NewAnalysisGridContainer.tsx';
 import VideoProcessorModal from '../common/components/VideoProcessorModal';
 import Modal from '../common/components/Modal';
-import Navigation from '../common/components/Navigation';
+import Navigation from '../common/bridges/NavigationBridge.tsx';
 
 // 라이브러리 import
 import { Processor } from '../lib/cv-val/processor';
@@ -12,7 +12,7 @@ import * as BatDetector from '../lib/cv-val/track-bat/bat-detector/index';
 import { BatDetectedObject } from '../lib/cv-val/track-bat/bat-detector/yolo';
 import { AnalysisModule } from '../common/types/analysis';
 
-import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper } from '../common/components/ui/UI';
+import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper } from '../common/bridges/UIBridge.ts';
 
 import TrackBatVideoModule from "../features/track-bat/modules/TrackBatVideoModule";
 import { saveBlobWithPicker } from "../common/save-blob.ts";

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import CanvasRenderer, { CanvasRendererHandle } from "../../../common/components/ui/CanvasRenderer.tsx";
+import CanvasRenderer, { CanvasRendererHandle } from "../../../common/components/ui/react-web/custom/CanvasRenderer.tsx";
 import { usePoseVisualize } from "../hooks/usePoseVisualize";
 import { exportVideo } from "../../../common/utils/exportVideo";
 import { PoseData } from '../../../lib/cv-val/pose/pose-data';
-import { Div, Button, InputNumber, InputColor, InputCheckbox, Select } from '../../../common/components/ui/UI';
+import { Div, Button, InputNumber, InputColor, InputCheckbox, Select } from '../../../common/bridges/UIBridge.ts';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
 
 /**

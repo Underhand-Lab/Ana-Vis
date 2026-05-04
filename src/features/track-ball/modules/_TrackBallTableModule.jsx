@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import TableRenderer from '../../../common/components/ui/TableRenderer';
-import { Div, InputCheckbox, Select } from '../../../common/components/ui/UI';
+import { Div, InputCheckbox, Select } from '../../../common/bridges/UIBridge';
 
 const defaultSettings = {
     selectedToolKey: "default",

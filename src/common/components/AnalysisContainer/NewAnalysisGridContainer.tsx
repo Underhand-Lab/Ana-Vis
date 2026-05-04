@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Responsive } from 'react-grid-layout';
 import NewAnalysisGridItem from './NewAnalysisGridItem';
-import { AnalysisModule } from '../types/analysis';
+import { AnalysisModule } from '../../types/analysis';
+import { Div } from "../../bridges/UIBridge";
+import vars from '../ui/Variables';
 
 interface Props {
   modules: AnalysisModule[];
@@ -34,7 +36,7 @@ const NewAnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame
     breakpoints.forEach((bp) => {
       // 1. 기존 레이아웃에서 현재 존재하는 모듈만 필터링
       const currentBpLayout = (layouts[bp] || []).filter(l => activeIds.includes(l.i));
-      
+
       // 2. 레이아웃 정보가 없는 새로운 모듈에 대해 초기값 설정
       const existingIds = new Set(currentBpLayout.map(l => l.i));
       const missingModules = modules.filter(m => !existingIds.has(m.id));
@@ -71,10 +73,18 @@ const NewAnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame
   }, []);
 
   return (
-    <div 
-      ref={gridWrapperRef} 
-      className="analysis-grid-container" 
-      style={{ width: '100%', flex: 1, position: 'relative', overflowY: 'scroll' }}
+    <Div
+      ref={gridWrapperRef}
+      className="analysis-grid-container"
+      style={
+        {
+          ...styles.container,
+          width: '100%',
+          flex: 1,
+          position:
+            'relative',
+          overflowY: 'scroll'
+        }}
     >
       {containerWidth > 0 && (
         <Responsive
@@ -90,26 +100,22 @@ const NewAnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame
           }}
           margin={[15, 15]}
         >
-      {modules.map((module) => (
-        <NewAnalysisGridItem
-          key={module.id}
-          module={module}
-          data={data}
-          currentFrame={currentFrame}
-            onRemove={onRemoveModule}
-        />
-      ))}
+          {modules.map((module) => (
+            <NewAnalysisGridItem
+              key={module.id}
+              module={module}
+              data={data}
+              currentFrame={currentFrame}
+              onRemove={onRemoveModule}
+            />
+          ))}
         </Responsive>
       )}
 
       <style>{`
-        .grid-item-overlay { opacity: 0; pointer-events: none; position: absolute; transition: opacity 0.2s; z-index: 10; }
         .drag-handle { pointer-events: auto; cursor: grab; }
         .drag-handle:active { cursor: grabbing; }
-        .grid-item-card:hover .drag-handle { opacity: 1; }
-        .grid-item-card.isSetting .grid-item-overlay { opacity: 1; pointer-events: auto; }
-        .grid-item-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .react-grid-placeholder { border-radius: 12px !important; background: rgba(0,0,0,0.1) !important; opacity: 0.2 !important; }
+        .react-grid-placeholder { border-radius: 12px !important; background: ${vars.primary} !important; opacity: 0.2 !important; }
         
         /* 리사이즈 핸들 스타일 및 가시성 확보 */
         .react-resizable-handle { 
@@ -122,10 +128,20 @@ const NewAnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame
           z-index: 40 !important; 
         }
         /* 핸들 모양 표시 (삼각형 아이콘) */
-        .react-resizable-handle::after { content: "◢"; position: absolute; right: 3px; bottom: 3px; color: #ccc; font-size: 12px; }
+        .react-resizable-handle::after { content: "◢"; position: absolute; right: 3px; bottom: 3px; color: ${vars.primary}; opacity: 0.5; font-size: 12px; }
       `}</style>
-    </div>
+    </Div>
   );
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    width: '100%',
+    flex: 1,
+    position: 'relative',
+    overflowY: 'scroll',
+    backgroundColor: '#f8f9fa', // 필요 시 배경색 추가
+  }
 };
 
 export default NewAnalysisGridContainer;

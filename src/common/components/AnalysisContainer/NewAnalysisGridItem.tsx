@@ -1,5 +1,7 @@
 import React, { useState, forwardRef, useRef } from 'react';
-import { AnalysisModule } from '../types/analysis';
+import { AnalysisModule } from '../../types/analysis';
+import { Div } from "../../bridges/UIBridge";
+import vars from '../ui/Variables';
 
 interface Props {
   module: AnalysisModule;
@@ -22,6 +24,7 @@ const NewAnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   } = props;
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [settings, setSettings] = useState(module.defaultSettings);
 
   // 시각화 인스턴스를 공유하기 위한 Ref
@@ -31,25 +34,26 @@ const NewAnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const toggleSettings = () => setIsSettingsOpen((prev) => !prev);
 
   return (
-    <div 
+    <Div 
       ref={ref}
-      style={{ ...style, border: '1px solid #ddd', overflow: 'hidden' }}
+      style={{ ...styles.card, ...style }}
       className={`${className} analysis-grid-item grid-item-card ${isSettingsOpen ? 'isSetting' : ''}`}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onTouchEnd={onTouchEnd}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* 상단 드래그 핸들 오버레이 */}
-      <div className="grid-item-overlay drag-handle frostedglassmorphism" style={{ 
-        position: 'absolute', top: 0, left: 0, right: 0, height: '40px', 
-        zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 15px'
-      }}>
+      <Div 
+        className="grid-item-overlay drag-handle frostedglassmorphism" 
+        style={{ ...styles.header, ...((isHovered || isSettingsOpen) ? styles.headerVisible : {}) }}
+      >
         <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{title}</span>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <Div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={(e) => { e.stopPropagation(); toggleSettings(); }} 
-            style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'white', fontSize: '16px' }}
+            style={styles.iconButton}
           >
             ⚙️
           </button>
@@ -59,51 +63,85 @@ const NewAnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
           >
             ✕
           </button>
-        </div>
-      </div>
+        </Div>
+      </Div>
 
-      <div className="item-content no-drag" style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <Div className="item-content no-drag" style={{ width: '100%', height: '100%', position: 'relative' }}>
         {/* 실제 시각화 결과물 */}
         <View 
-          data={data} 
-          moduleId={module.id}
+          data={data}
           currentFrame={currentFrame} 
           settings={settings} 
-          isSettingsOpen={isSettingsOpen} 
-          visualizerRef={visualizerRef}
+          isSettingsOpen={isSettingsOpen}
         />
 
         {/* 설정 레이어 (우측 사이드 패널 형태) */}
         {isSettingsOpen && (
-          <div className="grid-item-overlay setting frostedglassmorphism side-panel" style={{
-            position: 'absolute',
-            top: '40px', // 핸들 아래부터 시작
-            right: 0,
-            bottom: 0,
-            padding: '20px',
-            zIndex: 20,
-            overflowY: 'auto',
-            borderLeft: '1px solid rgba(255,255,255,0.3)'
+          <Div className="grid-item-overlay setting frostedglassmorphism side-panel" style={{
+            ...styles.sidePanel
           }}>
             {/* data와 currentFrame을 Settings 컴포넌트에 전달 */}
             <Settings 
               settings={settings} 
               onSettingsChange={setSettings} 
-              data={data} 
-              currentFrame={currentFrame} 
-              moduleId={module.id}
-              visualizer={visualizerRef.current}
+              data={data}
             />
-          </div>
+          </Div>
         )}
-      </div>
+      </Div>
 
       {/* RGL 리사이즈 핸들을 위한 children */}
       {children}
-    </div>
+    </Div>
   );
 });
 
-NewAnalysisGridItem.displayName = 'NewAnalysisGridItem';
+const styles: { [key: string]: React.CSSProperties } = {
+  card: {
+    background: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+    fontFamily: vars.font,
+    border: '1px solid #ddd',
+  },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '40px',
+    zIndex: 30,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 15px',
+    opacity: 0,
+    pointerEvents: 'none',
+    transition: 'opacity 0.2s ease-in-out',
+  },
+  headerVisible: {
+    opacity: 1,
+    pointerEvents: 'auto',
+  },
+  iconButton: {
+    border: 'none',
+    background: 'none',
+    cursor: 'pointer',
+    color: 'white',
+    fontSize: '16px',
+  },
+  sidePanel: {
+    position: 'absolute',
+    top: '40px',
+    right: 0,
+    bottom: 0,
+    padding: '20px',
+    zIndex: 20,
+    overflowY: 'auto',
+    borderLeft: '1px solid rgba(255,255,255,0.3)',
+  }
+};
 
+NewAnalysisGridItem.displayName = 'NewAnalysisGridItem';
 export default NewAnalysisGridItem;

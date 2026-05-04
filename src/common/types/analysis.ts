@@ -1,6 +1,7 @@
 import React from 'react';
 
 export interface AnalysisViewProps<D, S> {
+  isSettingsOpen: boolean,
   data: D | null;
   currentFrame: number;
   settings: S;

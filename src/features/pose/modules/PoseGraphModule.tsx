@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import Graph from '../../../common/components/Graph';
-import { Div, InputColor, InputNumber, InputCheckbox } from '../../../common/components/ui/UI';
+import { Div, InputColor, InputNumber, InputCheckbox } from '../../../common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
 import { PoseData } from '../../../lib/cv-val/pose/pose-data';
 
