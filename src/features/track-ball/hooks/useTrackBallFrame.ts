@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { TrackBallData } from '../../../lib/cv-val/track-ball/track-ball-data';
-import { DetectedObject } from '../../../lib/cv-val/track-ball/ball-detector/yolo';
+import { TrackBallData } from '../core/track-ball-data';
+import { DetectedObject } from '../core/ball-detector/yolo';
 
 interface TrackFrameOptions {
   trailColor: string;

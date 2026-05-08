@@ -1,4 +1,4 @@
-export type Vector3 = [number, number, number];
+import { Vector3 } from "@common/types/vector"
 
 export interface JointCoordinate {
     x: number;

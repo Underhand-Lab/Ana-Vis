@@ -1,21 +1,20 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo, ChangeEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NewAnalysisGridContainer from '../common/components/AnalysisContainer/NewAnalysisGridContainer.tsx';
-import VideoProcessorModal from '../common/components/VideoProcessorModal';
-import Modal from '../common/components/Modal';
-import Navigation from '../common/bridges/NavigationBridge.tsx';
+import { saveBlobWithPicker } from "@common/utils/save-blob.ts";
+import AnalysisGridContainer from '@common/components/analysis-container/AnalysisGridContainer';
+import VideoProcessorModal from '@common/components/VideoProcessorModal';
+import Modal from '@common/components/Modal';
+import Navigation from '@common/bridges/NavigationBridge.tsx';
+import { Processor } from '@common/lib/processor';
+import { AnalysisModule } from '@/common/types/analysis-module';
+import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper } from
+    '../common/bridges/UIBridge.ts';
 
 // 라이브러리 import
-import { Processor } from '../lib/cv-val/processor';
-import { TrackBatData } from "../lib/cv-val/track-bat/track-bat-data";
-import * as BatDetector from '../lib/cv-val/track-bat/bat-detector/index';
-import { BatDetectedObject } from '../lib/cv-val/track-bat/bat-detector/yolo';
-import { AnalysisModule } from '../common/types/analysis';
-
-import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper } from '../common/bridges/UIBridge.ts';
-
-import TrackBatVideoModule from "../features/track-bat/modules/TrackBatVideoModule";
-import { saveBlobWithPicker } from "../common/save-blob.ts";
+import { TrackBatData } from "@features/track-bat/core/track-bat-data";
+import * as BatDetector from '@features/track-bat/core/bat-detector/index';
+import { BatDetectedObject } from '@features/track-bat/core/bat-detector/yolo';
+import TrackBatVideoModule from "@features/track-bat/modules/TrackBatVideoModule";
 
 interface LocationState {
     externalFile?: File;
@@ -271,7 +270,7 @@ const TrackBatPage: React.FC = () => {
                 }))}
             />
 
-            <NewAnalysisGridContainer
+            <AnalysisGridContainer
                 modules={activeModules}
                 data={processedData}
                 currentFrame={currentIdx}

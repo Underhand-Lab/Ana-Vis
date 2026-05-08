@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import CanvasRenderer, { CanvasRendererHandle } from "../../../common/components/ui/react-web/custom/CanvasRenderer.tsx";
+import { PoseData } from '../core/pose-data.ts';
 import { usePoseVisualize } from "../hooks/usePoseVisualize";
-import { exportVideo } from "../../../common/utils/exportVideo";
-import { PoseData } from '../../../lib/cv-val/pose/pose-data';
-import { Div, Button, InputNumber, InputColor, InputCheckbox, Select } from '../../../common/bridges/UIBridge.ts';
-import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
+
+import { exportVideo } from "@common/utils/exportVideo";
+import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
+import { Div, Button, InputNumber, InputColor, InputCheckbox, Select }
+    from '@common/bridges/UIBridge.ts';
+import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
+    from '@common/types/analysis-module.ts';
 
 /**
  * 모듈에서 사용할 색상 매핑 및 기본 설정값

@@ -1,5 +1,5 @@
-import { magVec, subVec } from "../../../math/vector.js";
-import { PoseData, Landmarks3D } from "../types.js";
+import { magVec, subVec } from "@common/lib/math/vector.js"
+import { PoseData, Landmarks3D } from "../types";
 
 export class VelocityAnalysisTool {
     calc(data: PoseData): Record<string, (number | null)[]> {

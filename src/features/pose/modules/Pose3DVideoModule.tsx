@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from 'react';
+
+import { PoseData } from '../core/pose-data';
 import { usePose3DVisualize } from "../hooks/usePose3DVisualize"
-import { Div, InputColor } from '../../../common/bridges/UIBridge';
-import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
-import { PoseData } from '../../../lib/cv-val/pose/pose-data';
+
+import { Div, InputColor } from '@common/bridges/UIBridge';
+import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
+    from '../../../common/types/analysis-module';
 
 /**
  * 모듈 설정 및 기본값

@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Landmarks3D } from '../../../lib/cv-val/pose/types';
+import { Landmarks3D } from '../core/types';
 
 interface PoseData {
     getLandmarks3d(): (Landmarks3D | null)[];

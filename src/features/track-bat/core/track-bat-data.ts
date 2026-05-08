@@ -1,5 +1,7 @@
-import { MediaBunnyVideoConverter, VideoMetadata } from "../../video-to-img-list/media-bunny";
-import { MediabunnyImageListToVideo } from "../../image-list-to-video/media-bunny";
+import { MediaBunnyVideoToImageList, VideoMetadata }
+    from "@common/lib/video-to-img-list/media-bunny";
+import { MediabunnyImageListToVideo }
+    from "@common/lib/image-list-to-video/media-bunny";
 import { BatDetectedObject } from "./bat-detector/yolo"; // Assuming yolo.ts exports BatDetectedObject
 
 interface BatFrameData {
@@ -205,7 +207,7 @@ export class TrackBatData {
 
     /** 내부 헬퍼: 비디오 -> ImageBitmap 리스트 (MediaBunnyVideoConverter 활용) */
     private async _videoToImageBitmaps(videoBlob: Blob): Promise<ImageBitmap[]> {
-        const converter = new MediaBunnyVideoConverter();
+        const converter = new MediaBunnyVideoToImageList();
         const file = new File([videoBlob], "temp.mp4", { type: "video/mp4" });
         const { imageList } = await converter.convert(file);
         return imageList;

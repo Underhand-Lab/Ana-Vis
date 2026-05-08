@@ -1,4 +1,4 @@
-import { MediaBunnyVideoConverter } from '../video-to-img-list/media-bunny.js';
+import { MediaBunnyVideoToImageList } from './video-to-img-list/media-bunny.js';
 
 export interface OnProgressCallback {
     onState: (state: string) => void;
@@ -16,7 +16,7 @@ export class Processor {
     private videoConverter: any; // MediaBunnyVideoConverter의 정확한 타입을 알 수 없는 경우 any 혹은 별도 정의
 
     constructor() {
-        this.videoConverter = new MediaBunnyVideoConverter();
+        this.videoConverter = new MediaBunnyVideoToImageList();
     }
 
     setting(ballDetector: Detector, onProgress: OnProgressCallback): void {

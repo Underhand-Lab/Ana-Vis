@@ -1,5 +1,5 @@
 import React, { useState, forwardRef, useRef } from 'react';
-import { AnalysisModule } from '../../types/analysis';
+import { AnalysisModule } from '../../types/analysis-module';
 import { Div } from "../../bridges/UIBridge";
 import vars from '../ui/Variables';
 
@@ -17,7 +17,7 @@ interface Props {
   onRemove: (id: string) => void;
 }
 
-const NewAnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
+const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { 
     module, data, currentFrame, onRemove,
     style, className, onMouseDown, onMouseUp, onTouchEnd, children 
@@ -143,5 +143,5 @@ const styles: { [key: string]: React.CSSProperties } = {
   }
 };
 
-NewAnalysisGridItem.displayName = 'NewAnalysisGridItem';
-export default NewAnalysisGridItem;
+AnalysisGridItem.displayName = 'NewAnalysisGridItem';
+export default AnalysisGridItem;

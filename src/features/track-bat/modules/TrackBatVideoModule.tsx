@@ -1,10 +1,16 @@
 import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
+
+import { TrackBatData } from '../core/track-bat-data.ts';
 import { useTrackBatFrame } from '../hooks/useTrackBatFrame';
-import { TrackBatData } from '../../../lib/cv-val/track-bat/track-bat-data';
-import CanvasRenderer, { CanvasRendererHandle } from "../../../common/components/ui/react-web/custom/CanvasRenderer.tsx";
-import { exportVideo } from '../../../common/utils/exportVideo';
-import { Div, Button, InputColor, InputNumber } from '../../../common/bridges/UIBridge.ts';
-import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
+
+import { exportVideo } from '@common/utils/exportVideo';
+
+import CanvasRenderer, { CanvasRendererHandle }
+from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
+import { Div, Button, InputColor, InputNumber }
+    from '@common/bridges/UIBridge.ts';
+import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
+    from '@common/types/analysis-module.ts';
 
 export interface TrackBatSettings {
     batColor: string;

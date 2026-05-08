@@ -1,25 +1,26 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NewAnalysisGridContainer from '../common/components/AnalysisContainer/NewAnalysisGridContainer.tsx';
-import VideoProcessorModal from '../common/components/VideoProcessorModal';
-import Modal from '../common/components/Modal';
-import Navigation from '../common/bridges/NavigationBridge.tsx';
+
+import AnalysisGridContainer from '@common/components/analysis-container/AnalysisGridContainer.tsx';
+import VideoProcessorModal from '@common/components/VideoProcessorModal';
+import Modal from '@common/components/Modal';
+import Navigation from '@common/bridges/NavigationBridge.tsx';
+import { Processor } from '@common/lib/processor.ts';
 
 // 라이브러리 import
-import { PoseData } from '../lib/cv-val/pose/pose-data';
-import { Processor } from '../lib/cv-val/processor';
-import * as PoseDetector from '../lib/cv-val/pose/pose-detector/index';
-import * as PoseAnalysisTool from "../lib/cv-val/pose/analysis-tool/index";
-import { grfTool } from '../lib/cv-val/pose/analysis-tool/grf-tool';
-import { saveBlobWithPicker } from "../common/save-blob.ts";
-import { AnalysisModule } from '../common/types/analysis';
+import { saveBlobWithPicker } from "@/common/utils/save-blob";
+import { AnalysisModule } from '@common/types/analysis-module.ts';
+import { Div, InputFile, FixedFooter, Box, Button, Wrapper }
+	from '@common/bridges/UIBridge.ts';
 
-import PoseVideoModule from '../features/pose/modules/PoseVideoModule';
-import PoseGraphModule from '../features/pose/modules/PoseGraphModule';
-import PoseTableModule from '../features/pose/modules/PoseTableModule';
-import Pose3DVideoModule from '../features/pose/modules/Pose3DVideoModule';
+import { PoseData } from '@features/pose/core/pose-data.ts';
+import * as PoseDetector from '@features/pose/core/pose-detector/index';
+import * as PoseAnalysisTool from "@features/pose/core/analysis-tool/index";
+import PoseVideoModule from '@features/pose/modules/PoseVideoModule';
+import PoseGraphModule from '@features/pose/modules/PoseGraphModule';
+import PoseTableModule from '@features/pose/modules/PoseTableModule';
+import Pose3DVideoModule from '@features/pose/modules/Pose3DVideoModule';
 
-import { Div, InputFile, FixedFooter, Box, Button, Wrapper } from '../common/bridges/UIBridge.ts';
 
 interface LocationState {
 	externalFile?: File;
@@ -42,7 +43,7 @@ const ANALYSIS_TOOLS: Record<string, any> = {
 	"angle-velocity": new PoseAnalysisTool.AngleVelocityAnalysisTool(),
 	"velocity": new PoseAnalysisTool.VelocityAnalysisTool(),
 	"height": new PoseAnalysisTool.HeightAnalysisTool(),
-	"grf": grfTool,
+	"grf": new PoseAnalysisTool.GRFAnalysisTool(),
 };
 
 const AVAILABLE_MODULES: Record<string, AnalysisModule<PoseData, any>> = {
@@ -228,7 +229,7 @@ const PosePage: React.FC = () => {
 			/>
 
 			{/* 그리드 컨테이너: currentIdx와 data를 prop으로 직접 전달 */}
-			<NewAnalysisGridContainer
+			<AnalysisGridContainer
 				modules={activeModules}
 				data={processedData}
 				currentFrame={currentIdx}

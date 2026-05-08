@@ -1,5 +1,4 @@
-import { PoseData } from '../pose-data';
-import { PoseFrameData, JointCoordinate } from '../types';
+import { PoseData, PoseFrameData, JointCoordinate } from "../types";
 
 /**
  * 신체 분절 질량 및 CoM 비율 (Winter's Table 기반 단순화)

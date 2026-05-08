@@ -1,4 +1,4 @@
-import { Vector3 } from "../cv-val/pose/types";
+import { Vector3 } from "../../types/vector";
 
 export function magVec(vec: Vector3): number {
     let sum = 0;

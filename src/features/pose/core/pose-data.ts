@@ -1,6 +1,10 @@
-import { MediaBunnyVideoConverter, VideoMetadata } from "../../video-to-img-list/media-bunny"
-import { MediabunnyImageListToVideo } from "../../image-list-to-video/media-bunny"
-import { Landmarks3D, PoseData as IPoseData, PoseDetectionResult, AnalysisTool, JointCoordinate, PoseFrameData } from "./types";
+import { MediaBunnyVideoToImageList, VideoMetadata }
+    from "@common/lib/video-to-img-list/media-bunny"
+import { MediabunnyImageListToVideo }
+    from "@common/lib/image-list-to-video/media-bunny"
+import { Landmarks3D, PoseData as IPoseData,
+    PoseDetectionResult, AnalysisTool,
+    JointCoordinate, PoseFrameData } from "./types";
 
 export class PoseData implements IPoseData {
     private rawImgListList: ImageBitmap[][] = [];
@@ -195,7 +199,7 @@ export class PoseData implements IPoseData {
     }
 
     private async _videoToImageBitmaps(videoBlob: Blob): Promise<ImageBitmap[]> {
-        const converter = new (MediaBunnyVideoConverter as any)();
+        const converter = new (MediaBunnyVideoToImageList as any)();
         const file = new File([videoBlob], "temp.mp4", { type: "video/mp4" });
         const { imageList } = await converter.convert(file);
         return imageList;

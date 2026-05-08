@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import TableRenderer from '../../../common/components/ui/react-web/common/TableRenderer';
-import { Div, InputCheckbox } from '../../../common/bridges/UIBridge';
-import { PoseData } from '../../../lib/cv-val/pose/pose-data';
-import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
+import { PoseData } from '../core/pose-data';
+import TableRenderer from '@common/components/ui/react-web/common/TableRenderer';
+import { Div, InputCheckbox } from '@common/bridges/UIBridge';
+import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '@common/types/analysis-module';
 
 interface PoseTableSettingsData {
     selectedToolKey: string;

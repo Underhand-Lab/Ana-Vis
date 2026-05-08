@@ -1,8 +1,12 @@
 import React, { useMemo } from 'react';
-import Graph from '../../../common/components/Graph';
-import { Div, InputColor, InputNumber, InputCheckbox } from '../../../common/bridges/UIBridge';
-import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
-import { PoseData } from '../../../lib/cv-val/pose/pose-data';
+
+import { PoseData } from '../core/pose-data';
+
+import Graph from '@common/components/Graph';
+import { Div, InputColor, InputNumber, InputCheckbox } from '@common/bridges/UIBridge';
+import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
+    from '@common/types/analysis-module';
+
 
 // Graph.tsx와 동일한 색상 생성 로직 (범례 일치를 위함)
 const getDeterministicColor = (str: string) => {

@@ -20,7 +20,9 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"],
-      "@mediapipe/tasks-vision": ["./node_modules/@mediapipe/tasks-vision"]
+      "@mediapipe/tasks-vision": ["./node_modules/@mediapipe/tasks-vision"],
+      "@common/*": ["./src/common/*"],
+      "@features/*": ["./src/features/*"]
     }
   },
   "include": ["src", "electron"]

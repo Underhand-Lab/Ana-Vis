@@ -1,25 +1,25 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NewAnalysisGridContainer from '../common/components/AnalysisContainer/NewAnalysisGridContainer.tsx';
-import VideoProcessorModal from '../common/components/VideoProcessorModal';
-import Modal from '../common/components/Modal';
-import Navigation from '../common/bridges/NavigationBridge.tsx';
+import AnalysisGridContainer from '@common/components/analysis-container/AnalysisGridContainer.tsx';
+import VideoProcessorModal from '@common/components/VideoProcessorModal';
+import Modal from '@common/components/Modal';
+import Navigation from '@common/bridges/NavigationBridge.tsx';
 
 import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper }
-    from '../common/bridges/UIBridge.ts';
+    from '@common/bridges/UIBridge.ts';
 
-import TrackBallVideoModule from "../features/track-ball/modules/TrackBallVideoModule"
-import TrackBallTableModule from "../features/track-ball/modules/TrackBallTableModule"
+import TrackBallVideoModule from "@features/track-ball/modules/TrackBallVideoModule"
+import TrackBallTableModule from "@features/track-ball/modules/TrackBallTableModule"
 
 // 라이브러리 import
-import { Processor } from '../lib/cv-val/processor';
-import { TrackBallData } from "../lib/cv-val/track-ball/track-ball-data";
-import * as BallDetector from '../lib/cv-val/track-ball/ball-detector/index';
-import { DetectedObject } from '../lib/cv-val/track-ball/ball-detector/yolo';
-import { AnalysisModule } from '../common/types/analysis';
+import { Processor } from '@common/lib/processor.ts';
+import { TrackBallData } from "@features/track-ball/core/track-ball-data.ts";
+import * as BallDetector from '@features/track-ball/core/ball-detector/index';
+import { DetectedObject } from '@features/track-ball/core/ball-detector/yolo.ts';
+import { AnalysisModule } from '@common/types/analysis-module.ts';
 
-import * as Analysis from "../lib/cv-val/track-ball/calc/analysis";
-import { saveBlobWithPicker } from "../common/save-blob.ts";
+import * as Analysis from "@features/track-ball/core/calc/analysis.ts";
+import { saveBlobWithPicker } from "@/common/utils/save-blob";
 
 interface LocationState {
     externalFile?: File;
@@ -294,7 +294,7 @@ const TrackBallPage: React.FC = () => {
                 }))}
             />
 
-            <NewAnalysisGridContainer
+            <AnalysisGridContainer
                 modules={activeModules}
                 data={processedData}
                 currentFrame={currentIdx}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Responsive } from 'react-grid-layout';
-import NewAnalysisGridItem from './NewAnalysisGridItem';
-import { AnalysisModule } from '../../types/analysis';
+import AnalysisGridItem from './AnalysisGridItem';
+import { AnalysisModule } from '../../types/analysis-module';
 import { Div } from "../../bridges/UIBridge";
 import vars from '../ui/Variables';
 
@@ -14,7 +14,7 @@ interface Props {
 
 const COLUMNS = { lg: 24, md: 20, sm: 12, xs: 8, xxs: 8 };
 
-const NewAnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame, onRemoveModule }) => {
+const AnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame, onRemoveModule }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [layouts, setLayouts] = useState<{ [key: string]: any[] }>({});
   const gridWrapperRef = useRef<HTMLDivElement>(null);
@@ -101,7 +101,7 @@ const NewAnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame
           margin={[15, 15]}
         >
           {modules.map((module) => (
-            <NewAnalysisGridItem
+            <AnalysisGridItem
               key={module.id}
               module={module}
               data={data}
@@ -144,4 +144,4 @@ const styles: { [key: string]: React.CSSProperties } = {
   }
 };
 
-export default NewAnalysisGridContainer;
+export default AnalysisGridContainer;

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
-import { TrackBatData } from '../../../lib/cv-val/track-bat/track-bat-data';
-import { BatDetectedObject } from '../../../lib/cv-val/track-bat/bat-detector/yolo';
+import { TrackBatData } from '../core/track-bat-data';
+import { BatDetectedObject } from '../core/bat-detector/yolo';
 
 interface ColorsState {
   batColor: string;

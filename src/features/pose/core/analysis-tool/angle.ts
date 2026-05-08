@@ -1,5 +1,6 @@
-import { magVec, dotVec, subVec } from "../../../math/vector";
-import { PoseData, Landmarks3D, Vector3 } from "../types";
+import { magVec, dotVec, subVec } from "@common/lib/math/vector"
+import { PoseData, Landmarks3D } from "../types";
+import { Vector3 } from "@/common/types/vector";
 
 const jointCalcParameter: Record<string, string[]> = {
     "R_ELBOW": ["R_SHOULDER", "R_ELBOW", "R_WRIST"],

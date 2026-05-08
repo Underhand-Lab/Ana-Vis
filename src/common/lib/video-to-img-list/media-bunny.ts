@@ -16,7 +16,7 @@ interface FrameDataItem {
     bitmap: ImageBitmap;
 }
 
-export class MediaBunnyVideoConverter {
+export class MediaBunnyVideoToImageList {
     private decoder: VideoDecoder | null = null;
 
     async convert(file: File | Blob): Promise<{ imageList: ImageBitmap[]; metadata: VideoMetadata }> {
