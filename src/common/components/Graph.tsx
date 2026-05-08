@@ -65,11 +65,16 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
     const chartRef = useRef<Chart | null>(null);
     const customColorsRef = useRef<Record<string, string>>({});
 
-    const getRandomColor = () => {
-        const r = Math.floor(Math.random() * 255);
-        const g = Math.floor(Math.random() * 255);
-        const b = Math.floor(Math.random() * 255);
-        return `rgba(${r}, ${g}, ${b}, 1)`;
+    // 라벨 문자열을 기반으로 고유한 색상을 생성 (결정론적 방식)
+    const getDeterministicColor = (str: string) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const r = (hash & 0xFF0000) >> 16;
+        const g = (hash & 0x00FF00) >> 8;
+        const b = hash & 0x0000FF;
+        return `rgba(${Math.abs(r % 255)}, ${Math.abs(g % 255)}, ${Math.abs(b % 255)}, 1)`;
     };
 
     // 1. 차트 초기 생성 및 정리
@@ -115,7 +120,7 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
 
         for (const key in data) {
             if (!customColorsRef.current[key]) {
-                customColorsRef.current[key] = getRandomColor();
+                customColorsRef.current[key] = getDeterministicColor(key);
             }
             const color = settings[key] || customColorsRef.current[key];
             const visibility = settings.datasetVisibility || {};

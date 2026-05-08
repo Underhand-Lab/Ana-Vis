@@ -18,7 +18,6 @@ import PoseVideoModule from '../features/pose/modules/PoseVideoModule';
 import PoseGraphModule from '../features/pose/modules/PoseGraphModule';
 import PoseTableModule from '../features/pose/modules/PoseTableModule';
 import Pose3DVideoModule from '../features/pose/modules/Pose3DVideoModule';
-import PosePowerModule from '../features/pose/modules/PosePowerModule';
 
 import { Div, InputFile, FixedFooter, Box, Button, Wrapper } from '../common/bridges/UIBridge.ts';
 
@@ -51,7 +50,6 @@ const AVAILABLE_MODULES: Record<string, AnalysisModule<PoseData, any>> = {
 	"3D 동영상": Pose3DVideoModule,
 	"그래프": PoseGraphModule,
 	"표": PoseTableModule,
-	"지면반력": PosePowerModule
 };
 
 const PosePage: React.FC = () => {

@@ -4,6 +4,18 @@ import { Div, InputColor, InputNumber, InputCheckbox } from '../../../common/bri
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '../../../common/types/analysis';
 import { PoseData } from '../../../lib/cv-val/pose/pose-data';
 
+// Graph.tsx와 동일한 색상 생성 로직 (범례 일치를 위함)
+const getDeterministicColor = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const r = (hash & 0xFF0000) >> 16;
+    const g = (hash & 0x00FF00) >> 8;
+    const b = hash & 0x0000FF;
+    return `rgba(${Math.abs(r % 255)}, ${Math.abs(g % 255)}, ${Math.abs(b % 255)}, 1)`;
+};
+
 interface LegendItemProps {
     label: string;
     color: string;
@@ -77,13 +89,19 @@ export const PoseGraphView: React.FC<AnalysisViewProps<PoseData, PoseGraphSettin
         return (result ?? {}) as Record<string, (number | null)[]>;
     }, [data, settings.selectedToolKey]);
 
+    // 기본 설정과 현재 설정을 병합하여 Graph에 전달 (기본 색상 보장)
+    const mergedSettings = useMemo(() => ({
+        ...defaultSettings,
+        ...settings
+    }), [settings]);
+
     return (
         <Div className="viewer_container" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
             <Div style={{ flex: 1, minHeight: 0 }}>
                 <Graph 
                     data={graphData} 
                     idx={currentFrame} 
-                    settings={settings} 
+                    settings={mergedSettings} 
                 />
             </Div>
         </Div>
@@ -161,7 +179,7 @@ export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseData, PoseGra
                             <LegendItem
                                 key={label}
                                 label={label}
-                                color={settings[label] || "rgba(150,150,150,1)"}
+                                color={settings[label] || defaultSettings[label] || getDeterministicColor(label)}
                                 isVisible={isVisible}
                                 onToggleVisibility={() => {
                                     onSettingsChange({
