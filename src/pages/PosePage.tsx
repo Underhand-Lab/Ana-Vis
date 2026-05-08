@@ -10,6 +10,7 @@ import { PoseData } from '../lib/cv-val/pose/pose-data';
 import { Processor } from '../lib/cv-val/processor';
 import * as PoseDetector from '../lib/cv-val/pose/pose-detector/index';
 import * as PoseAnalysisTool from "../lib/cv-val/pose/analysis-tool/index";
+import { grfTool } from '../lib/cv-val/pose/analysis-tool/grf-tool';
 import { saveBlobWithPicker } from "../common/save-blob.ts";
 import { AnalysisModule } from '../common/types/analysis';
 
@@ -17,6 +18,7 @@ import PoseVideoModule from '../features/pose/modules/PoseVideoModule';
 import PoseGraphModule from '../features/pose/modules/PoseGraphModule';
 import PoseTableModule from '../features/pose/modules/PoseTableModule';
 import Pose3DVideoModule from '../features/pose/modules/Pose3DVideoModule';
+import PosePowerModule from '../features/pose/modules/PosePowerModule';
 
 import { Div, InputFile, FixedFooter, Box, Button, Wrapper } from '../common/bridges/UIBridge.ts';
 
@@ -41,13 +43,15 @@ const ANALYSIS_TOOLS: Record<string, any> = {
 	"angle-velocity": new PoseAnalysisTool.AngleVelocityAnalysisTool(),
 	"velocity": new PoseAnalysisTool.VelocityAnalysisTool(),
 	"height": new PoseAnalysisTool.HeightAnalysisTool(),
+	"grf": grfTool,
 };
 
 const AVAILABLE_MODULES: Record<string, AnalysisModule<PoseData, any>> = {
 	"동영상": PoseVideoModule,
 	"3D 동영상": Pose3DVideoModule,
 	"그래프": PoseGraphModule,
-	"표": PoseTableModule
+	"표": PoseTableModule,
+	"지면반력": PosePowerModule
 };
 
 const PosePage: React.FC = () => {

@@ -1,12 +1,13 @@
 import { MediaBunnyVideoConverter, VideoMetadata } from "../../video-to-img-list/media-bunny"
 import { MediabunnyImageListToVideo } from "../../image-list-to-video/media-bunny"
-import { Landmarks3D, PoseData as IPoseData, PoseDetectionResult, AnalysisTool } from "./types";
+import { Landmarks3D, PoseData as IPoseData, PoseDetectionResult, AnalysisTool, JointCoordinate, PoseFrameData } from "./types";
 
 export class PoseData implements IPoseData {
     private rawImgListList: ImageBitmap[][] = [];
     private landmarks3dList: (Landmarks3D | null)[] = [];
     private landmarks2dListList: (Landmarks3D | null)[][] = [];
     private visibilityScoreListList: (Record<string, number> | null)[][] = [];
+    private frameRate: number = 30; // Add frameRate property
     private videoMetaDataList: VideoMetadata[] = [];
     public analysisTools?: Record<string, AnalysisTool>;
 
@@ -24,6 +25,9 @@ export class PoseData implements IPoseData {
         this.rawImgListList = Array.from({ length: videoMetaDataList.length }, () => []);
         this.landmarks2dListList = Array.from({ length: videoMetaDataList.length }, () => []);
         this.visibilityScoreListList = Array.from({ length: videoMetaDataList.length }, () => []);
+        if (videoMetaDataList.length > 0) {
+            this.frameRate = videoMetaDataList[0].fps || 30; // Initialize frameRate
+        }
 
     }
 
@@ -60,6 +64,24 @@ export class PoseData implements IPoseData {
 
     getVisibilityScoreList(idx: number): (Record<string, number> | null)[] {
         return this.visibilityScoreListList[idx];
+    }
+
+    getFPS(): number { // Add getFPS method
+        return this.frameRate;
+    }
+
+    getPose(index: number): PoseFrameData { // Add getPose method
+        const landmarks3d = this.landmarks3dList[index];
+        const visibilityScores = this.visibilityScoreListList[0]?.[index]; // Assuming visibility scores are per frame for the first video
+
+        const keypoints: Record<string, JointCoordinate | undefined> = {};
+        if (landmarks3d) {
+            for (const key in landmarks3d) {
+                const [x, y, z] = landmarks3d[key];
+                keypoints[key] = { x, y, z, score: visibilityScores?.[key] };
+            }
+        }
+        return { keypoints };
     }
     
     async toBlob(): Promise<Blob> {
@@ -149,6 +171,9 @@ export class PoseData implements IPoseData {
         this.landmarks3dList = parsed.landmarks3d;
         this.landmarks2dListList = parsed.landmarks2d;
         this.visibilityScoreListList = parsed.visibility;
+        if (this.videoMetaDataList.length > 0) {
+            this.frameRate = this.videoMetaDataList[0].fps || 30; // Restore frameRate
+        }
 
         // 3. 비디오 데이터 읽기 및 이미지 리스트 복원
         const videoCount = view.getUint32(offset, true);

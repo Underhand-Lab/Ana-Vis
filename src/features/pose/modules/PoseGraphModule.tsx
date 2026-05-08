@@ -123,6 +123,7 @@ export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseData, PoseGra
                     <option value="velocity">관절 이동 속도</option>
                     <option value="angle-velocity">관절 회전 속도</option>
                     <option value="height">관절 높이</option>
+                    <option value="grf">지면반력 (GRF)</option>
                 </select>
             </Div>
 
