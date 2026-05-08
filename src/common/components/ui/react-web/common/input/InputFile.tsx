@@ -71,6 +71,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
+        maxWidth: '150px',
     }
 };
 

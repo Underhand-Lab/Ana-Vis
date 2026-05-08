@@ -78,7 +78,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
             />
           </Div>
           {models.length > 0 && (
-            <Div style={{ whiteSpace: 'nowrap' }}>
+            <Div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
               <label htmlFor="model-Select">모델 선택 </label>
               <Select
                 id="model-Select"
