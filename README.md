@@ -46,10 +46,13 @@ src/
 │       └── modules/  # AnalysisGrid용 UI 컴포넌트 세트
 ├── electron/         # Electron 메인 프로세스 및 네이티브 설정
 └── pages/            # 어플리케이션 주요 화면 구성
+```
 
 ## 🚀 시작하기
 
 ### 의존성 설치
+
+
 ```bash
 npm install
 ```
