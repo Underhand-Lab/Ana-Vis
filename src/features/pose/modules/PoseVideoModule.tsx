@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { PoseData } from '../core/pose-data.ts';
-import { usePoseVisualize } from "../hooks/usePoseVisualize";
+import { usePoseVisualize, PoseSettings } from "../hooks/usePoseVisualize";
 
 import { exportVideo } from "@common/utils/exportVideo";
 import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
@@ -8,6 +8,7 @@ import { Div, Button, InputNumber, InputColor, InputCheckbox, Select }
     from '@common/bridges/UIBridge.ts';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@common/types/analysis-module.ts';
+import { Toggle } from '@common/components/ui/react-web/common/Toggle.tsx';
 
 /**
  * 모듈에서 사용할 색상 매핑 및 기본 설정값
@@ -23,23 +24,6 @@ const colorMap = {
     JOINT_STROKE: "JOINT STROKE"
 };
 
-export interface PoseSettings {
-    COLOR_LEFT_ARM: string;
-    COLOR_RIGHT_ARM: string;
-    COLOR_LEFT_LEG: string;
-    COLOR_RIGHT_LEG: string;
-    COLOR_TORSO: string;
-    COLOR_HEAD_NECK: string;
-    COLOR_JOINT: string;
-    JOINT_STROKE: string;
-    lineWidth: number;
-    showBackground: boolean;
-    jointShape: string;
-    jointRadius: number;
-    jointStrokeWidth: number;
-    [key: string]: any; // dynamic color keys
-}
-
 const defaultSettings: PoseSettings = {
     COLOR_LEFT_ARM: "rgba(255,0,0,1)",
     COLOR_RIGHT_ARM: "rgba(0,255,0,1)",
@@ -54,6 +38,9 @@ const defaultSettings: PoseSettings = {
     jointShape: 'circle',
     jointRadius: 4,
     jointStrokeWidth: 2,
+    showPose: true,
+    showGRF: false,
+    grfScale: 0.1,
 };
 
 /**
@@ -104,9 +91,11 @@ export const PoseVideoView: React.FC<AnalysisViewProps<PoseData, PoseSettings>> 
             ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
         }
 
+        // 레이어 그리기 (훅 내부에서 showPose, showGRF 옵션에 따라 스켈레톤과 화살표를 모두 포함한 캔버스를 반환함)
         if (poseLayer) ctx.drawImage(poseLayer, 0, 0);
+
         return compositeCanvas;
-    }, [data, getPoseLayer, settings.showBackground]);
+    }, [data, getPoseLayer, settings.showBackground, settings.showPose, settings.showGRF, settings.grfScale]);
 
     // 2. 실제 그리기: data, frame 또는 drawTick(설정 변경 완료)이 바뀔 때 수행합니다.
     useEffect(() => {
@@ -169,7 +158,9 @@ export const PoseVideoSettings: React.FC<AnalysisSettingsProps<PoseData, PoseSet
             ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
         }
 
+        // 레이어 그리기 (내보내기용)
         if (poseLayer) ctx.drawImage(poseLayer, 0, 0);
+
         return compositeCanvas;
     };
 
@@ -194,90 +185,89 @@ export const PoseVideoSettings: React.FC<AnalysisSettingsProps<PoseData, PoseSet
             >
                 {isExporting ? '저장 중...' : '비디오 저장'}
             </Button>
+
             <InputCheckbox
                 label="배경 이미지 표시"
                 checked={settings.showBackground !== false}
                 onChange={(e) => onSettingsChange({ ...settings, showBackground: e.target.checked })}
-                style={{ fontWeight: 'bold' }}
+                style={{ fontWeight: 'bold', marginBottom: '10px' }}
             />
-            {/* 선 굵기 설정 추가 */}
-            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', alignContent: 'center' }}>선 굵기</label> {/* Display current value */}
-                <InputNumber
-                    min="1"
-                    // 'max'와 'step' 속성은 무제한 양수 입력을 위해 제거
-                    value={settings.lineWidth || 2}
-                    onChange={(e) => {
-                        const value = parseFloat(e.target.value); // parseFloat을 사용하여 소수점도 허용
-                        let newLineWidth = settings.lineWidth; // 현재 값 유지
-                        if (!isNaN(value) && value > 0) { // 유효한 양수일 경우에만 업데이트
-                            newLineWidth = value;
-                        } else if (e.target.value === '') { // 입력 필드가 비어있을 경우 기본값 1로 설정
-                            newLineWidth = 1;
-                        }
-                        onSettingsChange({ ...settings, lineWidth: newLineWidth });
-                    }}
-                    style={{ maxWidth: '70px', cursor: 'pointer' }}
+
+            <Toggle title="자세(관절) 시각화 설정">
+                <InputCheckbox
+                    label="관절 표시 여부"
+                    checked={settings.showPose !== false}
+                    onChange={(e) => onSettingsChange({ ...settings, showPose: e.target.checked })}
                 />
-            </Div>
-            {/* 관절 모양 설정 추가 */}
-            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', alignContent: 'center' }}>관절 모양</label>
-                <Select
-                    value={settings.jointShape || 'circle'}
-                    onChange={(e) => onSettingsChange({ ...settings, jointShape: e.target.value })}
-                    style={{ padding: '2px 5px', borderRadius: '4px', border: '1px solid #ccc' }}
-                    options={jointShapeOptions}
-                />
-            </Div>
-            {/* 관절 크기 설정 추가 */}
-            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', alignContent: 'center' }}>관절 크기</label>
-                <InputNumber
-                    min="0"
-                    value={settings.jointRadius !== undefined ? settings.jointRadius : 4}
-                    onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        let newValue = settings.jointRadius;
-                        if (!isNaN(value) && value >= 0) {
-                            newValue = value;
-                        } else if (e.target.value === '') {
-                            newValue = 0;
-                        }
-                        onSettingsChange({ ...settings, jointRadius: newValue });
-                    }}
-                    style={{ maxWidth: '70px', cursor: 'pointer' }}
-                />
-            </Div>
-            {/* 관절 테두리 설정 추가 */}
-            <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', alignContent: 'center' }}>관절 테두리</label>
-                <InputNumber
-                    min="0"
-                    value={settings.jointStrokeWidth !== undefined ? settings.jointStrokeWidth : 2}
-                    onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        let newValue = settings.jointStrokeWidth;
-                        if (!isNaN(value) && value >= 0) {
-                            newValue = value;
-                        } else if (e.target.value === '') {
-                            newValue = 0;
-                        }
-                        onSettingsChange({ ...settings, jointStrokeWidth: newValue });
-                    }}
-                    style={{ maxWidth: '70px', cursor: 'pointer' }}
-                />
-            </Div>
-            <Div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {Object.entries(colorMap).map(([key, label]) => ( // eslint-disable-line react-hooks/exhaustive-deps
-                    <InputColor
-                        key={key}
-                        label={label}
-                        value={settings[key] || defaultSettings[key]}
-                        onChange={(newColor) => onSettingsChange({ ...settings, [key]: newColor })}
+                <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>선 굵기</label>
+                    <InputNumber
+                        min="1"
+                        value={settings.lineWidth || 2}
+                        onChange={(e) => onSettingsChange({ ...settings, lineWidth: parseFloat(e.target.value) || 1 })}
+                        style={{ maxWidth: '70px', cursor: 'pointer' }}
                     />
-                ))}
-            </Div>
+                </Div>
+                <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>관절 모양</label>
+                    <Select
+                        value={settings.jointShape || 'circle'}
+                        onChange={(e) => onSettingsChange({ ...settings, jointShape: e.target.value })}
+                        options={jointShapeOptions}
+                        style={{ cursor: 'pointer', maxWidth: '90px' }}
+                    />
+                </Div>
+                <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>관절 크기</label>
+                    <InputNumber
+                        min="0"
+                        value={settings.jointRadius !== undefined ? settings.jointRadius : 4}
+                        onChange={(e) => onSettingsChange({ ...settings, jointRadius: parseFloat(e.target.value) || 0 })}
+                        style={{ maxWidth: '70px', cursor: 'pointer' }}
+                    />
+                </Div>
+                <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>관절 테두리</label>
+                    <InputNumber
+                        min="0"
+                        value={settings.jointStrokeWidth !== undefined ? settings.jointStrokeWidth : 2}
+                        onChange={(e) => onSettingsChange({ ...settings, jointStrokeWidth: parseFloat(e.target.value) || 0 })}
+                        style={{ maxWidth: '70px', cursor: 'pointer' }}
+                    />
+                </Div>
+                <Div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>색상 설정</label>
+                    {Object.entries(colorMap).map(([key, label]) => (
+                        <InputColor
+                            key={key}
+                            label={label}
+                            value={settings[key] || defaultSettings[key]}
+                            onChange={(newColor) => onSettingsChange({ ...settings, [key]: newColor })}
+                        />
+                    ))}
+                </Div>
+            </Toggle>
+
+            <Toggle title="지면반력(GRF) 시각화 설정">
+                <InputCheckbox
+                    label="GRF 화살표 표시"
+                    checked={settings.showGRF === true}
+                    onChange={(e) => onSettingsChange({ ...settings, showGRF: e.target.checked })}
+                />
+                <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>화살표 배율</label>
+                    <InputNumber
+                        min="0"
+                        step="0.01"
+                        value={settings.grfScale !== undefined ? settings.grfScale : 0.1}
+                        onChange={(e) => {
+                            const value = parseFloat(e.target.value);
+                            onSettingsChange({ ...settings, grfScale: isNaN(value) ? 0.1 : value });
+                        }}
+                        style={{ maxWidth: '70px', cursor: 'pointer' }}
+                    />
+                </Div>
+            </Toggle>
         </Div>
     );
 };

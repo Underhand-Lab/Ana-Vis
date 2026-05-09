@@ -1,5 +1,24 @@
 import { useState, useCallback, useRef } from 'react';
-import { PoseSettings } from '../modules/PoseVideoModule';
+
+export interface PoseSettings {
+    COLOR_LEFT_ARM: string;
+    COLOR_RIGHT_ARM: string;
+    COLOR_LEFT_LEG: string;
+    COLOR_RIGHT_LEG: string;
+    COLOR_TORSO: string;
+    COLOR_HEAD_NECK: string;
+    COLOR_JOINT: string;
+    JOINT_STROKE: string;
+    lineWidth: number;
+    showBackground: boolean;
+    jointShape: string;
+    jointRadius: number;
+    jointStrokeWidth: number;
+    showPose: boolean;
+    showGRF: boolean;
+    grfScale: number;
+    [key: string]: any; // dynamic color keys
+}
 
 const POSE_CONNECTIONS = [
     ["L_SHOULDER", "L_ELBOW"], ["L_ELBOW", "L_WRIST"],
@@ -119,10 +138,84 @@ function drawJoint(
 
 }
 
+/**
+ * 화살표 그리기 유틸리티
+ */
+const drawArrow = (ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number, color: string, width: number) => {
+    const headLength = 10;
+    const dx = toX - fromX;
+    const dy = toY - fromY;
+    const angle = Math.atan2(dy, dx);
+    
+    ctx.beginPath();
+    ctx.moveTo(fromX, fromY);
+    ctx.lineTo(toX, toY);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(toX, toY);
+    ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+};
+
 interface PoseDataInterface {
     getRawImgList: (idx: number) => any[];
     getLandmarks2dList: (idx: number) => any[];
+    getAnalysisResult: (toolKey: string) => any;
 }
+
+/**
+ * 지면반력(GRF) 그리기 내부 함수
+ */
+const drawGRF = (ctx: CanvasRenderingContext2D, idx: number, poseData: PoseDataInterface, options: PoseSettings, width: number, height: number) => {
+    const grfData = poseData.getAnalysisResult('grf');
+    if (!grfData) return;
+
+    const leftGRF = grfData["Left GRF (N)"]?.[idx];
+    const rightGRF = grfData["Right GRF (N)"]?.[idx];
+    const landmarks2d = poseData.getLandmarks2dList(0)[idx];
+    const scale = options.grfScale || 0.1;
+
+    if (!landmarks2d) return;
+    const lKnee = landmarks2d['L_KNEE'];
+    const rKnee = landmarks2d['R_KNEE'];
+
+    const renderArrow = (jointKey: string, value: number | null, color: string) => {
+        if (value === null || value === undefined || isNaN(value) || value <= 0) return;
+        const joint = landmarks2d[jointKey];
+        if (!joint) return;
+
+        const startX = joint[0] * width;
+        const startY = joint[1] * height;
+
+        // 발목 위치 표시
+        ctx.beginPath();
+        ctx.arc(startX, startY, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.closePath();
+
+        const target = jointKey === 'L_ANKLE' ? lKnee : rKnee;
+        if (target) {
+            const dx = (target[0] * width) - startX;
+            const dy = (target[1] * height) - startY;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            if (len > 0) {
+                const endX = startX + (dx / len) * (value * scale);
+                const endY = startY + (dy / len) * (value * scale);
+                drawArrow(ctx, startX, startY, endX, endY, color, 5);
+            }
+        }
+    };
+
+    renderArrow('L_ANKLE', leftGRF, 'rgba(255, 0, 0, 0.8)');
+    renderArrow('R_ANKLE', rightGRF, 'rgba(0, 255, 0, 0.8)');
+};
 
 export const usePoseVisualize = (poseData: PoseDataInterface | null) => {
     // renderer 인자는 현재 getPoseLayer에서 직접 캔버스를 생성하므로 로직상 필수는 아니지만,
@@ -141,6 +234,9 @@ export const usePoseVisualize = (poseData: PoseDataInterface | null) => {
         jointShape: 'circle',
         jointRadius: 4,
         jointStrokeWidth: 2,
+        showPose: true,
+        showGRF: false,
+        grfScale: 0.1,
     });
 
     const offscreenRef = useRef<HTMLCanvasElement | null>(null);
@@ -148,7 +244,7 @@ export const usePoseVisualize = (poseData: PoseDataInterface | null) => {
 
     // ✅ 포즈 스켈레톤 레이어만 생성하는 함수
     const getPoseLayer = useCallback((idx: number) => {
-        if (!poseData || idx < 0 || !poseData.getRawImgList) return null;
+        if (!poseData || idx < 0) return null;
 
         const targetIdx = 0; 
         const rawImgList = poseData.getRawImgList(targetIdx);
@@ -175,10 +271,15 @@ export const usePoseVisualize = (poseData: PoseDataInterface | null) => {
         // 레이어 초기화 (투명)
         offCtx.clearRect(0, 0, width, height);
 
-        // 스켈레톤 그리기
-        if (landmarks) {
+        // 1. 스켈레톤 그리기 (설정에 따라)
+        if (options.showPose !== false && landmarks) {
             drawConnection(offCtx, landmarks, width, height, options);
             drawJoint(offCtx, landmarks, width, height, options);
+        }
+
+        // 2. 지면반력(GRF) 그리기 (설정에 따라)
+        if (options.showGRF) {
+            drawGRF(offCtx, idx, poseData, options, width, height);
         }
 
         // ✅ 성능 최적화: 매번 생성하지 않고 ref에 저장된 캔버스를 재사용

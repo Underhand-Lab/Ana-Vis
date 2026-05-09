@@ -14,8 +14,13 @@ const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(({ style, ...
 
 const styles: { [key: string]: React.CSSProperties } = {
     input: {
+        display: 'block',
         fontFamily: vars.font,
         fontSize: '16px',
+        width: '100%',
+        minWidth: 0,
+        cursor: 'pointer',
+        flex: 1,
     },
 };
 

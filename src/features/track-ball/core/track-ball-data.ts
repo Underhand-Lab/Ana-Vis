@@ -53,8 +53,8 @@ export class TrackBallData {
         }
     }
 
-    getConf() {
-        this.conf;
+    getConf(): number {
+        return this.conf;
     }
 
     addDataAt(idx: number, rawImg: ImageBitmap, candidates: DetectedObject[]): void {

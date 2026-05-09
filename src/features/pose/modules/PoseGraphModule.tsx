@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { PoseData } from '../core/pose-data';
 
 import Graph from '@common/components/Graph';
-import { Div, InputColor, InputNumber, InputCheckbox } from '@common/bridges/UIBridge';
+import { Div, InputColor, InputNumber, InputCheckbox, Select } from '@common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@common/types/analysis-module';
 
@@ -133,17 +133,18 @@ export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseData, PoseGra
                 <label style={{ marginRight: '10px' }}>
                     <strong>도구</strong>:
                 </label>
-                <select
+                <Select
                     value={settings.selectedToolKey}
                     onChange={handleToolChange}
-                    style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #d1d9e6' }}
-                >
-                    <option value="angle">관절 각도</option>
-                    <option value="velocity">관절 이동 속도</option>
-                    <option value="angle-velocity">관절 회전 속도</option>
-                    <option value="height">관절 높이</option>
-                    <option value="grf">지면반력 (GRF)</option>
-                </select>
+                    options={[
+                        { label: "관절 각도", value: "angle"},
+                        { label: "관절 이동 속도", value: "velocity"},
+                        { label: "관절 회전 속도", value: "angle-velocity"},
+                        { label: "관절 높이", value: "height"},
+                        { label: "지면 반력", value: "grf"},
+
+                    ]}
+                />
             </Div>
 
             {/* 선 굵기 설정 추가 */}
