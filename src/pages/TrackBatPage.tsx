@@ -192,15 +192,6 @@ const TrackBatPage: React.FC = () => {
         setActiveModules(prev => prev.filter(m => m.id !== id));
     };
 
-    // 데이터에 분석 도구 주입 (모듈 내 View에서 사용하기 위함)
-    // TrackBatPage는 현재 ANALYSIS_TOOLS가 비어있으므로, 이 useEffect는 큰 의미가 없을 수 있습니다.
-    // 하지만 일관성을 위해 유지합니다.
-    useEffect(() => {
-        if (processedData) {
-            processedData.analysisTools = ANALYSIS_TOOLS;
-        }
-    }, [processedData]);
-
     // CONF 변경
     const handleConfChange = (e: ChangeEvent<HTMLInputElement>) => {
         const val = parseFloat(e.target.value);

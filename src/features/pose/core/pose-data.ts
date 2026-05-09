@@ -14,6 +14,7 @@ export class PoseData implements IPoseData {
     private frameRate: number = 30; // Add frameRate property
     private videoMetaDataList: VideoMetadata[] = [];
     public analysisTools?: Record<string, AnalysisTool>;
+    private _analysisCache: Record<string, any> = {};
 
     constructor() {
         this.rawImgListList = [];
@@ -32,6 +33,7 @@ export class PoseData implements IPoseData {
         if (videoMetaDataList.length > 0) {
             this.frameRate = videoMetaDataList[0].fps || 30; // Initialize frameRate
         }
+        this.clearAnalysisCache();
 
     }
 
@@ -41,6 +43,7 @@ export class PoseData implements IPoseData {
         this.visibilityScoreListList[idx].push(data.visibilityScoreList[0]);
 
         this.landmarks3dList.push(data.landmarks3d);
+        this.clearAnalysisCache();
     }
 
     getVideoMetadata(idx: number): VideoMetadata {
@@ -88,6 +91,33 @@ export class PoseData implements IPoseData {
         return { keypoints };
     }
     
+    /**
+     * 분석 도구의 결과를 요청합니다. (Lazy Evaluation)
+     * 결과가 캐시에 있으면 즉시 반환하고, 없으면 도구를 실행하여 계산 후 캐싱합니다.
+     */
+    public getAnalysisResult(toolKey: string): any {
+        if (!this.analysisTools) return null;
+
+        // 1. 캐시 확인
+        if (this._analysisCache[toolKey] !== undefined) {
+            return this._analysisCache[toolKey];
+        }
+
+        // 2. 도구 실행 및 결과 저장
+        const tool = this.analysisTools[toolKey];
+        if (tool && typeof tool.calc === 'function') {
+            const result = tool.calc(this);
+            this._analysisCache[toolKey] = result;
+            return result;
+        }
+
+        return null;
+    }
+
+    public clearAnalysisCache(): void {
+        this._analysisCache = {};
+    }
+
     async toBlob(): Promise<Blob> {
         const videoBlobs: Blob[] = [];
         

@@ -87,10 +87,9 @@ export const PoseGraphView: React.FC<AnalysisViewProps<PoseData, PoseGraphSettin
 }) => {
     // 분석 도구 데이터 추출 로직
     const graphData = useMemo<Record<string, (number | null)[]>>(() => {
-        if (!data || !data.analysisTools) return {};
-        const tool = data.analysisTools[settings.selectedToolKey];
-        const result = tool ? tool.calc(data) : {};
-        return (result ?? {}) as Record<string, (number | null)[]>;
+        if (!data) return {};
+        const result = data.getAnalysisResult(settings.selectedToolKey);
+        return (result || {}) as Record<string, (number | null)[]>;
     }, [data, settings.selectedToolKey]);
 
     // 기본 설정과 현재 설정을 병합하여 Graph에 전달 (기본 색상 보장)
@@ -123,10 +122,8 @@ export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseData, PoseGra
     // 차트 인스턴스에 의존하지 않고 데이터로부터 직접 범례 라벨을 추출합니다. (초기 렌더링 보장)
     const labels = useMemo(() => {
         if (!data) return [];
-        const analysisTools = data.analysisTools;
-        const tool = analysisTools?.[settings.selectedToolKey];
-        const graphData = tool ? (tool.calc(data) || {}) : {};
-        return Object.keys(graphData);
+        const graphData = data.getAnalysisResult(settings.selectedToolKey);
+        return graphData ? Object.keys(graphData) : [];
     }, [data, settings.selectedToolKey]);
 
     return (

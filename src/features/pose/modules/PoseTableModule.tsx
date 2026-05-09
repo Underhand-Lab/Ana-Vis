@@ -37,14 +37,9 @@ const defaultSettings: PoseTableSettingsData = {
 export const PoseTableView: React.FC<AnalysisViewProps<PoseData, PoseTableSettingsData>> = ({ data, currentFrame, settings }) => {
     // 데이터 계산 및 현재 프레임 값 추출 로직
     const currentFrameData = useMemo(() => {
-        if (!data || !data.analysisTools) return null;
+        if (!data) return null;
 
-        const analysisTools = data.analysisTools;
-        const currentTool = analysisTools[settings.selectedToolKey];
-        
-        // PoseData 인스턴스와 분석 결과 객체 간의 타입 충돌을 방지하기 위해 
-        // 도구가 없을 경우 null을 할당합니다.
-        const processedData = currentTool ? currentTool.calc(data) : null;
+        const processedData = data.getAnalysisResult(settings.selectedToolKey);
 
         if (!processedData) return null;
 
@@ -82,8 +77,7 @@ export const PoseTableSettings: React.FC<AnalysisSettingsProps<PoseData, PoseTab
 
     // 현재 도구가 출력하는 실제 데이터 키들을 추출합니다.
     const availableKeys = useMemo(() => {
-        const currentTool = data?.analysisTools?.[settings.selectedToolKey];
-        const calculatedData = currentTool ? currentTool.calc(data) : null;
+        const calculatedData = data?.getAnalysisResult(settings.selectedToolKey);
         return calculatedData ? Object.keys(calculatedData) : [];
     }, [data, settings.selectedToolKey]);
 
