@@ -39,18 +39,15 @@ export const PoseTableView: React.FC<AnalysisViewProps<PoseData, PoseTableSettin
     const currentFrameData = useMemo(() => {
         if (!data) return null;
 
-        const processedData = data.getAnalysisResult(settings.selectedToolKey);
-
+        const processedData = data.getAnalysisResult(settings.selectedToolKey, currentFrame);
         if (!processedData) return null;
 
         const ret: Record<string, string | number> = {};
         for (const key of Object.keys(processedData)) {
             // 설정에서 해당 키의 가시성이 false인 경우 건너뜀
             if (settings.visibility && settings.visibility[key] === false) continue;
-
-            const values = processedData[key];
-            if (Array.isArray(values) && values[currentFrame] !== undefined) {
-                const val = values[currentFrame];
+            const val = processedData[key];
+            if (val !== undefined) {
                 // 숫자인 경우 소수점 2자리까지 표시
                 ret[key] = typeof val === 'number' ? val.toFixed(2) : val;
             }

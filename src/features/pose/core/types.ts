@@ -24,7 +24,7 @@ export interface PoseData {
     getLandmarks3d: () => (Landmarks3D | null)[];
     getPose: (index: number) => PoseFrameData;
     analysisTools?: Record<string, AnalysisTool>;
-    getAnalysisResult: (toolKey: string) => any;
+    getAnalysisResult: (toolKey: string, index?: number) => any;
 }
 
 export interface PoseDetectionResult {

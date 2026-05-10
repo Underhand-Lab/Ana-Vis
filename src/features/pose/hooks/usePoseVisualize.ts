@@ -166,18 +166,18 @@ const drawArrow = (ctx: CanvasRenderingContext2D, fromX: number, fromY: number, 
 interface PoseDataInterface {
     getRawImgList: (idx: number) => any[];
     getLandmarks2dList: (idx: number) => any[];
-    getAnalysisResult: (toolKey: string) => any;
+    getAnalysisResult: (toolKey: string, index?: number) => any;
 }
 
 /**
  * 지면반력(GRF) 그리기 내부 함수
  */
 const drawGRF = (ctx: CanvasRenderingContext2D, idx: number, poseData: PoseDataInterface, options: PoseSettings, width: number, height: number) => {
-    const grfData = poseData.getAnalysisResult('grf');
+    const grfData = poseData.getAnalysisResult('grf', idx);
     if (!grfData) return;
 
-    const leftGRF = grfData["Left GRF (N)"]?.[idx];
-    const rightGRF = grfData["Right GRF (N)"]?.[idx];
+    const leftGRF = grfData["Left GRF (N)"];
+    const rightGRF = grfData["Right GRF (N)"];
     const landmarks2d = poseData.getLandmarks2dList(0)[idx];
     const scale = options.grfScale || 0.1;
 

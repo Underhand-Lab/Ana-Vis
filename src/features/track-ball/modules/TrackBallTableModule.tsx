@@ -16,20 +16,10 @@ const defaultSettings: TrackBallTableSettingsData = {
     visibility: {}
 };
 
-// AnalysisTool 인터페이스 정의 (analysis.ts에서 가져올 수도 있음)
-interface AnalysisTool {
-    calc: (data: TrackBallData, frame: number) => Record<string, any> | null | undefined;
-}
-
-// TrackBallData에 analysisTools 속성을 추가한 타입 정의
-type TrackBallDataWithAnalysisTools = TrackBallData & {
-    analysisTools?: Record<string, AnalysisTool>;
-};
-
 /**
  * 출력(View) 컴포넌트
  */
-export const TrackBallTableView: React.FC<AnalysisViewProps<TrackBallDataWithAnalysisTools, TrackBallTableSettingsData>> = ({ data, currentFrame, settings }) => {
+export const TrackBallTableView: React.FC<AnalysisViewProps<TrackBallData, TrackBallTableSettingsData>> = ({ data, currentFrame, settings }) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
@@ -42,15 +32,7 @@ export const TrackBallTableView: React.FC<AnalysisViewProps<TrackBallDataWithAna
 
         if (!data) return null;
 
-        const analysisTools = data.analysisTools;
-        const tool: AnalysisTool | null = (analysisTools && analysisTools[settings.selectedToolKey]) || null;
-
-        // 도구가 없는 경우(default) data에서 직접 현재 프레임 데이터를 가져옵니다.
-        // data.getFrameData는 TrackBallData에 없는 메서드이므로, data.getSelectedBallAt을 사용하거나
-        // data 자체를 직접 처리하는 로직으로 변경해야 합니다. 여기서는 data.getSelectedBallAt을 사용하도록 가정합니다.
-        // 이를 통해 초기 데이터 입력 시 바로 렌더링되도록 합니다.
-        const processedData: Record<string, any> | null | undefined = tool ? tool.calc(data, currentFrame) : data.getSelectedBallAt(currentFrame);
-
+        const processedData = data.getAnalysisResult(settings.selectedToolKey, currentFrame);
         if (!processedData) return null;
 
         const ret: Record<string, string | number> = {};
@@ -59,8 +41,10 @@ export const TrackBallTableView: React.FC<AnalysisViewProps<TrackBallDataWithAna
             if (settings.visibility && settings.visibility[key] === false) continue;
 
             const val = processedData[key];
-            // 숫자인 경우 소수점 2자리까지 표시 (PoseTable과 동일 사양)
-            ret[key] = typeof val === 'number' ? val.toFixed(2) : val;
+            // 유효한 값인 경우에만 추가하고 숫자는 소수점 2자리 포맷팅
+            if (val !== undefined && val !== null) {
+                ret[key] = typeof val === 'number' ? val.toFixed(2) : val;
+            }
         }
         
         return Object.keys(ret).length > 0 ? ret : null;
@@ -86,16 +70,14 @@ export const TrackBallTableView: React.FC<AnalysisViewProps<TrackBallDataWithAna
 /**
  * 설정(Settings) 컴포넌트
  */
-export const TrackBallTableSettings: React.FC<AnalysisSettingsProps<TrackBallDataWithAnalysisTools, TrackBallTableSettingsData>> = ({ settings, onSettingsChange, data }) => {
+export const TrackBallTableSettings: React.FC<AnalysisSettingsProps<TrackBallData, TrackBallTableSettingsData>> = ({ settings, onSettingsChange, data }) => {
     const handleToolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onSettingsChange({ ...settings, selectedToolKey: e.target.value });
     };
 
     // 현재 도구가 출력하는 실제 데이터 키들을 추출합니다.
     const availableKeys = useMemo(() => {
-        const tool = data?.analysisTools?.[settings.selectedToolKey];
-        // 초기 렌더링 시 도구가 선택되지 않았더라도 데이터에서 키를 추출하여 표시 설정 UI를 활성화합니다. (data.getSelectedBallAt 사용)
-        const sampleData = tool ? tool.calc(data as TrackBallData, 0) : (data?.getSelectedBallAt(0) || null);
+        const sampleData = data?.getAnalysisResult(settings.selectedToolKey, 0);
         return sampleData ? Object.keys(sampleData) : [];
     }, [data, settings.selectedToolKey]);
 
@@ -143,7 +125,7 @@ export const TrackBallTableSettings: React.FC<AnalysisSettingsProps<TrackBallDat
     );
 };
 
-export const TrackBallTableModule: AnalysisModule<TrackBallDataWithAnalysisTools, TrackBallTableSettingsData> = {
+export const TrackBallTableModule: AnalysisModule<TrackBallData, TrackBallTableSettingsData> = {
     id: 'track-ball-table',
     title: '표',
     View: TrackBallTableView,

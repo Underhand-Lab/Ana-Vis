@@ -15,7 +15,7 @@ import TrackBallTableModule from "@features/track-ball/modules/TrackBallTableMod
 import { Processor } from '@common/lib/processor.ts';
 import { TrackBallData } from "@features/track-ball/core/track-ball-data.ts";
 import * as BallDetector from '@features/track-ball/core/ball-detector/index';
-import { DetectedObject } from '@features/track-ball/core/ball-detector/yolo.ts';
+import { DetectedObject } from '@features/track-ball/types';
 import { AnalysisModule } from '@common/types/analysis-module.ts';
 
 import * as Analysis from "@features/track-ball/core/calc/analysis.ts";

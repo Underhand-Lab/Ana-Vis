@@ -95,23 +95,36 @@ export class PoseData implements IPoseData {
      * 분석 도구의 결과를 요청합니다. (Lazy Evaluation)
      * 결과가 캐시에 있으면 즉시 반환하고, 없으면 도구를 실행하여 계산 후 캐싱합니다.
      */
-    public getAnalysisResult(toolKey: string): any {
+    public getAnalysisResult(toolKey: string, index?: number): any {
         if (!this.analysisTools) return null;
 
         // 1. 캐시 확인
-        if (this._analysisCache[toolKey] !== undefined) {
-            return this._analysisCache[toolKey];
+        if (this._analysisCache[toolKey] === undefined) {
+            // 2. 도구 실행 및 결과 저장
+            const tool = this.analysisTools[toolKey];
+            if (tool && typeof tool.calc === 'function') {
+                this._analysisCache[toolKey] = tool.calc(this);
+            }
         }
 
-        // 2. 도구 실행 및 결과 저장
-        const tool = this.analysisTools[toolKey];
-        if (tool && typeof tool.calc === 'function') {
-            const result = tool.calc(this);
-            this._analysisCache[toolKey] = result;
-            return result;
+        const result = this._analysisCache[toolKey];
+        if (!result) return null;
+
+        // 3. index가 제공된 경우 해당 프레임의 데이터만 추출하여 반환
+        if (index !== undefined) {
+            const frameData: Record<string, any> = {};
+            for (const key of Object.keys(result)) {
+                const values = result[key];
+                if (Array.isArray(values)) {
+                    frameData[key] = values[index];
+                } else {
+                    frameData[key] = values;
+                }
+            }
+            return frameData;
         }
 
-        return null;
+        return result;
     }
 
     public clearAnalysisCache(): void {

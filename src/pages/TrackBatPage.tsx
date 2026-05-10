@@ -13,7 +13,7 @@ import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper 
 // 라이브러리 import
 import { TrackBatData } from "@features/track-bat/core/track-bat-data";
 import * as BatDetector from '@features/track-bat/core/bat-detector/index';
-import { BatDetectedObject } from '@features/track-bat/core/bat-detector/yolo';
+import { BatDetectedObject } from '@features/track-bat/types';
 import TrackBatVideoModule from "@features/track-bat/modules/TrackBatVideoModule";
 
 interface LocationState {

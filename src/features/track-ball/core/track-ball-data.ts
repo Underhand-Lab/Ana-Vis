@@ -2,12 +2,7 @@ import { MediaBunnyVideoToImageList, VideoMetadata }
     from "@common/lib/video-to-img-list/media-bunny";
 import { MediabunnyImageListToVideo }
     from "@common/lib/image-list-to-video/media-bunny";
-import { DetectedObject } from "./ball-detector/yolo";
-
-interface BallFrameData {
-    selectedIdx: number;
-    candidates: DetectedObject[];
-}
+import { DetectedObject, BallFrameData, AnalysisTool } from "../types";
 
 export class TrackBallData {
     private videoMetaDataList: VideoMetadata[] = [];
@@ -15,6 +10,7 @@ export class TrackBallData {
     /** ballList 구조: [ { selectedIdx: 0, candidates: [...] }, ... ] */
     private ballList: BallFrameData[] = [];
     private conf: number = 0.1;
+    public analysisTools?: Record<string, AnalysisTool>;
 
     constructor() {}
 
@@ -55,6 +51,59 @@ export class TrackBallData {
 
     getConf(): number {
         return this.conf;
+    }
+
+    /**
+     * 분석 도구의 결과를 요청합니다.
+     * index가 제공되면 해당 프레임의 데이터만 추출하여 반환합니다.
+     */
+    public getAnalysisResult(toolKey: string, index?: number): any {
+        const key = toolKey || 'default';
+        const tool = this.analysisTools?.[key];
+
+        // 1. 등록된 분석 도구가 있다면 해당 도구의 계산 로직을 최우선으로 실행합니다.
+        if (tool && typeof tool.calc === 'function') {
+            const result = tool.calc(this, index);
+            if (!result) return null;
+
+            // PoseData와 같이 '전체 리스트(배열들을 가진 객체)'를 반환하는 도구일 경우를 대비하여
+            // index가 제공되었다면 해당 프레임의 데이터만 추출하여 반환합니다.
+            if (index !== undefined && typeof result === 'object') {
+                const keys = Object.keys(result);
+                if (keys.length > 0 && Array.isArray(result[keys[0]])) {
+                    const frameData: Record<string, any> = {};
+                    keys.forEach(k => {
+                        frameData[k] = result[k][index];
+                    });
+                    return frameData;
+                }
+            }
+            return result;
+        }
+
+        // 2. 도구가 등록되어 있지 않은 경우에만 기본 원본 데이터를 반환합니다 (Fallback).
+        if (key === 'default') {
+            if (index !== undefined) {
+                const ball = this.getSelectedBallAt(index);
+                return ball ? { ...ball } : null;
+            }
+            // index가 없는 경우 전체 데이터셋을 "키: 배열" 형태로 생성하여 반환 (PoseData와 규격 통일)
+            const frameCnt = this.getFrameCnt();
+            const result: Record<string, any[]> = {
+                x: [], y: [], width: [], height: [], confidence: []
+            };
+            for (let i = 0; i < frameCnt; i++) {
+                const ball = this.getSelectedBallAt(i);
+                result.x.push(ball?.x ?? null);
+                result.y.push(ball?.y ?? null);
+                result.width.push(ball?.width ?? null);
+                result.height.push(ball?.height ?? null);
+                result.confidence.push(ball?.confidence ?? null);
+            }
+            return result;
+        }
+
+        return null;
     }
 
     addDataAt(idx: number, rawImg: ImageBitmap, candidates: DetectedObject[]): void {

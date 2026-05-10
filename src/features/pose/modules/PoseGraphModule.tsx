@@ -122,8 +122,8 @@ export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseData, PoseGra
     // 차트 인스턴스에 의존하지 않고 데이터로부터 직접 범례 라벨을 추출합니다. (초기 렌더링 보장)
     const labels = useMemo(() => {
         if (!data) return [];
-        const graphData = data.getAnalysisResult(settings.selectedToolKey);
-        return graphData ? Object.keys(graphData) : [];
+        const frameData = data.getAnalysisResult(settings.selectedToolKey, 0);
+        return frameData ? Object.keys(frameData) : [];
     }, [data, settings.selectedToolKey]);
 
     return (
