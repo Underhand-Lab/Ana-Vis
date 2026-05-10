@@ -10,7 +10,7 @@ import { Processor } from '@common/lib/processor.ts';
 // 라이브러리 import
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
 import { AnalysisModule } from '@common/types/analysis-module.ts';
-import { Div, InputFile, FixedFooter, Box, Button, Wrapper }
+import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper }
 	from '@common/bridges/UIBridge.ts';
 
 import { PoseData } from '@features/pose/core/pose-data.ts';
@@ -241,14 +241,13 @@ const PosePage: React.FC = () => {
 				<Box className="container">
 					<Div className="Divide" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
 						<Div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '15px' }}>
-							<input
-								type="range"
+							<InputSlider
 								id="frameSlider"
 								min="0"
 								max={maxFrame}
 								step="1"
 								value={currentIdx}
-								onChange={(e) => setCurrentIdx(parseInt(e.target.value, 10))}
+								onChange={setCurrentIdx}
 								style={{ flex: 1 }}
 							/>
 						</Div>

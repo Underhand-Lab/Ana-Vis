@@ -11,7 +11,8 @@ import Button from "../components/ui/react-web/common/Button.tsx"
 import FixedFooter from '../components/ui/react-web/custom/FixedFooter.tsx'
 import Wrapper from '../components/ui/react-web/custom/Wrapper.tsx'
 import Box from "../components/ui/react-web/custom/Box.tsx"
+import InputSlider from "../components/ui/react-web/common/input/InputSlider.tsx"
 
-export { Box, InputNumber, InputCheckbox, InputFile, Select, Div, H3, Button, InputColor,
+export { Box, InputNumber, InputCheckbox, InputFile, InputSlider, Select, Div, H3, Button, InputColor,
     FixedFooter, Wrapper
  };

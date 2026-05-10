@@ -5,7 +5,8 @@ import VideoProcessorModal from '@common/components/VideoProcessorModal';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
 
-import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper }
+import { Div, InputNumber, InputFile, InputSlider, 
+    Select, FixedFooter, Box, Button, Wrapper }
     from '@common/bridges/UIBridge.ts';
 
 import TrackBallVideoModule from "@features/track-ball/modules/TrackBallVideoModule"
@@ -304,17 +305,13 @@ const TrackBallPage: React.FC = () => {
             <FixedFooter>
                 <Box className="container">
                     <Div className="Divide" style={{ display: 'flex', flexDirection: 'row', gap: '20px', }}>
-                        <input
-                            type="range"
+                        <InputSlider
                             id="frameSlider"
                             min="0"
                             max={maxFrame}
                             step="1"
                             value={currentIdx}
-                            onChange={(e) => {
-                                const idx = parseInt(e.target.value, 10);
-                                setCurrentIdx(idx);
-                            }}
+                            onChange={setCurrentIdx}
                             style={{ flex: 1 }}
                         />
 

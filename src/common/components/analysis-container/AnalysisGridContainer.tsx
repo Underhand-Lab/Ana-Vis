@@ -140,7 +140,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     flex: 1,
     position: 'relative',
     overflowY: 'scroll',
-    backgroundColor: '#f8f9fa', // 필요 시 배경색 추가
   }
 };
 

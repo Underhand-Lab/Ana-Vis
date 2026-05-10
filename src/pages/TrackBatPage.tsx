@@ -7,7 +7,10 @@ import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
 import { Processor } from '@common/lib/processor';
 import { AnalysisModule } from '@/common/types/analysis-module';
-import { Div, InputNumber, InputFile, Select, FixedFooter, Box, Button, Wrapper } from
+import {
+    Div, InputNumber, InputFile, InputSlider,
+    Select, FixedFooter, Box, Button, Wrapper
+} from
     '../common/bridges/UIBridge.ts';
 
 // 라이브러리 import
@@ -135,7 +138,7 @@ const TrackBatPage: React.FC = () => {
                     const content = event.target?.result as string;
                     // eslint-disable-next-line no-new-func
                     const plugin = new Function('React', 'AnalysisTools', `return ${content}`)(React, ANALYSIS_TOOLS);
-                    
+
                     if (plugin && plugin.View && plugin.title) {
                         setActiveModules(prev => [...prev, { ...plugin, id: `plugin-${Date.now()}` }]);
                     } else {
@@ -230,11 +233,11 @@ const TrackBatPage: React.FC = () => {
     return (
         <Wrapper>
             <InputFile ref={dataInputRef} style={{ display: 'none' }} accept=".cvbt" onChange={handleLoadFile} />
-            <InputFile 
-                ref={pluginInputRef} 
-                style={{ display: 'none' }} 
-                accept=".js" 
-                onChange={handleLoadPlugin} 
+            <InputFile
+                ref={pluginInputRef}
+                style={{ display: 'none' }}
+                accept=".js"
+                onChange={handleLoadPlugin}
             />
 
             <Navigation
@@ -271,16 +274,13 @@ const TrackBatPage: React.FC = () => {
             <FixedFooter>
                 <Box className="container">
                     <Div className="Divide" style={{ display: 'flex', flexDirection: 'row', gap: '20px', }}>
-                        <input
-                            type="range"
+                        <InputSlider
                             id="frameSlider"
                             min="0"
                             max={maxFrame}
                             step="1"
                             value={currentIdx}
-                            onChange={(e) => {
-                                setCurrentIdx(parseInt(e.target.value, 10));
-                            }}
+                            onChange={setCurrentIdx}
                             style={{ flex: 1 }}
                         />
 
