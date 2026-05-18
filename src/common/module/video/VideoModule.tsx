@@ -3,15 +3,7 @@ import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '@commo
 import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
 import { Div, Button } from '@common/bridges/UIBridge.ts';
 import { exportVideo } from '@common/utils/exportVideo';
-
-/**
- * VideoModule에서 사용될 데이터의 공통 인터페이스
- */
-export interface VideoModuleData {
-    getRawImgList?(index: number): HTMLImageElement[] | undefined;
-    getFrameCnt?(): number | undefined;
-    getVideoMetadata?(index: number): { fps: number } | undefined;
-}
+import { IAnalysisData } from '@/common/core/cvval-data';
 
 /**
  * VideoModule을 위한 플러그인 추상 클래스
@@ -41,7 +33,7 @@ export abstract class VideoModulePlugin<TSettings, TContext = any> {
 /**
  * 공통 비디오 모듈 생성 함수
  */
-export function createVideoModule<TData extends VideoModuleData>(
+export function createVideoModule<TData extends IAnalysisData>(
     plugins: VideoModulePlugin<any, any>[],
     moduleId: string,
     moduleTitle: string

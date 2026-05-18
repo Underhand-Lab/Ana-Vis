@@ -4,13 +4,19 @@
  */
 export type AnalysisType = string;
 
+export interface IAnalysisData {
+    getRawImgList?(index: number): ImageBitmap[] | undefined;
+    getFrameCnt?(): number | undefined;
+    getVideoMetadata?(index: number): { fps: number } | undefined;
+}
+
 /**
  * 2차 분석 플러그인 인터페이스
  */
 export interface IAnalysisPlugin<T = any> {
     name: string;
     setData(data: T): void;
-    getResult(): any;
+    getResult(idx: number): any;
 }
 
 export class CVValData {
@@ -54,7 +60,7 @@ export class CVValData {
     /**
      * 2차 분석 알고리즘(플러그인)을 추가합니다.
      */
-    addPlugin<K extends string>(
+    addAnalysisPlugin<K extends string>(
         key: K,
         plugin: IAnalysisPlugin<any>
     ): void {
@@ -66,15 +72,5 @@ export class CVValData {
         if (currentData) {
             plugin.setData(currentData);
         }
-    }
-    
-    getAnalysisResults(type: string): Record<string, any> {
-        const results: Record<string, any> = {};
-        const typePlugins = this.plugins.get(type) || [];
-        typePlugins.forEach((plugin) => {
-            results[plugin.name] = plugin.getResult();
-        });
-
-        return results;
     }
 }

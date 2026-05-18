@@ -2,33 +2,37 @@ import { MediaBunnyVideoToImageList, VideoMetadata }
     from "@common/lib/video-to-img-list/media-bunny";
 import { MediabunnyImageListToVideo }
     from "@common/lib/image-list-to-video/media-bunny";
-import { DetectedObject, BallFrameData, AnalysisTool } from "../types";
+import { IAnalysisData } from "@/common/core/cvval-data";
+import { BatDetectedObject } from "../types";
 
-export class TrackBallData {
+
+interface BatFrameData {
+    selectedIdx: number;
+    candidates: BatDetectedObject[];
+}
+
+export class TrackBatData implements IAnalysisData {
     private videoMetaDataList: VideoMetadata[] = [];
     private rawImgListList: ImageBitmap[][] = [];
-    /** ballList 구조: [ { selectedIdx: 0, candidates: [...] }, ... ] */
-    private ballList: BallFrameData[] = [];
-    private conf: number = 0.1;
-    public analysisTools?: Record<string, AnalysisTool>;
+    /** batList 구조: [ { selectedIdx: 0, candidates: [...] }, ... ] */
+    private batList: BatFrameData[] = [];
 
     constructor() {}
 
     initialize(videoMetaDataList: VideoMetadata[]): void {
         this.videoMetaDataList = videoMetaDataList;
         this.rawImgListList = Array.from({ length: videoMetaDataList.length }, () => []);
-        this.ballList = [];
+        this.batList = [];
     }
     
     setConf(conf: number): void {
-        this.conf = conf;
-        for (let i = 0; i < this.ballList.length; i++) {
-            const frameData = this.ballList[i];
-            // getSelectedBallAt이 null을 반환할 수 있으므로 타입 단언 혹은 체크 필요
-            const currentBall = this.getSelectedBallAt(i) as DetectedObject | null;
+        for (let i = 0; i < this.batList.length; i++) {
+            const frameData = this.batList[i];
+            // getSelectedBatAt이 null을 반환할 수 있으므로 타입 단언 혹은 체크 필요
+            const currentBat = this.getSelectedBatAt(i);
 
             // 1. 현재 선택된 후보가 있고, 그 신뢰도가 기준치(conf)보다 높다면 그대로 유지
-            if (currentBall && currentBall.confidence >= conf) {
+            if (currentBat && currentBat.confidence >= conf) {
                 continue;
             }
 
@@ -49,80 +53,23 @@ export class TrackBallData {
         }
     }
 
-    getConf(): number {
-        return this.conf;
-    }
-
-    /**
-     * 분석 도구의 결과를 요청합니다.
-     * index가 제공되면 해당 프레임의 데이터만 추출하여 반환합니다.
-     */
-    public getAnalysisResult(toolKey: string, index?: number): any {
-        const key = toolKey || 'default';
-        const tool = this.analysisTools?.[key];
-
-        // 1. 등록된 분석 도구가 있다면 해당 도구의 계산 로직을 최우선으로 실행합니다.
-        if (tool && typeof tool.calc === 'function') {
-            const result = tool.calc(this, index);
-            if (!result) return null;
-
-            // PoseData와 같이 '전체 리스트(배열들을 가진 객체)'를 반환하는 도구일 경우를 대비하여
-            // index가 제공되었다면 해당 프레임의 데이터만 추출하여 반환합니다.
-            if (index !== undefined && typeof result === 'object') {
-                const keys = Object.keys(result);
-                if (keys.length > 0 && Array.isArray(result[keys[0]])) {
-                    const frameData: Record<string, any> = {};
-                    keys.forEach(k => {
-                        frameData[k] = result[k][index];
-                    });
-                    return frameData;
-                }
-            }
-            return result;
-        }
-
-        // 2. 도구가 등록되어 있지 않은 경우에만 기본 원본 데이터를 반환합니다 (Fallback).
-        if (key === 'default') {
-            if (index !== undefined) {
-                const ball = this.getSelectedBallAt(index);
-                return ball ? { ...ball } : null;
-            }
-            // index가 없는 경우 전체 데이터셋을 "키: 배열" 형태로 생성하여 반환 (PoseData와 규격 통일)
-            const frameCnt = this.getFrameCnt();
-            const result: Record<string, any[]> = {
-                x: [], y: [], width: [], height: [], confidence: []
-            };
-            for (let i = 0; i < frameCnt; i++) {
-                const ball = this.getSelectedBallAt(i);
-                result.x.push(ball?.x ?? null);
-                result.y.push(ball?.y ?? null);
-                result.width.push(ball?.width ?? null);
-                result.height.push(ball?.height ?? null);
-                result.confidence.push(ball?.confidence ?? null);
-            }
-            return result;
-        }
-
-        return null;
-    }
-
-    addDataAt(idx: number, rawImg: ImageBitmap, candidates: DetectedObject[]): void {
+    addDataAt(idx: number, rawImg: ImageBitmap, candidates: BatDetectedObject[]): void {
         if (!this.rawImgListList[idx]) return;
 
         this.rawImgListList[idx].push(rawImg);
 
         // 기본적으로 가장 신뢰도 높은 0번 선택, 후보 없으면 -1(선택 안 함)
-        this.ballList.push({
+        this.batList.push({
             selectedIdx: (candidates && candidates.length > 0) ? 0 : -1,
             candidates: candidates || []
         });
     }
 
     /**
-     * 특정 프레임에서 현재 선택된 공 데이터를 반환합니다.
+     * 특정 프레임에서 현재 선택된 배트 데이터를 반환합니다.
      */
-    getSelectedBallAt(frameIdx: number): DetectedObject | null {
-        const frameData = this.ballList[frameIdx];
+    getSelectedBatAt(frameIdx: number): BatDetectedObject | null {
+        const frameData = this.batList[frameIdx];
         if (!frameData || frameData.selectedIdx === -1) return null;
 
         return frameData.candidates[frameData.selectedIdx] || null;
@@ -132,16 +79,16 @@ export class TrackBallData {
      * 사용자가 UI에서 후보를 변경할 때 호출합니다.
      */
     setSelectedIdx(frameIdx: number, candidateIdx: number): void {
-        if (this.ballList[frameIdx]) {
-            this.ballList[frameIdx].selectedIdx = candidateIdx;
+        if (this.batList[frameIdx]) {
+            this.batList[frameIdx].selectedIdx = candidateIdx;
         }
     }
 
     /**
      * 특정 프레임의 모든 후보군을 가져옵니다 (드롭다운 생성용).
      */
-    getCandidatesAt(frameIdx: number): DetectedObject[] {
-        return this.ballList[frameIdx]?.candidates || [];
+    getCandidatesAt(frameIdx: number): BatDetectedObject[] {
+        return this.batList[frameIdx]?.candidates || [];
     }
 
     getVideoMetadata(idx: number): VideoMetadata {
@@ -156,12 +103,12 @@ export class TrackBallData {
         return this.rawImgListList[idx];
     }
 
-    getBallList(): BallFrameData[] {
-        return this.ballList;
+    getBatList(): BatFrameData[] {
+        return this.batList;
     }
 
     async toBlob(): Promise<Blob> {
-        const videoBlobs = [];
+        const videoBlobs: Blob[] = [];
         
         // 1. 이미지 리스트를 비디오(MP4)로 인코딩
         for (let i = 0; i < this.rawImgListList.length; i++) {
@@ -183,10 +130,10 @@ export class TrackBallData {
             videoConverter.postprocess();
         }
 
-        // 2. 수치 데이터(ballList 등) JSON 직렬화
+        // 2. 수치 데이터(batList 등) JSON 직렬화
         const jsonInfo = JSON.stringify({
             metadata: this.videoMetaDataList,
-            ballList: this.ballList
+            batList: this.batList
         });
         const jsonBuffer = new TextEncoder().encode(jsonInfo);
 
@@ -229,7 +176,7 @@ export class TrackBallData {
         offset += jsonSize;
 
         this.videoMetaDataList = parsed.metadata;
-        this.ballList = parsed.ballList;
+        this.batList = parsed.batList;
 
         // 2. 비디오 데이터로부터 이미지 리스트 복원
         const videoCount = view.getUint32(offset, true);

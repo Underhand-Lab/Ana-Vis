@@ -5,8 +5,9 @@ import { MediabunnyImageListToVideo }
 import { Landmarks3D, PoseData as IPoseData,
     PoseDetectionResult, AnalysisTool,
     JointCoordinate, PoseFrameData } from "./types";
+import { IAnalysisData } from "@/common/core/cvval-data";
 
-export class PoseData implements IPoseData {
+export class PoseData implements IAnalysisData {
     private rawImgListList: ImageBitmap[][] = [];
     private landmarks3dList: (Landmarks3D | null)[] = [];
     private landmarks2dListList: (Landmarks3D | null)[][] = [];

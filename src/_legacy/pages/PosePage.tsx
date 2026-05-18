@@ -13,13 +13,13 @@ import { AnalysisModule } from '@common/types/analysis-module.ts';
 import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper }
 	from '@common/bridges/UIBridge.ts';
 
-import { PoseData } from '@/_legacy/features/pose/core/pose-data';
-import * as PoseDetector from '@/_legacy/features/pose/core/pose-detector/index';
-import * as PoseAnalysisTool from "@/_legacy/features/pose/core/analysis-tool/index";
-import PoseVideoModule from '@/_legacy/features/pose/modules/PoseVideoModule';
-import PoseGraphModule from '@/_legacy/features/pose/modules/PoseGraphModule';
-import PoseTableModule from '@/_legacy/features/pose/modules/PoseTableModule';
-import Pose3DVideoModule from '@/_legacy/features/pose/modules/Pose3DVideoModule';
+import { PoseData } from '@features/pose/core/pose-data';
+import * as PoseDetector from '@features/pose/core/pose-detector/index';
+import * as PoseAnalysisTool from "@features/pose/core/analysis-tool/index";
+import PoseVideoModule from '@features/pose/modules/PoseVideoModule';
+import PoseGraphModule from '@features/pose/modules/PoseGraphModule';
+import PoseTableModule from '@features/pose/modules/PoseTableModule';
+import Pose3DVideoModule from '@features/pose/modules/Pose3DVideoModule';
 
 
 interface LocationState {
