@@ -6,6 +6,7 @@ import Graph from '@common/components/Graph';
 import { Div, InputColor, InputNumber, InputCheckbox, Select } from '@common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@common/types/analysis-module';
+import featureName from '../ constant';
 
 
 // Graph.tsx와 동일한 색상 생성 로직 (범례 일치를 위함)
@@ -80,15 +81,18 @@ const defaultSettings: PoseGraphSettingsData = {
 /**
  * 출력(View) 컴포넌트: 그래프 캔버스 렌더링 및 데이터 시각화를 담당합니다.
  */
-export const PoseGraphView: React.FC<AnalysisViewProps<PoseData, PoseGraphSettingsData>> = ({ 
+export const PoseGraphView: React.FC<AnalysisViewProps<PoseGraphSettingsData>> = ({ 
     data, 
     currentFrame, 
     settings 
 }) => {
     // 분석 도구 데이터 추출 로직
     const graphData = useMemo<Record<string, (number | null)[]>>(() => {
-        if (!data) return {};
-        const result = data.getAnalysisResult(settings.selectedToolKey);
+        if (!data || !data.exist(featureName)) return {};
+
+        const poseData = data.get(featureName) as PoseData;
+
+        const result = poseData.getAnalysisResult(settings.selectedToolKey);
         return (result || {}) as Record<string, (number | null)[]>;
     }, [data, settings.selectedToolKey]);
 
@@ -114,15 +118,17 @@ export const PoseGraphView: React.FC<AnalysisViewProps<PoseData, PoseGraphSettin
 /**
  * 설정(Settings) 컴포넌트: 분석 도구 선택 및 범례 UI를 담당합니다.
  */
-export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseData, PoseGraphSettingsData>> = ({ settings, onSettingsChange, data }) => {
+export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseGraphSettingsData>> = ({ settings, onSettingsChange, data }) => {
     const handleToolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onSettingsChange({ ...settings, selectedToolKey: e.target.value });
     };
 
     // 차트 인스턴스에 의존하지 않고 데이터로부터 직접 범례 라벨을 추출합니다. (초기 렌더링 보장)
     const labels = useMemo(() => {
-        if (!data) return [];
-        const frameData = data.getAnalysisResult(settings.selectedToolKey, 0);
+        if (!data || !data.exist(featureName)) return [];
+
+        const poseData = data.get(featureName) as PoseData;
+        const frameData = poseData.getAnalysisResult(settings.selectedToolKey, 0);
         return frameData ? Object.keys(frameData) : [];
     }, [data, settings.selectedToolKey]);
 
@@ -207,7 +213,7 @@ export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseData, PoseGra
     );
 };
 
-export const PoseGraphModule: AnalysisModule<PoseData, PoseGraphSettingsData> = {
+export const PoseGraphModule: AnalysisModule<PoseGraphSettingsData> = {
     id: 'pose-graph',
     title: '자세 그래프',
     View: PoseGraphView,

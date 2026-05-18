@@ -1,4 +1,6 @@
-import { PoseData, PoseFrameData, JointCoordinate } from "../types";
+import { PoseFrameData, JointCoordinate } from "../types";
+import { PoseData } from "../core/pose-data";
+import { PoseAnalysisTool } from "./pose-analysis-tool";
 
 /**
  * 신체 분절 질량 및 CoM 비율 (Winter's Table 기반 단순화)
@@ -72,8 +74,9 @@ const lowPassFilter = (data: (number | null)[], windowSize: number): (number | n
 /**
  * 지면반력(GRF) 계산 도구 객체
  */
-export class GRFAnalysisTool {
-    id = 'grf';
+export class GRFAnalysisTool extends PoseAnalysisTool {
+    
+    name = 'grf';
     title = '지면반력 (GRF)';
 
     calc(data: PoseData, options?: { userWeight?: number }) {

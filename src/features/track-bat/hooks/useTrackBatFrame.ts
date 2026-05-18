@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import { TrackBatData } from '../core/track-bat-data';
 import { BatDetectedObject } from '../types';
+import { CVValData } from '@/common/core/cvval-data';
+import featureName from '../constant';
 
 interface ColorsState {
   batColor: string;
@@ -25,7 +27,7 @@ interface Vertices {
  * TrackBatFrameMaker의 복잡한 픽셀 조작 및 마스킹 로직을 
  * React 환경에서 사용할 수 있도록 변환한 Custom Hook입니다.
  */
-export const useTrackBatFrame = (trackData: TrackBatData | null) => {
+export const useTrackBatFrame = (trackData: CVValData | null) => {
   const [trailLen, setTrailLen] = useState<number>(3);
   const [colors, setColors] = useState<ColorsState>({
     batColor: '#ff8000',
@@ -174,12 +176,14 @@ export const useTrackBatFrame = (trackData: TrackBatData | null) => {
   };
 
   const getTrailLayer = useCallback((idx: number, length?: number): HTMLCanvasElement | null => {
-    if (!trackData || idx < 0) return null;
+    if (!trackData || !trackData.exist(featureName) || idx < 0) return null;
+    
+    const batData = trackData.get(featureName) as TrackBatData;
 
     // 1. 마스크 데이터 존재 여부 확인 및 크기 계산
     let sampleBat: BatDetectedObject | null = null;
     for (let i = idx; i >= 0; i--) {
-      sampleBat = trackData.getSelectedBatAt(i);
+      sampleBat = batData.getSelectedBatAt(i);
       if (sampleBat?.maskConfidenceMap) break;
     }
     if (!sampleBat || !sampleBat.maskConfidenceMap) return null;
@@ -215,12 +219,12 @@ export const useTrackBatFrame = (trackData: TrackBatData | null) => {
     const effectiveLen = length !== undefined ? length : trailLen;
     const startIdx = Math.max(1, idx - effectiveLen + 1);
     for (let i = startIdx; i <= idx; i++) {
-      const prev = trackData.getSelectedBatAt(i - 1);
-      const curr = trackData.getSelectedBatAt(i);
+      const prev = batData.getSelectedBatAt(i - 1);
+      const curr = batData.getSelectedBatAt(i);
       masking(pixelBuffer, prev, curr, actualConf, trailRGBA, maskW, maskH);
     }
 
-    const nowBat = trackData.getSelectedBatAt(idx);
+    const nowBat = batData.getSelectedBatAt(idx);
     if (nowBat?.maskConfidenceMap) {
       applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, actualConf, batRGBA, maskW, maskH);
     }

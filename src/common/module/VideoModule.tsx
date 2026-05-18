@@ -27,7 +27,7 @@ export abstract class VideoModulePlugin<TSettings, TContext = any> {
     /**
      * 설정 UI 컴포넌트를 반환합니다.
      */
-    abstract getSettingComponent(props: AnalysisSettingsProps<any, TSettings>): React.ReactNode;
+    abstract getSettingComponent(props: AnalysisSettingsProps<TSettings>): React.ReactNode;
 }
 
 /**
@@ -37,9 +37,9 @@ export function createVideoModule<TData extends IAnalysisData>(
     plugins: VideoModulePlugin<any, any>[],
     moduleId: string,
     moduleTitle: string
-): AnalysisModule<TData, Record<string, any>> {
+): AnalysisModule<Record<string, any>> {
     
-    const VideoView: React.FC<AnalysisViewProps<TData, Record<string, any>>> = ({ data, currentFrame, settings }) => {
+    const VideoView: React.FC<AnalysisViewProps<Record<string, any>>> = ({ data, currentFrame, settings }) => {
         const rendererRef = useRef<CanvasRendererHandle>(null);
         
         // 각 플러그인의 훅을 순서대로 호출하여 컨텍스트 획득
@@ -85,7 +85,7 @@ export function createVideoModule<TData extends IAnalysisData>(
         );
     };
 
-    const VideoSettings: React.FC<AnalysisSettingsProps<TData, Record<string, any>>> = (props) => {
+    const VideoSettings: React.FC<AnalysisSettingsProps<Record<string, any>>> = (props) => {
         const { data, settings, onSettingsChange } = props;
         const [isExporting, setIsExporting] = useState(false);
 
@@ -179,7 +179,7 @@ export class VideoModuleBuilder {
         return this;
     }
 
-    build(id: string, title: string): AnalysisModule<any, Record<string, any>> {
+    build(id: string, title: string): AnalysisModule<Record<string, any>> {
         return createVideoModule(this.plugins, id, title);
     }
 }

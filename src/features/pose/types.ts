@@ -19,15 +19,6 @@ export interface AnalysisTool {
     calc(data: any, ...args: any[]): Record<string, any> | null | undefined;
 }
 
-export interface PoseData {
-    getFrameCnt: () => number;
-    getFPS: () => number;
-    getLandmarks3d: () => (Landmarks3D | null)[];
-    getPose: (index: number) => PoseFrameData;
-    analysisTools?: Record<string, AnalysisTool>;
-    getAnalysisResult: (toolKey: string, index?: number) => any;
-}
-
 export interface PoseDetectionResult {
     landmarks3d: Landmarks3D | null;
     landmarks2dList: (Landmarks3D | null)[];

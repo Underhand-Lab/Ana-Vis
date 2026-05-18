@@ -7,7 +7,7 @@ import {
     Landmark
 } from "@mediapipe/tasks-vision";
 import { Vector3 } from "@/common/types/vector";
-import { Landmarks3D, PoseDetectionResult } from "../types";
+import { Landmarks3D, PoseDetectionResult } from "../../types";
 
 const MEDIAPIPE_LANDMARK_NAMES: Record<number, string> = {
     0: 'NOSE', 1: 'L_EYE_INNER', 2: 'L_EYE', 3: 'L_EYE_OUTER',

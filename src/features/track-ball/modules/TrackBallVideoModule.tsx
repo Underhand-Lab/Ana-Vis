@@ -1,4 +1,4 @@
-import { VideoModulePlugin, VideoModuleBuilder } from '@common/module/video/VideoModule.tsx';
+import { VideoModulePlugin, VideoModuleBuilder } from '@/common/module/VideoModule.tsx';
 import { TrackBallVideoPlugin } from '../plugin/TrackBallVideoPlugin.tsx';
 
 export const TrackBallVideoModule = new VideoModuleBuilder()

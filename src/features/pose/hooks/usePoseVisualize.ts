@@ -1,4 +1,7 @@
+import { CVValData } from '@/common/core/cvval-data';
 import { useState, useCallback, useRef } from 'react';
+import featureName from '../ constant';
+import { PoseData } from '../core/pose-data';
 
 export interface PoseSettings {
     COLOR_LEFT_ARM: string;
@@ -217,7 +220,7 @@ const drawGRF = (ctx: CanvasRenderingContext2D, idx: number, poseData: PoseDataI
     renderArrow('R_ANKLE', rightGRF, 'rgba(0, 255, 0, 0.8)');
 };
 
-export const usePoseVisualize = (poseData: PoseDataInterface | null) => {
+export const usePoseVisualize = (data: CVValData | null) => {
     // renderer 인자는 현재 getPoseLayer에서 직접 캔버스를 생성하므로 로직상 필수는 아니지만,
     // 모듈에서의 호출 규약을 맞추기 위해 추가되었습니다.
     const [options, setOptions] = useState<PoseSettings>({
@@ -244,10 +247,12 @@ export const usePoseVisualize = (poseData: PoseDataInterface | null) => {
 
     // ✅ 포즈 스켈레톤 레이어만 생성하는 함수
     const getPoseLayer = useCallback((idx: number) => {
-        if (!poseData || idx < 0) return null;
+        if (!data || !data.exist(featureName)|| idx < 0) return null;
+
+        const poseData = data.get(featureName) as PoseData;
 
         const targetIdx = 0; 
-        const rawImgList = poseData.getRawImgList(targetIdx);
+        const rawImgList = data.getRawImgList(targetIdx);
         const landmark2dList = poseData.getLandmarks2dList(targetIdx);
 
         const image = rawImgList[idx];
@@ -295,7 +300,7 @@ export const usePoseVisualize = (poseData: PoseDataInterface | null) => {
         }
 
         return resultCanvas;
-    }, [poseData, options]);
+    }, [data, options]);
 
     return { options, setOptions, getPoseLayer };
 };

@@ -3,7 +3,8 @@ import { useTrackBallFrame } from '../hooks/useTrackBallFrame';
 import { TrackBallData } from '../core/track-ball-data';
 import { InputColor, InputCheckbox } from '@common/bridges/UIBridge';
 import { AnalysisSettingsProps } from '@common/types/analysis-module';
-import { VideoModulePlugin } from '@common/module/video/VideoModule.tsx';
+import { VideoModulePlugin } from '@/common/module/VideoModule';
+import { CVValData } from '@/common/core/cvval-data';
 
 export interface TrackBallSettings {
     showConfidence: boolean;
@@ -23,7 +24,7 @@ export class TrackBallVideoPlugin extends VideoModulePlugin<TrackBallSettings> {
     title = '동영상';
     defaultSettings = defaultSettings;
 
-    usePluginContext(data: TrackBallData | null, settings: TrackBallSettings) {
+    usePluginContext(data: CVValData | null, settings: TrackBallSettings) {
         const { setOptions, getTrailLayer } = useTrackBallFrame(data);
 
         useEffect(() => {
@@ -42,7 +43,7 @@ export class TrackBallVideoPlugin extends VideoModulePlugin<TrackBallSettings> {
         }
     }
 
-    getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<any, TrackBallSettings>) {
+    getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<TrackBallSettings>) {
         return (
             <>
                 <InputCheckbox

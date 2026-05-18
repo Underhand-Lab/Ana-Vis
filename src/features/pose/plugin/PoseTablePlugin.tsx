@@ -1,7 +1,9 @@
 import React from 'react';
-import { TableModulePlugin } from '@common/module/table/TableModule.tsx';
+import { TableModulePlugin } from '@/common/module/TableModule';
 import { AnalysisSettingsProps } from '@common/types/analysis-module';
 import { Div, InputCheckbox } from '@common/bridges/UIBridge';
+import featureName from '../ constant';
+import { PoseData } from '../core/pose-data';
 
 export interface PoseTableSettings {
     visibility?: Record<string, boolean>;
@@ -19,7 +21,7 @@ export class PoseTablePlugin extends TableModulePlugin<any, PoseTableSettings> {
     }
 
     getRowData(data: any, frameIdx: number, settings: PoseTableSettings) {
-        const poseResult = data?.getAnalysisResult?.('pose', frameIdx);
+        const poseResult = data?.getAnalysisResult?.(featureName, frameIdx);
         if (!poseResult) return null;
 
         const ret: Record<string, string | number> = {};
@@ -31,8 +33,10 @@ export class PoseTablePlugin extends TableModulePlugin<any, PoseTableSettings> {
         return ret;
     }
 
-    getSettingComponent({ settings, onSettingsChange, data }: AnalysisSettingsProps<any, PoseTableSettings>) {
-        const sampleData = data?.getAnalysisResult?.('pose', 0) || {};
+    getSettingComponent({ settings, onSettingsChange, data }: AnalysisSettingsProps<PoseTableSettings>) {
+        
+        const poseData =  data?.get(featureName) as PoseData;
+        const sampleData = poseData.getAnalysisResult?.(featureName, 0) || {};
         const keys = Object.keys(sampleData);
 
         return (

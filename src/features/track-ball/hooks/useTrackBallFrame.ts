@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { TrackBallData } from '../core/track-ball-data';
 import { DetectedObject } from '../types';
+import { CVValData } from '@/common/core/cvval-data';
+import featureName from '../constant';
 
 interface TrackFrameOptions {
   trailColor: string;
@@ -15,10 +17,10 @@ interface LastRenderedState {
   isEdit?: boolean;
   selectedIdx?: number;
   options: TrackFrameOptions | null;
-  trackData: TrackBallData | null;
+  trackData: CVValData | null;
 }
 
-export const useTrackBallFrame = (trackData: TrackBallData | null) => {
+export const useTrackBallFrame = (trackData: CVValData | null) => {
   const [options, setOptions] = useState<TrackFrameOptions>({
     trailColor: '#ff0000',
     boxColor: '#0000ff',
@@ -49,7 +51,7 @@ export const useTrackBallFrame = (trackData: TrackBallData | null) => {
    * ✅ 공의 궤적, 바운딩 박스, 신뢰도 정보가 담긴 투명 레이어 반환
    */
   const getTrailLayer = useCallback((idx: number, length?: number): HTMLCanvasElement | null => {
-    if (!trackData || idx < 0) return null;
+    if (!trackData || !trackData.exist(featureName) || idx < 0) return null;
     if (
       lastRendered.current.idx === idx && 
       lastRendered.current.length === length &&
@@ -77,7 +79,8 @@ export const useTrackBallFrame = (trackData: TrackBallData | null) => {
     // ✅ 2. 레이어 초기화 (투명 배경)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const ballList = trackData.getBallList();
+    const ballData = trackData.get(featureName) as TrackBallData;
+    const ballList = ballData.getBallList();
     if (ballList) {
       // 2. 궤적(Trail) 그리기
       ctx.beginPath();
@@ -91,7 +94,7 @@ export const useTrackBallFrame = (trackData: TrackBallData | null) => {
       // length가 지정된 경우 해당 범위만큼만, 아니면 처음부터 그리기
       const startIdx = length ? Math.max(0, idx - length + 1) : 0;
       for (let i = startIdx; i <= idx; i++) {
-        const ball: DetectedObject | null = trackData.getSelectedBallAt(i);
+        const ball: DetectedObject | null = ballData.getSelectedBallAt(i);
         if (ball) {
           const x = ball.bbox[0] + ball.bbox[2] / 2;
           const y = ball.bbox[1] + ball.bbox[3] / 2;
@@ -110,7 +113,7 @@ export const useTrackBallFrame = (trackData: TrackBallData | null) => {
       ctx.stroke();
 
       // 3. 현재 프레임의 바운딩 박스 및 신뢰도
-      const nowBall: DetectedObject | null = trackData.getSelectedBallAt(idx);
+      const nowBall: DetectedObject | null = ballData.getSelectedBallAt(idx);
       if (nowBall) {
         const [bx, by, bw, bh] = nowBall.bbox;
         ctx.strokeStyle = options.boxColor;

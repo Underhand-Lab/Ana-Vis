@@ -9,8 +9,8 @@ import TrackingEditorModal from '@common/components/TrackingEditorModal';
 import { Processor } from '@common/lib/processor';
 import { AnalysisModule } from '@/common/types/analysis-module';
 import {
-    Div, InputNumber, InputFile, InputSlider,
-    Select, FixedFooter, Box, Button, Wrapper
+    Div, InputFile, InputSlider,
+    FixedFooter, Box, Button, Wrapper
 } from
     '@common/bridges/UIBridge.ts';
 
@@ -20,6 +20,7 @@ import * as BatDetector from '@features/track-bat/core/bat-detector/index';
 import { BatDetectedObject } from '@features/track-bat/types';
 import { useTrackBatFrame } from '@features/track-bat/hooks/useTrackBatFrame';
 import TrackBatVideoModule from "@features/track-bat/modules/TrackBatVideoModule";
+import { CVValData } from '@/common/core/cvval-data';
 
 interface LocationState {
     externalFile?: File;
@@ -45,7 +46,7 @@ const DETECTORS: Record<string, BatDetector.YOLOBatDetector> = {
 
 const ANALYSIS_TOOLS: Record<string, any> = {};
 
-const AVAILABLE_MODULES: Record<string, AnalysisModule<TrackBatData, any>> = {
+const AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
     "video": TrackBatVideoModule,
 };
 
@@ -53,13 +54,13 @@ const TrackBatPage: React.FC = () => {
     const location = useLocation();
     const state = location.state as LocationState;
     const navigate = useNavigate();
-    const [processedData, setProcessedData] = useState<TrackBatDataWithAnalysis | null>(null);
+    const [processedData, setProcessedData] = useState<CVValData | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState<Progress>({ current: 0, total: 0 });
     const [statusKey, setStatusKey] = useState('label-before-process');
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.55); // 기본값 0.55
-    const [activeModules, setActiveModules] = useState<AnalysisModule<TrackBatData, any>[]>([
+    const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
         { ...TrackBatVideoModule, id: 'bat-video-default' },
     ]);
 
@@ -84,8 +85,10 @@ const TrackBatPage: React.FC = () => {
 
         setCurrentFrameIdx(frameIdx);
 
-        const cands = processedData.getCandidatesAt(frameIdx) || [];
-        const batList = processedData.getBatList();
+        const batData = processedData.get('bat') as TrackBatData;     
+
+        const cands = batData.getCandidatesAt(frameIdx) || [];
+        const batList = batData.getBatList();
         const frameData = batList ? batList[frameIdx] : null;
         const currentSelected = frameData ? frameData.selectedIdx : -1;
 
@@ -104,8 +107,10 @@ const TrackBatPage: React.FC = () => {
     const loadTrackBatData = useCallback(async (file: File) => {
         if (!file) return;
         try {
-            const data = new TrackBatData() as TrackBatDataWithAnalysis;
-            await data.loadFromFile(file);
+            const data = new CVValData();
+            const bdata = new TrackBatData() as TrackBatDataWithAnalysis;
+            await bdata.loadFromFile(file);
+            data.set('bat', bdata);
             setProcessedData(data);
             setCurrentIdx(0);
         } catch (err) {
@@ -172,8 +177,11 @@ const TrackBatPage: React.FC = () => {
                 onState: (state: string) => setStatusKey(`label-${state}`),
                 onProgress: (current: number, total: number) => setProgress({ current, total })
             });
-            const result = await processor.processVideo(files, new TrackBatData()) as TrackBatDataWithAnalysis;
-            result.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
+            const batData =  new TrackBatData();
+            const result = await processor.processVideo(
+                files, 'bat', new CVValData(), batData);
+
+            batData.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
             setProcessedData(result);
             setCurrentIdx(0);
             setProcessModalOpen(false);
@@ -188,7 +196,7 @@ const TrackBatPage: React.FC = () => {
     const handleAddModule = (type: string) => {
         const moduleBase = AVAILABLE_MODULES[type];
         if (moduleBase) {
-            setActiveModules((prev: AnalysisModule<TrackBatData, any>[]) => [
+            setActiveModules((prev: AnalysisModule<any>[]) => [
                 ...prev,
                 { ...moduleBase, id: `${type}-${Date.now()}` }
             ]);
@@ -206,7 +214,10 @@ const TrackBatPage: React.FC = () => {
         const val = parseFloat(e.target.value);
         setConfValue(val);
         if (processedData) {
-            processedData.setConf(val);
+
+            const batData = processedData.get('bat') as TrackBatData;     
+
+            batData.setConf(val);
             // 참조를 변경하여 하위 모듈의 리렌더링을 유도합니다.
             const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
             setProcessedData(newData);
@@ -217,7 +228,9 @@ const TrackBatPage: React.FC = () => {
     const updateCandidateSelection = (idx: number) => {
         setSelectedCandidateIdx(idx);
         if (processedData) {
-            processedData.setSelectedIdx(currentFrameIdx, idx);
+            const batData = processedData.get('bat') as TrackBatData;     
+
+            batData.setSelectedIdx(currentFrameIdx, idx);
             // 참조를 변경하여 하위 모듈의 리렌더링을 유도합니다.
             const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
             setProcessedData(newData);
@@ -226,7 +239,9 @@ const TrackBatPage: React.FC = () => {
 
     const handleEditorCandidateSelect = (frameIdx: number, candIdx: number) => {
         if (processedData) {
-            processedData.setSelectedIdx(frameIdx, candIdx);
+            const batData = processedData.get('bat') as TrackBatData;     
+
+            batData.setSelectedIdx(frameIdx, candIdx);
             const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
             setProcessedData(newData);
         }
@@ -330,6 +345,7 @@ const TrackBatPage: React.FC = () => {
                 confValue={confValue}
                 onConfChange={handleConfChange}
                 data={processedData}
+                type={'bat'}
                 getTrailLayer={getTrailLayer}
                 getEditLayer={getEditLayer}
                 onCandidateSelect={handleEditorCandidateSelect}

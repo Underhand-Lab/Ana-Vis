@@ -15,11 +15,12 @@ import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper }
 
 import { PoseData } from '@features/pose/core/pose-data';
 import * as PoseDetector from '@features/pose/core/pose-detector/index';
-import * as PoseAnalysisTool from "@features/pose/core/analysis-tool/index";
+import * as PoseAnalysisTool from "@/features/pose/tool/index";
 import PoseVideoModule from '@features/pose/modules/PoseVideoModule';
 import PoseGraphModule from '@features/pose/modules/PoseGraphModule';
-import PoseTableModule from '@features/pose/modules/PoseTableModule';
+import TableModule from '@common/module/TableModule';
 import Pose3DVideoModule from '@features/pose/modules/Pose3DVideoModule';
+import { CVValData, IAnalysisTool } from '@/common/core/cvval-data';
 
 
 interface LocationState {
@@ -38,31 +39,31 @@ const DETECTORS: Record<string, any> = {
 	"mediapipe_lite": new PoseDetector.MediaPipePoseDetector("./external/models/mediapipe/pose_landmarker_lite.task"),
 };
 
-const ANALYSIS_TOOLS: Record<string, any> = {
-	"angle": new PoseAnalysisTool.AngleAnalysisTool(),
-	"angle-velocity": new PoseAnalysisTool.AngleVelocityAnalysisTool(),
-	"velocity": new PoseAnalysisTool.VelocityAnalysisTool(),
-	"height": new PoseAnalysisTool.HeightAnalysisTool(),
-	"grf": new PoseAnalysisTool.GRFAnalysisTool(),
-};
+const ANALYSIS_TOOLS: IAnalysisTool[] = [
+	new PoseAnalysisTool.AngleAnalysisTool(),
+	new PoseAnalysisTool.AngleVelocityAnalysisTool(),
+	new PoseAnalysisTool.VelocityAnalysisTool(),
+	new PoseAnalysisTool.HeightAnalysisTool(),
+	new PoseAnalysisTool.GRFAnalysisTool(),
+];
 
-const AVAILABLE_MODULES: Record<string, AnalysisModule<PoseData, any>> = {
+const AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
 	"동영상": PoseVideoModule,
 	"3D 동영상": Pose3DVideoModule,
 	"그래프": PoseGraphModule,
-	"표": PoseTableModule,
+	"표": TableModule,
 };
 
 const PosePage: React.FC = () => {
 	const location = useLocation();
 	const state = location.state as LocationState;
 	const navigate = useNavigate();
-	const [processedData, setProcessedData] = useState<PoseData | null>(null);
+	const [processedData, setProcessedData] = useState<CVValData | null>(null);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [progress, setProgress] = useState<Progress>({ current: 0, total: 0 });
 	const [statusKey, setStatusKey] = useState('label-before-process');
 	const [currentIdx, setCurrentIdx] = useState(0);
-	const [activeModules, setActiveModules] = useState<AnalysisModule<PoseData, any>[]>([
+	const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
 		{ ...PoseVideoModule, id: 'video-default' },
 		{ ...PoseGraphModule, id: 'graph-default' }
 	]);
@@ -81,9 +82,11 @@ const PosePage: React.FC = () => {
 	const loadPoseData = useCallback(async (file: File) => {
 		if (!file) return;
 		try {
-			const data = new PoseData();
-			await data.loadFromFile(file); // data.analysisTools는 loadFromFile에서 복원되지 않으므로, 명시적으로 할당
-			data.analysisTools = ANALYSIS_TOOLS; // 데이터 로드 즉시 도구 주입
+			const data = new CVValData();
+			const pdata = new PoseData();
+			await pdata.loadFromFile(file); // data.analysisTools는 loadFromFile에서 복원되지 않으므로, 명시적으로 할당
+			data.set('pose', pdata);
+			data.addAnalysisTools('pose', ANALYSIS_TOOLS);
 			setProcessedData(data);
 			setCurrentIdx(0); // 데이터 로드 시 인덱스 초기화
 		} catch (err) {
@@ -153,9 +156,11 @@ const PosePage: React.FC = () => {
 				onProgress: (current: number, total: number) => setProgress({ current, total })
 			});
 
-			const result = await processor.processVideo(files, new PoseData());
-			result.analysisTools = ANALYSIS_TOOLS; // 처리 완료 즉시 도구 주입
-			setProcessedData(result);
+			const data = await processor.processVideo(files, 'pose', new CVValData(), new PoseData());
+
+			data.addAnalysisTools('pose', ANALYSIS_TOOLS);
+			
+			setProcessedData(data);
 			setCurrentIdx(0); // 처리 완료 시 인덱스 초기화
 			setProcessModalOpen(false);
 		} catch (e) {
@@ -170,7 +175,7 @@ const PosePage: React.FC = () => {
 	const handleAddModule = (type: string) => {
 		const moduleBase = AVAILABLE_MODULES[type];
 		if (moduleBase) {
-			setActiveModules((prev: AnalysisModule<PoseData, any>[]) => [
+			setActiveModules((prev: AnalysisModule<any>[]) => [
 				...prev,
 				{ ...moduleBase, id: `${type}-${Date.now()}` }
 			]);

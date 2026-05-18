@@ -2,9 +2,8 @@ import { MediaBunnyVideoToImageList, VideoMetadata }
     from "@common/lib/video-to-img-list/media-bunny"
 import { MediabunnyImageListToVideo }
     from "@common/lib/image-list-to-video/media-bunny"
-import { Landmarks3D, PoseData as IPoseData,
-    PoseDetectionResult, AnalysisTool,
-    JointCoordinate, PoseFrameData } from "./types";
+import { Landmarks3D, PoseDetectionResult, AnalysisTool,
+    JointCoordinate, PoseFrameData } from "../types";
 import { IAnalysisData } from "@/common/core/cvval-data";
 
 export class PoseData implements IAnalysisData {

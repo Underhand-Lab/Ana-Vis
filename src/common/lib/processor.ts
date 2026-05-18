@@ -1,3 +1,4 @@
+import { CVValData } from '../core/cvval-data.js';
 import { MediaBunnyVideoToImageList } from './video-to-img-list/media-bunny.js';
 
 export interface OnProgressCallback {
@@ -24,7 +25,7 @@ export class Processor {
         this.onProgressCallback = onProgress;
     }
 
-    async processVideo(videoList: FileList | Blob[], data: any): Promise<any> {
+    async processVideo(videoList: FileList | Blob[], type: string, cvval: CVValData, data: any): Promise<CVValData> {
         if (!this.detector) {
             throw new Error("Detector is not set. Call setting() before processVideo().");
         }
@@ -49,6 +50,9 @@ export class Processor {
         
         let frameIndex = 0;
         data.initialize([metadata]);
+        
+        cvval.setRawImgList(imageList, 0);
+        cvval.setVideoMetadata([metadata]);
 
         for (const image of imageList) {
             if (this.onProgressCallback) {
@@ -59,7 +63,6 @@ export class Processor {
             }
             
             const frameData = await this.detector.process(image);
-
             data.addDataAt(0, image, frameData);
 
             await new Promise(resolve => setTimeout(resolve, 0));
@@ -70,7 +73,9 @@ export class Processor {
             this.onProgressCallback.onState("after-process");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
+
+        cvval.set(type, data);
         
-        return data;
+        return cvval;
     }
 }

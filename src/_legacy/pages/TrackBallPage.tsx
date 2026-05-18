@@ -11,7 +11,7 @@ import { Div, InputNumber, InputFile, InputSlider,
     from '@common/bridges/UIBridge.ts';
 
 import TrackBallVideoModule from "@features/track-ball/modules/TrackBallVideoModule"
-import TrackBallTableModule from "@features/track-ball/modules/TrackBallTableModule"
+import TableModule from "@common/module/TableModule"
 
 // 라이브러리 import
 import { Processor } from '@common/lib/processor.ts';
@@ -21,8 +21,9 @@ import { DetectedObject } from '@features/track-ball/types';
 import { useTrackBallFrame } from '@features/track-ball/hooks/useTrackBallFrame';
 import { AnalysisModule } from '@common/types/analysis-module.ts';
 
-import * as Analysis from "@features/track-ball/core/calc/analysis";
+import * as Analysis from "@/features/track-ball/tool/analysis";
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
+import { CVValData, IAnalysisTool } from '@/common/core/cvval-data';
 
 interface LocationState {
     externalFile?: File;
@@ -33,10 +34,6 @@ interface Progress {
     total: number;
 }
 
-type TrackBallDataWithAnalysis = TrackBallData & {
-    analysisTools?: Record<string, any>;
-};
-
 // YOLO 탐지기 설정
 const DETECTORS: Record<string, BallDetector.YOLOBallDetector> = {
     "yolo11x": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11x_web_model/model.json", 32),
@@ -46,28 +43,28 @@ const DETECTORS: Record<string, BallDetector.YOLOBallDetector> = {
     "yolo11n": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11n_web_model/model.json", 32),
 };
 
-const ANALYSIS_TOOLS: Record<string, any> = {
-    "default": new Analysis.BallAnalysisTool(),
-};
+const ANALYSIS_TOOLS: IAnalysisTool[] = [
+    new Analysis.BallAnalysisTool()
+]
 
-const AVAILABLE_MODULES: Record<string, AnalysisModule<TrackBallData, any>> = {
+const AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
     "video": TrackBallVideoModule,
-    "table": TrackBallTableModule
+    "table": TableModule
 };
 
 const TrackBallPage: React.FC = () => {
     const location = useLocation();
     const state = location.state as LocationState;
     const navigate = useNavigate();
-    const [processedData, setProcessedData] = useState<TrackBallDataWithAnalysis | null>(null);
+    const [processedData, setProcessedData] = useState<CVValData | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState<Progress>({ current: 0, total: 0 });
     const [statusKey, setStatusKey] = useState('label-before-process');
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.01);
-    const [activeModules, setActiveModules] = useState<AnalysisModule<TrackBallData, any>[]>([
+    const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
         { ...TrackBallVideoModule, id: 'video-default' },
-        { ...TrackBallTableModule, id: 'table-default' }
+        { ...TableModule, id: 'table-default' }
     ]);
 
     // 편집용 독립 인덱스 및 시각화 훅
@@ -93,8 +90,10 @@ const TrackBallPage: React.FC = () => {
 
         setCurrentFrameIdx(frameIdx);
 
-        const cands = processedData.getCandidatesAt(frameIdx) || [];
-        const ballList = processedData.getBallList();
+        const ballData = processedData.get('ball') as TrackBallData;
+
+        const cands = ballData.getCandidatesAt(frameIdx) || [];
+        const ballList = ballData.getBallList();
         const frameData = ballList ? ballList[frameIdx] : null;
         const currentSelected = frameData ? frameData.selectedIdx : -1;
 
@@ -113,10 +112,12 @@ const TrackBallPage: React.FC = () => {
     const loadTrackBallData = useCallback(async (file: File) => {
         if (!file) return;
         try {
-            const data = new TrackBallData() as TrackBallDataWithAnalysis;
-            await data.loadFromFile(file);
-            data.analysisTools = ANALYSIS_TOOLS;
-            setProcessedData(data);
+            const data = new CVValData();
+            const bdata = new TrackBallData();
+            await bdata.loadFromFile(file);
+            data.set('ball', bdata);
+            data.addAnalysisTools('ball', ANALYSIS_TOOLS); // 데이터 로드 즉시 도구 주입
+			setProcessedData(data);
             setCurrentIdx(0);
         } catch (err) {
             console.error(err);
@@ -184,11 +185,13 @@ const TrackBallPage: React.FC = () => {
                 onState: (state: string) => setStatusKey(`label-${state}`),
                 onProgress: (current: number, total: number) => setProgress({ current, total })
             });
+            
+            const trackBallData =  new TrackBallData();
+            const result = await processor.processVideo(
+                files, 'ball', new CVValData(), trackBallData);
 
-            const result = await processor.processVideo(files, new TrackBallData()) as TrackBallDataWithAnalysis;
-
-            result.analysisTools = ANALYSIS_TOOLS;
-            result.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
+            result.addAnalysisTools('ball', ANALYSIS_TOOLS);
+            trackBallData.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
             setProcessedData(result);
             setCurrentIdx(0);
             setProcessModalOpen(false);
@@ -204,7 +207,7 @@ const TrackBallPage: React.FC = () => {
     const handleAddModule = (type: string) => {
         const moduleBase = AVAILABLE_MODULES[type];
         if (moduleBase) {
-            setActiveModules((prev: AnalysisModule<TrackBallData, any>[]) => [
+            setActiveModules((prev: AnalysisModule<any>[]) => [
                 ...prev,
                 { ...moduleBase, id: `${type}-${Date.now()}` }
             ]);
@@ -222,7 +225,8 @@ const TrackBallPage: React.FC = () => {
         const val = parseFloat(e.target.value);
         setConfValue(val);
         if (processedData) {
-            processedData.setConf(val);
+            const ballData = processedData.get('ball') as TrackBallData;
+            ballData.setConf(val);
             // 참조를 변경하여 하위 모듈(Video, Table)의 리렌더링을 유도합니다.
             const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
             setProcessedData(newData);
@@ -233,7 +237,8 @@ const TrackBallPage: React.FC = () => {
     const updateCandidateSelection = (idx: number) => {
         setSelectedCandidateIdx(idx);
         if (processedData) {
-            processedData.setSelectedIdx(currentFrameIdx, idx);
+            const ballData = processedData.get('ball') as TrackBallData;
+            ballData.setSelectedIdx(currentFrameIdx, idx);
             // 참조를 변경하여 하위 모듈의 리렌더링을 유도합니다.
             const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
             setProcessedData(newData);
@@ -242,7 +247,8 @@ const TrackBallPage: React.FC = () => {
 
     const handleEditorCandidateSelect = (frameIdx: number, candIdx: number) => {
         if (processedData) {
-            processedData.setSelectedIdx(frameIdx, candIdx);
+            const ballData = processedData.get('ball') as TrackBallData;
+            ballData.setSelectedIdx(frameIdx, candIdx);
             const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
             setProcessedData(newData);
         }
@@ -363,6 +369,7 @@ const TrackBallPage: React.FC = () => {
                 confValue={confValue}
                 onConfChange={handleConfChange}
                 data={processedData}
+                type={'ball'}
                 getTrailLayer={getTrailLayer}
                 getEditLayer={getEditLayer}
                 onCandidateSelect={handleEditorCandidateSelect}

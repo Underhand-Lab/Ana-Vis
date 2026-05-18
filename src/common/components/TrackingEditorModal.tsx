@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useMemo } from 'react';
 import Modal from './Modal';
 import { Div, InputNumber, Button } from '../bridges/UIBridge.ts';
 import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
+import { CVValData } from '../core/cvval-data.ts';
 
 interface TrackingEditorModalProps {
     isOpen: boolean;
@@ -10,7 +11,8 @@ interface TrackingEditorModalProps {
     maxFrame: number;
     confValue: number;
     onConfChange: (e: any) => void;
-    data: any;
+    data: CVValData | null;
+    type: string;
     getTrailLayer: (idx: number, len?: number) => HTMLCanvasElement | null;
     getEditLayer?: (idx: number, candidates: any[], selectedIdx: number) => HTMLCanvasElement | null;
     onCandidateSelect: (frameIdx: number, candidateIdx: number) => void;
@@ -18,7 +20,7 @@ interface TrackingEditorModalProps {
 
 const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
     isOpen, onClose, initialFrame, maxFrame,
-    confValue, onConfChange, data, getTrailLayer, getEditLayer, onCandidateSelect
+    confValue, onConfChange, data, type, getTrailLayer, getEditLayer, onCandidateSelect
 }) => {
     const rendererRef = useRef<CanvasRendererHandle>(null);
     const [localIdx, setLocalIdx] = useState(initialFrame);
@@ -30,13 +32,15 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
     }, [isOpen, initialFrame]);
 
     const localCandidates = useMemo(() => {
-        if (!data) return [];
-        return data.getCandidatesAt(localIdx) || [];
+        if (!data || data.exist(type)) return [];
+        const targetData = data.get(type) as any;
+        return targetData.getCandidatesAt(localIdx) || [];
     }, [data, localIdx]);
 
     const localSelectedIdx = useMemo(() => {
-        if (!data) return -1;
-        const list = data.getBallList ? data.getBallList() : data.getBatList();
+        if (!data || data.exist(type)) return -1;
+        const targetData = data.get(type) as any;
+        const list = targetData.getBallList ? targetData.getBallList() : targetData.getBatList();
         return list ? (list[localIdx]?.selectedIdx ?? -1) : -1;
     }, [data, localIdx]);
 

@@ -5,8 +5,9 @@ import { usePoseVisualize, PoseSettings } from "../hooks/usePoseVisualize";
 import { Div, InputNumber, InputColor, InputCheckbox, Select }
     from '@common/bridges/UIBridge.ts';
 import { AnalysisSettingsProps } from '@common/types/analysis-module.ts';
-import { VideoModulePlugin, VideoModuleBuilder } from '@common/module/video/VideoModule.tsx';
+import { VideoModulePlugin, VideoModuleBuilder } from '@/common/module/VideoModule.tsx';
 import { Toggle } from '@common/components/ui/react-web/common/Toggle.tsx';
+import { CVValData } from '@/common/core/cvval-data.ts';
 
 const colorMap = {
     COLOR_LEFT_ARM: "L_ARM",
@@ -43,7 +44,7 @@ export class PoseVideoPlugin extends VideoModulePlugin<PoseSettings> {
     title = '자세 동영상';
     defaultSettings = defaultSettings;
 
-    usePluginContext(data: PoseData | null, settings: PoseSettings) {
+    usePluginContext(data: CVValData, settings: PoseSettings) {
         const { setOptions, getPoseLayer } = usePoseVisualize(data);
 
         useEffect(() => {
@@ -68,7 +69,7 @@ export class PoseVideoPlugin extends VideoModulePlugin<PoseSettings> {
         }
     }
 
-    getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<any, PoseSettings>) {
+    getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<PoseSettings>) {
         const jointShapeOptions = [
             { label: "원형 (Circle)", value: "circle" },
             { label: "사각형 (Square)", value: "rect" }

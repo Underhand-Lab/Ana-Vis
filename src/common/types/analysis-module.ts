@@ -1,22 +1,23 @@
 import React from 'react';
+import { CVValData } from '../core/cvval-data';
 
-export interface AnalysisViewProps<D, S> {
+export interface AnalysisViewProps<S> {
   isSettingsOpen: boolean,
-  data: D | null;
+  data: CVValData | null;
   currentFrame: number;
   settings: S;
 }
 
-export interface AnalysisSettingsProps<D, S> {
+export interface AnalysisSettingsProps<S> {
   settings: S;
   onSettingsChange: (newSettings: S) => void;
-  data: D | null;
+  data: CVValData | null;
 }
 
-export interface AnalysisModule<D = any, S = any> {
+export interface AnalysisModule<S = any> {
   id: string;
   title: string;
-  View: React.FC<AnalysisViewProps<D, S>>;
-  Settings: React.FC<AnalysisSettingsProps<D, S>>;
+  View: React.FC<AnalysisViewProps<S>>;
+  Settings: React.FC<AnalysisSettingsProps<S>>;
   defaultSettings: S;
 }

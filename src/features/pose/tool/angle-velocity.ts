@@ -1,10 +1,15 @@
 import { AngleAnalysisTool } from "./angle";
-import { PoseData } from "../types";
+import { PoseData } from "../core/pose-data";
+import { PoseAnalysisTool } from "./pose-analysis-tool";
 
-export class AngleVelocityAnalysisTool {
+export class AngleVelocityAnalysisTool extends PoseAnalysisTool {
+    
+    name = 'angle-velocity-analysis-plugin';
+  
     private angleCalcer: AngleAnalysisTool;
 
     constructor() {
+        super();
         this.angleCalcer = new AngleAnalysisTool();
     }
 

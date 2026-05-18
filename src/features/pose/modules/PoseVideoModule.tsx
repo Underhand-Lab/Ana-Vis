@@ -1,5 +1,5 @@
 import { PoseVideoPlugin } from '../plugin/PoseVideoPlugin';
-import { VideoModuleBuilder } from '@common/module/video/VideoModule.tsx';
+import { VideoModuleBuilder } from '@/common/module/VideoModule';
 
 export const PoseVideoModule = new VideoModuleBuilder()
     .addPlugin(new PoseVideoPlugin())

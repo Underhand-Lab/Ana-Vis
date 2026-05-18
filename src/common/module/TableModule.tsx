@@ -1,48 +1,38 @@
-import React, { useMemo } from 'react';
-import { PoseData } from '../core/pose-data';
+import React, { useMemo, useEffect } from 'react';
 import TableRenderer from '@common/components/ui/react-web/common/TableRenderer';
 import { Div, InputCheckbox, Select } from '@common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '@common/types/analysis-module';
-import featureName from '../ constant';
 
-interface PoseTableSettingsData {
+interface TableSettingsData {
     selectedToolKey: string;
     visibility?: Record<string, boolean>;
-    // 기존 설정을 유지하기 위한 필드들 (선택적)
-    show_L_ARM?: boolean;
-    show_R_ARM?: boolean;
-    show_L_LEG?: boolean;
-    show_R_LEG?: boolean;
-    show_BODY?: boolean;
-    show_HEAD?: boolean;
-    [key: string]: any;
 }
 
 /**
  * 모듈의 기본 설정값
  */
-const defaultSettings: PoseTableSettingsData = {
-    selectedToolKey: "angle",
-    show_L_ARM: true,
-    show_R_ARM: true,
-    show_L_LEG: true,
-    show_R_LEG: true,
-    show_BODY: true,
-    show_HEAD: true,
+const defaultSettings: TableSettingsData = {
+    selectedToolKey: "",
     visibility: {},
 };
 
 /**
  * 출력(View) 컴포넌트: 데이터 테이블을 렌더링합니다.
  */
-export const PoseTableView: React.FC<AnalysisViewProps<PoseTableSettingsData>> = ({ data, currentFrame, settings }) => {
+export const TableView: React.FC<AnalysisViewProps<TableSettingsData>> = ({ data, currentFrame, settings }) => {
+    
     // 데이터 계산 및 현재 프레임 값 추출 로직
     const currentFrameData = useMemo(() => {
-        if (!data || !data.exist(featureName)) return null;
+        if (!data) return null;
 
-        const poseData =  data?.get(featureName) as PoseData;
+        const tools = data.getAnalysisTools();
+        const toolKeys = Object.keys(tools);
+        if (toolKeys.length === 0) return null;
 
-        const processedData = poseData.getAnalysisResult(settings.selectedToolKey, currentFrame);
+        // 선택된 키가 없거나 존재하지 않는 도구인 경우 첫 번째 도구를 사용합니다.
+        const toolKey = (settings.selectedToolKey && tools[settings.selectedToolKey]) ? settings.selectedToolKey : toolKeys[0];
+        
+        const processedData = tools[toolKey].getResult(currentFrame);
         if (!processedData) return null;
 
         const ret: Record<string, string | number> = {};
@@ -50,9 +40,12 @@ export const PoseTableView: React.FC<AnalysisViewProps<PoseTableSettingsData>> =
             // 설정에서 해당 키의 가시성이 false인 경우 건너뜀
             if (settings.visibility && settings.visibility[key] === false) continue;
             const val = processedData[key];
-            if (val !== undefined) {
+            if (val) {
                 // 숫자인 경우 소수점 2자리까지 표시
                 ret[key] = typeof val === 'number' ? val.toFixed(2) : val;
+            }
+            else {
+                ret[key] = "?";
             }
         }
         return Object.keys(ret).length > 0 ? ret : null;
@@ -70,17 +63,40 @@ export const PoseTableView: React.FC<AnalysisViewProps<PoseTableSettingsData>> =
 /**
  * 설정(Settings) 컴포넌트: 분석 도구 선택 UI를 담당합니다.
  */
-export const PoseTableSettings: React.FC<AnalysisSettingsProps<PoseTableSettingsData>> = ({ settings, onSettingsChange, data }) => {
+export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> = ({ settings, onSettingsChange, data }) => {
     const handleToolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onSettingsChange({ ...settings, selectedToolKey: e.target.value });
     };
 
+    const toolOptions = useMemo(() => {
+        if (!data) return [];
+        const tools = data.getAnalysisTools();
+        return Object.values(tools).map(tool => ({
+            label: tool.name,
+            value: tool.name
+        }));
+    }, [data]);
+
+    // 초기 선택값이 없거나 설정된 도구가 현재 데이터에 없는 경우 첫 번째 도구를 자동으로 선택합니다.
+    useEffect(() => {
+        if (toolOptions.length > 0 && (!settings.selectedToolKey || !toolOptions.find(o => o.value === settings.selectedToolKey))) {
+            onSettingsChange({ ...settings, selectedToolKey: toolOptions[0].value });
+        }
+    }, [toolOptions, settings.selectedToolKey, onSettingsChange, settings]);
+
     // 현재 도구가 출력하는 실제 데이터 키들을 추출합니다.
     const availableKeys = useMemo(() => {
+        if (!data) return [];
 
-        const poseData =  data?.get(featureName) as PoseData;
-        const calculatedData = poseData.getAnalysisResult(settings.selectedToolKey);
+        const tools =  data.getAnalysisTools();
+        const toolKeys = Object.keys(tools);
+        if (toolKeys.length === 0) return [];
+
+        const toolKey = (settings.selectedToolKey && tools[settings.selectedToolKey]) ? settings.selectedToolKey : toolKeys[0];
+        const selectedTool = tools[toolKey];
+        const calculatedData = selectedTool.getResult(0);
         return calculatedData ? Object.keys(calculatedData) : [];
+
     }, [data, settings.selectedToolKey]);
 
     return (
@@ -93,14 +109,7 @@ export const PoseTableSettings: React.FC<AnalysisSettingsProps<PoseTableSettings
                 <Select
                     value={settings.selectedToolKey}
                     onChange={handleToolChange}
-                    options={[
-                        { label: "관절 각도", value: "angle"},
-                        { label: "관절 이동 속도", value: "velocity"},
-                        { label: "관절 회전 속도", value: "angle-velocity"},
-                        { label: "관절 높이", value: "height"},
-                        { label: "지면 반력", value: "grf"},
-
-                    ]}
+                    options={toolOptions}
                 />
             </Div>
 
@@ -129,12 +138,12 @@ export const PoseTableSettings: React.FC<AnalysisSettingsProps<PoseTableSettings
     );
 };
 
-export const PoseTableModule: AnalysisModule<PoseTableSettingsData> = {
+export const TableModule: AnalysisModule<TableSettingsData> = {
     id: 'pose-table',
     title: '자세 정보 표',
-    View: PoseTableView,
-    Settings: PoseTableSettings,
+    View: TableView,
+    Settings: TableSettings,
     defaultSettings
 };
 
-export default PoseTableModule;
+export default TableModule;
