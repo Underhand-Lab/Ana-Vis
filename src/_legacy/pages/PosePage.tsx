@@ -17,7 +17,7 @@ import { PoseData } from '@features/pose/core/pose-data';
 import * as PoseDetector from '@features/pose/core/pose-detector/index';
 import * as PoseAnalysisTool from "@/features/pose/tool/index";
 import PoseVideoModule from '@features/pose/modules/PoseVideoModule';
-import PoseGraphModule from '@features/pose/modules/PoseGraphModule';
+import GraphModule from '@common/module/GraphModule';
 import TableModule from '@common/module/TableModule';
 import Pose3DVideoModule from '@features/pose/modules/Pose3DVideoModule';
 import { CVValData, IAnalysisTool } from '@/common/core/cvval-data';
@@ -50,7 +50,7 @@ const ANALYSIS_TOOLS: IAnalysisTool[] = [
 const AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
 	"동영상": PoseVideoModule,
 	"3D 동영상": Pose3DVideoModule,
-	"그래프": PoseGraphModule,
+	"그래프": GraphModule,
 	"표": TableModule,
 };
 
@@ -65,7 +65,7 @@ const PosePage: React.FC = () => {
 	const [currentIdx, setCurrentIdx] = useState(0);
 	const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
 		{ ...PoseVideoModule, id: 'video-default' },
-		{ ...PoseGraphModule, id: 'graph-default' }
+		{ ...GraphModule, id: 'graph-default' }
 	]);
 
 	const [isProcessModalOpen, setProcessModalOpen] = useState(false);

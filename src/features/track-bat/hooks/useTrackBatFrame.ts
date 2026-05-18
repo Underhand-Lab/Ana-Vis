@@ -249,6 +249,7 @@ export const useTrackBatFrame = (trackData: CVValData | null) => {
    */
   const getEditLayer = useCallback((idx: number, candidates: any[], selectedIdx: number): HTMLCanvasElement | null => {
     const trailLayer = getTrailLayer(idx, 1);
+    
     if (!trailLayer || !trackData) return null;
 
     const canvas = document.createElement('canvas');

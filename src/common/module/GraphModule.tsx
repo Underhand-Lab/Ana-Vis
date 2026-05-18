@@ -1,13 +1,10 @@
-import React, { useMemo } from 'react';
-
-import { PoseData } from '../core/pose-data';
+import React, { useMemo, useEffect } from 'react';
 
 import Graph from '@common/components/Graph';
 import { Div, InputColor, InputNumber, InputCheckbox, Select } from '@common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@common/types/analysis-module';
-import featureName from '../ constant';
-
+import { IAnalysisTool } from '@/common/core/cvval-data';
 
 // Graph.tsx와 동일한 색상 생성 로직 (범례 일치를 위함)
 const getDeterministicColor = (str: string) => {
@@ -55,25 +52,18 @@ const LegendItem: React.FC<LegendItemProps> = ({
     );
 };
 
-interface PoseGraphSettingsData {
+interface GraphSettingsData {
     selectedToolKey: string;
     lineWidth: number;
-    datasetVisibility: Record<string, boolean>;
-    [key: string]: any; // 동적 컬러 키 허용 (L_ARM 등)
+    datasetVisibility?: Record<string, boolean>;
+    [key: string]: any; 
 }
 
 /**
  * 모듈의 기본 설정값
  */
-const defaultSettings: PoseGraphSettingsData = {
-    selectedToolKey: "angle",
-    // 데이터셋 라벨에 직접 대응하도록 키 변경
-    L_ARM: "rgba(255, 0, 0, 1)",
-    R_ARM: "rgba(0, 255, 0, 1)",
-    L_LEG: "rgba(0, 0, 255, 1)",
-    R_LEG: "rgba(255, 255, 0, 1)",
-    BODY: "rgba(255, 0, 255, 1)",
-    HEAD: "rgba(0, 255, 255, 1)",
+const defaultSettings: GraphSettingsData = {
+    selectedToolKey: "",
     lineWidth: 2, // 그래프 선 굵기 추가
     datasetVisibility: {} // 각 데이터셋의 가시성 상태를 저장
 };
@@ -81,18 +71,23 @@ const defaultSettings: PoseGraphSettingsData = {
 /**
  * 출력(View) 컴포넌트: 그래프 캔버스 렌더링 및 데이터 시각화를 담당합니다.
  */
-export const PoseGraphView: React.FC<AnalysisViewProps<PoseGraphSettingsData>> = ({ 
+export const GraphView: React.FC<AnalysisViewProps<GraphSettingsData>> = ({ 
     data, 
     currentFrame, 
     settings 
 }) => {
     // 분석 도구 데이터 추출 로직
     const graphData = useMemo<Record<string, (number | null)[]>>(() => {
-        if (!data || !data.exist(featureName)) return {};
+        if (!data) return {};
 
-        const poseData = data.get(featureName) as PoseData;
+        const tools = data.getAnalysisTools();
+        const toolKeys = Object.keys(tools);
+        if (toolKeys.length === 0) return {};
 
-        const result = poseData.getAnalysisResult(settings.selectedToolKey);
+        const toolKey = (settings.selectedToolKey && tools[settings.selectedToolKey]) ? settings.selectedToolKey : toolKeys[0];
+        const tool = tools[toolKey];
+
+        const result = tool?.getResults();
         return (result || {}) as Record<string, (number | null)[]>;
     }, [data, settings.selectedToolKey]);
 
@@ -118,18 +113,40 @@ export const PoseGraphView: React.FC<AnalysisViewProps<PoseGraphSettingsData>> =
 /**
  * 설정(Settings) 컴포넌트: 분석 도구 선택 및 범례 UI를 담당합니다.
  */
-export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseGraphSettingsData>> = ({ settings, onSettingsChange, data }) => {
+export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> = ({ settings, onSettingsChange, data }) => {
     const handleToolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onSettingsChange({ ...settings, selectedToolKey: e.target.value });
     };
 
+    const toolOptions = useMemo(() => {
+        if (!data) return [];
+        const tools = data.getAnalysisTools();
+        return Object.values(tools).map(tool => ({
+            label: (tool as any).title || tool.name,
+            value: tool.name
+        }));
+    }, [data]);
+
+    // 초기 선택값이 없거나 설정된 도구가 현재 데이터에 없는 경우 첫 번째 도구를 자동으로 선택합니다.
+    useEffect(() => {
+        if (toolOptions.length > 0 && (!settings.selectedToolKey || !toolOptions.find(o => o.value === settings.selectedToolKey))) {
+            onSettingsChange({ ...settings, selectedToolKey: toolOptions[0].value });
+        }
+    }, [toolOptions, settings.selectedToolKey, onSettingsChange, settings]);
+
     // 차트 인스턴스에 의존하지 않고 데이터로부터 직접 범례 라벨을 추출합니다. (초기 렌더링 보장)
     const labels = useMemo(() => {
-        if (!data || !data.exist(featureName)) return [];
+        if (!data) return [];
 
-        const poseData = data.get(featureName) as PoseData;
-        const frameData = poseData.getAnalysisResult(settings.selectedToolKey, 0);
-        return frameData ? Object.keys(frameData) : [];
+        const tools = data.getAnalysisTools();
+        const toolKeys = Object.keys(tools);
+        if (toolKeys.length === 0) return [];
+
+        const toolKey = (settings.selectedToolKey && tools[settings.selectedToolKey]) ? settings.selectedToolKey : toolKeys[0];
+        const tool = tools[toolKey];
+        const results = tool?.getResults();
+        
+        return results ? Object.keys(results) : [];
     }, [data, settings.selectedToolKey]);
 
     return (
@@ -142,14 +159,7 @@ export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseGraphSettings
                 <Select
                     value={settings.selectedToolKey}
                     onChange={handleToolChange}
-                    options={[
-                        { label: "관절 각도", value: "angle"},
-                        { label: "관절 이동 속도", value: "velocity"},
-                        { label: "관절 회전 속도", value: "angle-velocity"},
-                        { label: "관절 높이", value: "height"},
-                        { label: "지면 반력", value: "grf"},
-
-                    ]}
+                    options={toolOptions}
                 />
             </Div>
 
@@ -213,12 +223,12 @@ export const PoseGraphSettings: React.FC<AnalysisSettingsProps<PoseGraphSettings
     );
 };
 
-export const PoseGraphModule: AnalysisModule<PoseGraphSettingsData> = {
-    id: 'pose-graph',
-    title: '자세 그래프',
-    View: PoseGraphView,
-    Settings: PoseGraphSettings,
+export const GraphModule: AnalysisModule<GraphSettingsData> = {
+    id: 'common-graph',
+    title: '분석 그래프',
+    View: GraphView,
+    Settings: GraphSettings,
     defaultSettings
 };
 
-export default PoseGraphModule;
+export default GraphModule;

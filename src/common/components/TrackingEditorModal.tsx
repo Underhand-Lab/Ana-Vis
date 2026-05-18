@@ -32,7 +32,7 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
     }, [isOpen, initialFrame]);
 
     const localCandidates = useMemo(() => {
-        if (!data || data.exist(type)) return [];
+        if (!data || !data.exist(type)) return [];
         const targetData = data.get(type) as any;
         return targetData.getCandidatesAt(localIdx) || [];
     }, [data, localIdx]);
