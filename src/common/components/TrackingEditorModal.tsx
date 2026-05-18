@@ -217,7 +217,7 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
                     borderRadius: '8px', 
                     overflow: 'hidden',
                     cursor: 'crosshair',
-                    height: '40vh',
+                    flex: 1,
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',

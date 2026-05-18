@@ -26,7 +26,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <h1>{title}</h1>
         </Div>
-        <Div style= {{maxHeight: '60vh', overflowY: 'auto'}}>
+        <Div style= {{maxHeight: '60vh'}}>
           {children}
         </Div>
         <Button onClick={onClose}>닫기</Button>
