@@ -12,14 +12,14 @@ import {
     Div, InputNumber, InputFile, InputSlider,
     Select, FixedFooter, Box, Button, Wrapper
 } from
-    '../common/bridges/UIBridge.ts';
+    '@common/bridges/UIBridge.ts';
 
 // 라이브러리 import
-import { TrackBatData } from "@features/track-bat/core/track-bat-data";
-import * as BatDetector from '@features/track-bat/core/bat-detector/index';
-import { BatDetectedObject } from '@features/track-bat/types';
-import { useTrackBatFrame } from '@features/track-bat/hooks/useTrackBatFrame';
-import TrackBatVideoModule from "@features/track-bat/modules/TrackBatVideoModule";
+import { TrackBatData } from "@/_legacy/features/track-bat/core/track-bat-data";
+import * as BatDetector from '@/_legacy/features/track-bat/core/bat-detector/index';
+import { BatDetectedObject } from '@/_legacy/features/track-bat/types';
+import { useTrackBatFrame } from '@/_legacy/features/track-bat/hooks/useTrackBatFrame';
+import TrackBatVideoModule from "@/_legacy/features/track-bat/modules/TrackBatVideoModule";
 
 interface LocationState {
     externalFile?: File;

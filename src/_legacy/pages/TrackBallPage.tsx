@@ -10,18 +10,18 @@ import { Div, InputNumber, InputFile, InputSlider,
     Select, FixedFooter, Box, Button, Wrapper }
     from '@common/bridges/UIBridge.ts';
 
-import TrackBallVideoModule from "@features/track-ball/modules/TrackBallVideoModule"
-import TrackBallTableModule from "@features/track-ball/modules/TrackBallTableModule"
+import TrackBallVideoModule from "@/_legacy/features/track-ball/modules/TrackBallVideoModule"
+import TrackBallTableModule from "@/_legacy/features/track-ball/modules/TrackBallTableModule"
 
 // 라이브러리 import
 import { Processor } from '@common/lib/processor.ts';
-import { TrackBallData } from "@features/track-ball/core/track-ball-data.ts";
-import * as BallDetector from '@features/track-ball/core/ball-detector/index';
-import { DetectedObject } from '@features/track-ball/types';
-import { useTrackBallFrame } from '@features/track-ball/hooks/useTrackBallFrame';
+import { TrackBallData } from "@/_legacy/features/track-ball/core/track-ball-data";
+import * as BallDetector from '@/_legacy/features/track-ball/core/ball-detector/index';
+import { DetectedObject } from '@/_legacy/features/track-ball/types';
+import { useTrackBallFrame } from '@/_legacy/features/track-ball/hooks/useTrackBallFrame';
 import { AnalysisModule } from '@common/types/analysis-module.ts';
 
-import * as Analysis from "@features/track-ball/core/calc/analysis.ts";
+import * as Analysis from "@/_legacy/features/track-ball/core/calc/analysis";
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
 
 interface LocationState {

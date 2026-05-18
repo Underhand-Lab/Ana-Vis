@@ -34,7 +34,10 @@ export default defineConfig({
     },
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "src"),
+        '@': path.resolve(__dirname, './src'),
+        '@common': path.resolve(__dirname, './src/common'),
+        '@features': path.resolve(__dirname, './src/features'),
+        '@legacy': path.resolve(__dirname, './src/_legacy/'),
       },
     },
     plugins: [react()],

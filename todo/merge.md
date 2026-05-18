@@ -1,4 +1,4 @@
-# 현재 프로젝트는 아래의 구조
+# 현재 프로젝트 구조
 
 - 각 분석 방식마다 아래의 요소를 가짐
     - 1차 분석 결과 데이터
@@ -24,10 +24,11 @@
     - ```CVValData.addPlugin('pose', new GRFTool())```
 - 분석 시각화 컴포넌트는 각각의 기능을 가짐
     - VideoModule
-        - CVValData.exist('pose')일 경우 포즈 그리기
-        - CVValData.exist('ball')일 경우 공 궤적 그리기
-        - CVValData.exist('bat')일 경우 배트 궤적 그리기
+        - ```CVValData.exist('pose')```일 경우 포즈 그리기
+        - ```CVValData.exist('ball')```일 경우 공 궤적 그리기
+        - ```CVValData.exist('bat')```일 경우 배트 궤적 그리기
     - TableModule, GraphModule
-        - CVValData.getAnalysisResults('pose' || 'ball' || 'bat')에 출력 값이 존재하는 경우 각각을 렌더링
+        - ```CVValData.getAnalysisResults('pose' || 'ball' || 'bat')```에 출력 값이 존재하는 경우 각각을 렌더링
     - 3DVideoModule
-        - CVValData.exist('pose')일 경우 포즈 그리기
+        - ```CVValData.exist('pose')```일 경우 포즈 그리기
+- 위의 구현은 레거시 지원을 위해 AppPage에서 구현, 즉 기존 코드를 제거하는 것이 아닌 통합하는 코드를 새로 추가

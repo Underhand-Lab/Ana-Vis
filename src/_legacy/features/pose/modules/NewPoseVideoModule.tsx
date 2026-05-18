@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { PoseData } from '../core/pose-data.ts';
-import { usePoseVisualize, PoseSettings } from "../hooks/usePoseVisualize";
+import { usePoseVisualize, PoseSettings } from "../hooks/usePoseVisualize.ts";
 
 import { exportVideo } from "@common/utils/exportVideo";
-import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
+import { VideoModule } from "@common/module/video/VideoModule.tsx";
+import { IVideoStrategy } from "@common/types/video-strategy.ts";
 import { Div, Button, InputNumber, InputColor, InputCheckbox, Select }
     from '@common/bridges/UIBridge.ts';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
@@ -47,74 +48,37 @@ const defaultSettings: PoseSettings = {
  * 출력(View) 컴포넌트: 실제 캔버스 렌더링을 담당합니다.
  */
 export const PoseVideoView: React.FC<AnalysisViewProps<PoseData, PoseSettings>> = ({ data, currentFrame, settings }) => {
-    const rendererRef = useRef<CanvasRendererHandle>(null);
-
-    // usePoseVisualize 훅이 렌더러 인스턴스를 필요로 하므로, 
-    // 컴포넌트 내부에서 명령형 메서드를 제공하는 안정적인 객체를 생성합니다.
-    const rendererInterface = useMemo(() => ({
-        getCanvas: () => rendererRef.current?.getCanvas() || null
-    }), []);
-
     const { setOptions, getPoseLayer } = usePoseVisualize(data);
 
-    // 설정 반영 후 그리기를 강제하기 위한 로컬 상태
-    const [drawTick, setDrawTick] = useState(0);
-
-    // 1. 설정값 동기화: 설정이 변경되면 setOptions를 호출하고 drawTick을 올려 다음 렌더링을 유도합니다.
-    // setTimeout(0)을 통해 hook 내부의 상태가 완전히 업데이트된 후(다음 tick) 그리기가 발생하도록 하여
-    // "직전의 수정이 반영되는" 현상을 해결합니다.
     useEffect(() => {
-        if (settings) {
-            setOptions(settings);
-            const timerId = setTimeout(() => setDrawTick(t => t + 1), 0);
-            return () => clearTimeout(timerId); // eslint-disable-line react-hooks/exhaustive-deps
-        }
+        if (settings) setOptions(settings);
     }, [settings, setOptions]);
 
-    const drawImageAt = useCallback((frameIdx: number) => {
-        if (!data) return null;
-        const rawImgList = data.getRawImgList(0);
-        const backgroundImage = rawImgList[frameIdx];
-        if (!backgroundImage) return null;
-
-        const poseLayer = getPoseLayer(frameIdx);
-        const compositeCanvas = document.createElement('canvas');
-        compositeCanvas.width = backgroundImage.width;
-        compositeCanvas.height = backgroundImage.height;
-        const ctx = compositeCanvas.getContext('2d');
-        if (!ctx) return null;
-
-        if (settings.showBackground !== false) {
-            ctx.drawImage(backgroundImage, 0, 0);
-        } else {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+    // Pose용 렌더링 전략 정의
+    const strategies = useMemo<IVideoStrategy[]>(() => [{
+        type: 'pose',
+        draw: (ctx, _data, frameIdx) => {
+            const poseLayer = getPoseLayer(frameIdx);
+            if (poseLayer) ctx.drawImage(poseLayer, 0, 0);
         }
+    }], [getPoseLayer]);
 
-        // 레이어 그리기 (훅 내부에서 showPose, showGRF 옵션에 따라 스켈레톤과 화살표를 모두 포함한 캔버스를 반환함)
-        if (poseLayer) ctx.drawImage(poseLayer, 0, 0);
-
-        return compositeCanvas;
-    }, [data, getPoseLayer, settings.showBackground, settings.showPose, settings.showGRF, settings.grfScale]);
-
-    // 2. 실제 그리기: data, frame 또는 drawTick(설정 변경 완료)이 바뀔 때 수행합니다.
-    useEffect(() => {
-        if (!data || !rendererRef.current) return;
-
-        const composite = drawImageAt(currentFrame);
-        if (composite) {
-            rendererRef.current.updateLayout(composite.width, composite.height);
-            rendererRef.current.drawImage(composite);
-        }
-    }, [data, currentFrame, drawTick, drawImageAt]);
+    // VideoModule 호환성을 위한 데이터 어댑터
+    const cvValDataAdapter = useMemo(() => ({
+        get: () => data,
+        exist: () => !!data
+    }), [data]);
 
     return (
-        <Div style={{ width: '100%', height: '100%', position: 'relative' }}>
-            <CanvasRenderer 
-                ref={rendererRef} 
-                style={{ position: 'absolute', top: 0, left: 0 }} 
-            />
-        </Div>
+        <VideoModule
+            cvValData={cvValDataAdapter as any}
+            currentFrame={currentFrame}
+            strategies={strategies}
+            settings={{
+                pose: settings,
+                global: { showBackground: settings.showBackground }
+            }}
+        />
     );
 };
 

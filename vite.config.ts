@@ -11,6 +11,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@common': path.resolve(__dirname, './src/common'),
       '@features': path.resolve(__dirname, './src/features'),
+      '@legacy': path.resolve(__dirname, './src/_legacy/'),
       'react-native': 'react-native-web',
     },
     // 리액트 인스턴스를 하나로 강제 고정하여 버전 충돌 방지

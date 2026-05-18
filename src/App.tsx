@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-import HomeBridge from './pages/Home/HomeBridge';
-import ExternalFileBridge from './common/bridges/ExternalFileBridge';
+import HomeBridge from '@/_legacy/pages/Home/HomeBridge';
+import ExternalFileBridge from '@common/bridges/ExternalFileBridge';
 
-import PosePage from './pages/PosePage';
-import TrackBallPage from './pages/TrackBallPage';
-import TrackBatPage from './pages/TrackBatPage';
+import PosePage from '@/_legacy/pages/PosePage';
+import TrackBallPage from '@/_legacy/pages/TrackBallPage';
+import TrackBatPage from '@/_legacy/pages/TrackBatPage';
 
 const STORAGE_KEY = 'cv_val_last_path';
 

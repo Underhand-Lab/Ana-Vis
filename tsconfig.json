@@ -22,7 +22,8 @@
       "@/*": ["./src/*"],
       "@mediapipe/tasks-vision": ["./node_modules/@mediapipe/tasks-vision"],
       "@common/*": ["./src/common/*"],
-      "@features/*": ["./src/features/*"]
+      "@features/*": ["./src/features/*"],
+      "@legacy/*": ["./src/_legacy/*"]
     }
   },
   "include": ["src", "electron"]

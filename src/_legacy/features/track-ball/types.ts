@@ -2,6 +2,10 @@ export interface DetectedObject {
     bbox: [number, number, number, number];
     confidence: number;
     classId: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
 }
 
 
