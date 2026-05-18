@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { TrackBatData } from '../core/track-bat-data';
-import { BatDetectedObject } from '../core/bat-detector/yolo';
+import { BatDetectedObject } from '../types';
 
 interface ColorsState {
   batColor: string;
@@ -173,7 +173,7 @@ export const useTrackBatFrame = (trackData: TrackBatData | null) => {
     }
   };
 
-  const getTrailLayer = useCallback((idx: number): HTMLCanvasElement | null => {
+  const getTrailLayer = useCallback((idx: number, length?: number): HTMLCanvasElement | null => {
     if (!trackData || idx < 0) return null;
 
     // 1. 마스크 데이터 존재 여부 확인 및 크기 계산
@@ -212,7 +212,8 @@ export const useTrackBatFrame = (trackData: TrackBatData | null) => {
     const trailRGBA = getRgba(colors.trailColor, colors.trailAlpha);
 
     // 2. 궤적 및 배트 마스킹 (픽셀 데이터 생성)
-    const startIdx = Math.max(1, idx - trailLen + 1);
+    const effectiveLen = length !== undefined ? length : trailLen;
+    const startIdx = Math.max(1, idx - effectiveLen + 1);
     for (let i = startIdx; i <= idx; i++) {
       const prev = trackData.getSelectedBatAt(i - 1);
       const curr = trackData.getSelectedBatAt(i);
@@ -239,5 +240,39 @@ export const useTrackBatFrame = (trackData: TrackBatData | null) => {
     return layerCanvas;
   }, [trackData, colors, trailLen]);
 
-  return { colors, setColors, trailLen, setTrailLen, getTrailLayer };
+  /**
+   * ✅ 편집 모드용 레이어 반환 (모든 후보군 시각화)
+   */
+  const getEditLayer = useCallback((idx: number, candidates: any[], selectedIdx: number): HTMLCanvasElement | null => {
+    const trailLayer = getTrailLayer(idx, 1);
+    if (!trailLayer || !trackData) return null;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = trailLayer.width;
+    canvas.height = trailLayer.height;
+    const ctx = canvas.getContext('2d')!;
+
+    ctx.drawImage(trailLayer, 0, 0);
+
+    // 모든 후보군 박스 시각화
+    candidates.forEach((cand, i) => {
+      const isSelected = selectedIdx === i;
+      if (!cand.bbox) return;
+      
+      const [bx, by, bw, bh] = cand.bbox;
+      ctx.strokeStyle = isSelected ? '#007bff' : 'rgba(255, 255, 0, 0.7)';
+      ctx.lineWidth = isSelected ? 4 : 2;
+      ctx.strokeRect(bx, by, bw, bh);
+
+      ctx.fillStyle = isSelected ? '#007bff' : 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(bx, by - 25, 35, 25);
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText(`${i + 1}`, bx + 5, by - 7);
+    });
+
+    return canvas;
+  }, [getTrailLayer, trackData]);
+
+  return { colors, setColors, trailLen, setTrailLen, getTrailLayer, getEditLayer };
 };

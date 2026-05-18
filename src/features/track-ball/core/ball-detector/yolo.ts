@@ -1,10 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-
-export interface DetectedObject {
-    bbox: [number, number, number, number];
-    confidence: number;
-    classId: number;
-}
+import { DetectedObject } from '../../types';
 
 export type ImageSource = HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas;
 

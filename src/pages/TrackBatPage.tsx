@@ -5,6 +5,7 @@ import AnalysisGridContainer from '@common/components/analysis-container/Analysi
 import VideoProcessorModal from '@common/components/VideoProcessorModal';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
+import TrackingEditorModal from '@common/components/TrackingEditorModal';
 import { Processor } from '@common/lib/processor';
 import { AnalysisModule } from '@/common/types/analysis-module';
 import {
@@ -17,6 +18,7 @@ import {
 import { TrackBatData } from "@features/track-bat/core/track-bat-data";
 import * as BatDetector from '@features/track-bat/core/bat-detector/index';
 import { BatDetectedObject } from '@features/track-bat/types';
+import { useTrackBatFrame } from '@features/track-bat/hooks/useTrackBatFrame';
 import TrackBatVideoModule from "@features/track-bat/modules/TrackBatVideoModule";
 
 interface LocationState {
@@ -61,6 +63,9 @@ const TrackBatPage: React.FC = () => {
         { ...TrackBatVideoModule, id: 'bat-video-default' },
     ]);
 
+    // 편집용 독립 인덱스 및 시각화 훅
+    const { getTrailLayer, getEditLayer } = useTrackBatFrame(processedData);
+
     // 후보군(Candidate) 관련 상태
     const [candidates, setCandidates] = useState<BatDetectedObject[]>([]);
     const [selectedCandidateIdx, setSelectedCandidateIdx] = useState(-1);
@@ -68,6 +73,7 @@ const TrackBatPage: React.FC = () => {
 
     const [isProcessModalOpen, setProcessModalOpen] = useState(false);
     const [isToolModalOpen, setToolModalOpen] = useState(false);
+    const [isEditorModalOpen, setEditorModalOpen] = useState(false);
     const dataInputRef = useRef<HTMLInputElement>(null);
     const pluginInputRef = useRef<HTMLInputElement>(null);
 
@@ -218,6 +224,14 @@ const TrackBatPage: React.FC = () => {
         }
     };
 
+    const handleEditorCandidateSelect = (frameIdx: number, candIdx: number) => {
+        if (processedData) {
+            processedData.setSelectedIdx(frameIdx, candIdx);
+            const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
+            setProcessedData(newData);
+        }
+    };
+
     const handleCandidateChange = (e: ChangeEvent<HTMLSelectElement>) => {
         updateCandidateSelection(parseInt(e.target.value, 10));
     };
@@ -247,6 +261,9 @@ const TrackBatPage: React.FC = () => {
                             setProcessModalOpen(true);
                         }
                     },
+                    { name: "편집", action: () => {
+                        setEditorModalOpen(true);
+                    }},
                     { name: "불러오기", action: () => dataInputRef.current?.click() },
                     {
                         name: "저장", action: async () => {
@@ -288,52 +305,6 @@ const TrackBatPage: React.FC = () => {
                             도구 추가
                         </Button>
                     </Div>
-                    <Div style={{ display: 'flex', gap: '10px' }}>
-
-                        {/* CONF 입력 UI */}
-                        <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <label htmlFor="confInput">CONF: </label>
-                            <InputNumber
-                                id="confInput"
-                                value={confValue}
-                                step="0.01"
-                                min="0" max="1"
-                                onChange={handleConfChange}
-                                style={{ width: '60px' }}
-                            />
-                        </Div>
-
-                        {/* 후보군 선택 UI (Candidate Select) */}
-                        <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <label>선택: </label>
-                            <Div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                <Button
-                                    style={{ padding: '0 8px', height: '30px', minWidth: '30px' }}
-                                    onClick={() => {
-                                        const nextIdx = selectedCandidateIdx <= -1 ? candidates.length - 1 : selectedCandidateIdx - 1;
-                                        updateCandidateSelection(nextIdx);
-                                    }}
-                                >
-                                    &lt;
-                                </Button>
-                                <Select
-                                    value={selectedCandidateIdx}
-                                    onChange={handleCandidateChange}
-                                    options={candidateOptions}
-                                />
-                                <Button
-                                    style={{ padding: '0 8px', height: '30px', minWidth: '30px' }}
-                                    onClick={() => {
-                                        const nextIdx = selectedCandidateIdx >= candidates.length - 1 ? -1 : selectedCandidateIdx + 1;
-                                        updateCandidateSelection(nextIdx);
-                                    }}
-                                >
-                                    &gt;
-                                </Button>
-                            </Div>
-                        </Div>
-
-                    </Div>
                     <Div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
 
                     </Div>
@@ -349,6 +320,19 @@ const TrackBatPage: React.FC = () => {
                 isProcessing={isProcessing}
                 progress={progress}
                 statusKey={statusKey}
+            />
+
+            <TrackingEditorModal
+                isOpen={isEditorModalOpen}
+                onClose={() => setEditorModalOpen(false)}
+                initialFrame={currentIdx}
+                maxFrame={maxFrame}
+                confValue={confValue}
+                onConfChange={handleConfChange}
+                data={processedData}
+                getTrailLayer={getTrailLayer}
+                getEditLayer={getEditLayer}
+                onCandidateSelect={handleEditorCandidateSelect}
             />
 
             <Modal

@@ -26,7 +26,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <h1>{title}</h1>
         </Div>
-        {children}
+        <Div style= {{maxHeight: '60vh', overflowY: 'auto'}}>
+          {children}
+        </Div>
         <Button onClick={onClose}>닫기</Button>
       </Box>
     </Div>,
@@ -41,7 +43,7 @@ const overlayStyle: React.CSSProperties = {
 };
 
 const modalStyle: React.CSSProperties = {
-  minWidth: '300px', maxWidth: '500px', padding: '10px 25px'
+  minWidth: '300px', maxWidth: '500px', padding: '10px 25px', 
 };
 
 export default Modal;

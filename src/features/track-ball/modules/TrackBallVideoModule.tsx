@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useTrackFrame } from '../hooks/useTrackBallFrame';
+import { useTrackBallFrame } from '../hooks/useTrackBallFrame';
 import { TrackBallData } from '../core/track-ball-data';
 import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer";
 import { exportVideo } from "@common/utils/exportVideo";
@@ -30,7 +30,7 @@ export const TrackBallVideoView: React.FC<AnalysisViewProps<TrackBallData, Track
         getCanvas: () => rendererRef.current?.getCanvas() || null
     }), []);
 
-    const { setOptions, getTrackLayer } = useTrackFrame(data);
+    const { setOptions, getTrailLayer } = useTrackBallFrame(data);
 
     // 설정 반영 후 그리기를 강제하기 위한 로컬 상태
     const [drawTick, setDrawTick] = useState(0);
@@ -50,7 +50,7 @@ export const TrackBallVideoView: React.FC<AnalysisViewProps<TrackBallData, Track
         const backgroundImage = rawImages ? rawImages[frameIdx] : null;
         if (!backgroundImage) return null;
 
-        const trackLayer = getTrackLayer(frameIdx);
+        const trackLayer = getTrailLayer(frameIdx);
         const compositeCanvas = document.createElement('canvas');
         compositeCanvas.width = backgroundImage.width;
         compositeCanvas.height = backgroundImage.height;
@@ -60,7 +60,7 @@ export const TrackBallVideoView: React.FC<AnalysisViewProps<TrackBallData, Track
         ctx.drawImage(backgroundImage, 0, 0);
         if (trackLayer) ctx.drawImage(trackLayer, 0, 0);
         return compositeCanvas;
-    }, [data, getTrackLayer]);
+    }, [data, getTrailLayer]);
 
     // 2. 실제 그리기 수행
     useEffect(() => {
@@ -90,7 +90,7 @@ export const TrackBallVideoSettings: React.FC<AnalysisSettingsProps<TrackBallDat
     const [isExporting, setIsExporting] = useState(false);
 
     const dummyRenderer = useMemo(() => ({ getCanvas: () => null }), []);
-    const { setOptions, getTrackLayer } = useTrackFrame(data);
+    const { setOptions, getTrailLayer } = useTrackBallFrame(data);
 
     useEffect(() => {
         if (settings) setOptions((prev: any) => ({ ...prev, ...settings }));
@@ -102,7 +102,7 @@ export const TrackBallVideoSettings: React.FC<AnalysisSettingsProps<TrackBallDat
         const backgroundImage = rawImages ? rawImages[frameIdx] : null;
         if (!backgroundImage) return null;
 
-        const trackLayer = getTrackLayer(frameIdx);
+        const trackLayer = getTrailLayer(frameIdx);
         const compositeCanvas = document.createElement('canvas');
         compositeCanvas.width = backgroundImage.width;
         compositeCanvas.height = backgroundImage.height;

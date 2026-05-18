@@ -4,6 +4,7 @@ import AnalysisGridContainer from '@common/components/analysis-container/Analysi
 import VideoProcessorModal from '@common/components/VideoProcessorModal';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
+import TrackingEditorModal from '@common/components/TrackingEditorModal';
 
 import { Div, InputNumber, InputFile, InputSlider, 
     Select, FixedFooter, Box, Button, Wrapper }
@@ -17,6 +18,7 @@ import { Processor } from '@common/lib/processor.ts';
 import { TrackBallData } from "@features/track-ball/core/track-ball-data.ts";
 import * as BallDetector from '@features/track-ball/core/ball-detector/index';
 import { DetectedObject } from '@features/track-ball/types';
+import { useTrackBallFrame } from '@features/track-ball/hooks/useTrackBallFrame';
 import { AnalysisModule } from '@common/types/analysis-module.ts';
 
 import * as Analysis from "@features/track-ball/core/calc/analysis.ts";
@@ -68,6 +70,9 @@ const TrackBallPage: React.FC = () => {
         { ...TrackBallTableModule, id: 'table-default' }
     ]);
 
+    // 편집용 독립 인덱스 및 시각화 훅
+    const { getTrailLayer, getEditLayer } = useTrackBallFrame(processedData);
+
     // 후보군(Candidate) UI 상태 관리
     const [candidates, setCandidates] = useState<DetectedObject[]>([]);
     const [selectedCandidateIdx, setSelectedCandidateIdx] = useState(-1);
@@ -75,6 +80,7 @@ const TrackBallPage: React.FC = () => {
 
     const [isProcessModalOpen, setProcessModalOpen] = useState(false);
     const [isToolModalOpen, setToolModalOpen] = useState(false);
+    const [isEditorModalOpen, setEditorModalOpen] = useState(false);
 
     const analysisBoxRef = useRef<HTMLDivElement>(null);
     const dataInputRef = useRef<HTMLInputElement>(null);
@@ -234,6 +240,14 @@ const TrackBallPage: React.FC = () => {
         }
     };
 
+    const handleEditorCandidateSelect = (frameIdx: number, candIdx: number) => {
+        if (processedData) {
+            processedData.setSelectedIdx(frameIdx, candIdx);
+            const newData = Object.assign(Object.create(Object.getPrototypeOf(processedData)), processedData);
+            setProcessedData(newData);
+        }
+    };
+
     const handleCandidateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         updateCandidateSelection(parseInt(e.target.value, 10));
     };
@@ -272,6 +286,9 @@ const TrackBallPage: React.FC = () => {
                             setProcessModalOpen(true);
                         }
                     },
+                    { name: "편집", action: () => {
+                        setEditorModalOpen(true);
+                    }},
                     { name: "불러오기", action: () => dataInputRef.current?.click() },
                     {
                         name: "저장",
@@ -319,52 +336,6 @@ const TrackBallPage: React.FC = () => {
                             도구 추가
                         </Button>
                     </Div>
-                    <Div style={{ display: 'flex', gap: '10px' }}>
-
-                        {/* CONF 입력 UI */}
-                        <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <label htmlFor="confInput">CONF: </label>
-                            <InputNumber
-                                id="confInput"
-                                value={confValue}
-                                step="0.01"
-                                min="0" max="1"
-                                onChange={handleConfChange}
-                                style={{ width: '60px' }}
-                            />
-                        </Div>
-
-                        {/* 후보군 선택 UI (Candidate Select) */}
-                        <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <label>선택: </label>
-                            <Div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                <Button
-                                    style={{ padding: '0 8px', height: '30px', minWidth: '30px' }}
-                                    onClick={() => {
-                                        const nextIdx = selectedCandidateIdx <= -1 ? candidates.length - 1 : selectedCandidateIdx - 1;
-                                        updateCandidateSelection(nextIdx);
-                                    }}
-                                >
-                                    &lt;
-                                </Button>
-                                <Select
-                                    value={selectedCandidateIdx}
-                                    onChange={handleCandidateChange}
-                                    options={candidateOptions}
-                                />
-                                <Button
-                                    style={{ padding: '0 8px', height: '30px', minWidth: '30px' }}
-                                    onClick={() => {
-                                        const nextIdx = selectedCandidateIdx >= candidates.length - 1 ? -1 : selectedCandidateIdx + 1;
-                                        updateCandidateSelection(nextIdx);
-                                    }}
-                                >
-                                    &gt;
-                                </Button>
-                            </Div>
-                        </Div>
-
-                    </Div>
                     <Div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
 
                     </Div>
@@ -382,6 +353,19 @@ const TrackBallPage: React.FC = () => {
                 isProcessing={isProcessing}
                 progress={progress}
                 statusKey={statusKey}
+            />
+
+            <TrackingEditorModal
+                isOpen={isEditorModalOpen}
+                onClose={() => setEditorModalOpen(false)}
+                initialFrame={currentIdx}
+                maxFrame={maxFrame}
+                confValue={confValue}
+                onConfChange={handleConfChange}
+                data={processedData}
+                getTrailLayer={getTrailLayer}
+                getEditLayer={getEditLayer}
+                onCandidateSelect={handleEditorCandidateSelect}
             />
 
             {/* 모달: 도구 추가 */}

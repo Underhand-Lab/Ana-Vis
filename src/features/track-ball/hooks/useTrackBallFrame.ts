@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { TrackBallData } from '../core/track-ball-data';
-import { DetectedObject } from '../core/ball-detector/yolo';
+import { DetectedObject } from '../types';
 
 interface TrackFrameOptions {
   trailColor: string;
@@ -11,11 +11,14 @@ interface TrackFrameOptions {
 
 interface LastRenderedState {
   idx: number;
+  length?: number;
+  isEdit?: boolean;
+  selectedIdx?: number;
   options: TrackFrameOptions | null;
   trackData: TrackBallData | null;
 }
 
-export const useTrackFrame = (trackData: TrackBallData | null) => {
+export const useTrackBallFrame = (trackData: TrackBallData | null) => {
   const [options, setOptions] = useState<TrackFrameOptions>({
     trailColor: '#ff0000',
     boxColor: '#0000ff',
@@ -45,12 +48,12 @@ export const useTrackFrame = (trackData: TrackBallData | null) => {
   /**
    * ✅ 공의 궤적, 바운딩 박스, 신뢰도 정보가 담긴 투명 레이어 반환
    */
-  const getTrackLayer = useCallback((idx: number): HTMLCanvasElement | null => {
+  const getTrailLayer = useCallback((idx: number, length?: number): HTMLCanvasElement | null => {
     if (!trackData || idx < 0) return null;
-
-    // 1. 성능 최적화: 동일한 조건(데이터, 프레임, 옵션)이라면 새로 그리지 않고 기존 캔버스 즉시 반환
     if (
       lastRendered.current.idx === idx && 
+      lastRendered.current.length === length &&
+      !lastRendered.current.isEdit &&
       lastRendered.current.options === options &&
       lastRendered.current.trackData === trackData
     ) {
@@ -84,8 +87,10 @@ export const useTrackFrame = (trackData: TrackBallData | null) => {
       ctx.lineCap = 'round';
 
       let isDrawing = false;
-      // 0번 프레임부터 현재 프레임(idx)까지의 선 연결
-      for (let i = 0; i <= idx; i++) {
+      
+      // length가 지정된 경우 해당 범위만큼만, 아니면 처음부터 그리기
+      const startIdx = length ? Math.max(0, idx - length + 1) : 0;
+      for (let i = startIdx; i <= idx; i++) {
         const ball: DetectedObject | null = trackData.getSelectedBallAt(i);
         if (ball) {
           const x = ball.bbox[0] + ball.bbox[2] / 2;
@@ -124,10 +129,49 @@ export const useTrackFrame = (trackData: TrackBallData | null) => {
     }
 
     // 3. 현재 렌더링 상태 기록 (다음 호출 시 비교용)
-    lastRendered.current = { idx, options, trackData };
+    lastRendered.current = { idx, length, isEdit: false, options, trackData };
 
     return canvas;
   }, [trackData, options, uiScale]);
 
-  return { options, setOptions, getTrackLayer };
+  /**
+   * ✅ 편집 모드용 레이어 반환 (후보군 박스 및 번호 포함)
+   */
+  const getEditLayer = useCallback((idx: number, candidates: any[], selectedIdx: number): HTMLCanvasElement | null => {
+    const trailLayer = getTrailLayer(idx, 1); // 편집 시엔 무조건 trail 1 고정
+    if (!trailLayer || !trackData) return null;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = trailLayer.width;
+    canvas.height = trailLayer.height;
+    const ctx = canvas.getContext('2d')!;
+
+    // 1. 기존 궤적 레이어 복사
+    ctx.drawImage(trailLayer, 0, 0);
+
+    // 2. 후보군 박스 그리기
+    candidates.forEach((cand, i) => {
+      const isSelected = selectedIdx === i;
+      const [bx, by, bw, bh] = cand.bbox;
+
+      ctx.strokeStyle = isSelected ? '#007bff' : 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = (isSelected ? 6 : 3) * uiScale;
+      ctx.strokeRect(bx, by, bw, bh);
+
+      // 라벨 배경
+      ctx.fillStyle = isSelected ? '#007bff' : 'rgba(0, 0, 0, 0.6)';
+      const labelH = 30 * uiScale;
+      const labelW = 45 * uiScale;
+      ctx.fillRect(bx, by - labelH, labelW, labelH);
+
+      // 라벨 텍스트 (번호)
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${20 * uiScale}px Arial`;
+      ctx.fillText(`${i + 1}`, bx + (10 * uiScale), by - (7 * uiScale));
+    });
+
+    return canvas;
+  }, [getTrailLayer, trackData, uiScale]);
+
+  return { options, setOptions, getTrailLayer, getEditLayer };
 };

@@ -1,11 +1,9 @@
 export interface DetectedObject {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+    bbox: [number, number, number, number];
     confidence: number;
-    label?: string;
+    classId: number;
 }
+
 
 export interface BallFrameData {
     selectedIdx: number;
