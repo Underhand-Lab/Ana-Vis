@@ -1,84 +1,193 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { CVValData } from "@common/core/cvval-data";
-import { IVideoStrategy } from "@common/types/video-strategy";
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '@common/types/analysis-module.ts';
 import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
-import { Div } from '@common/bridges/UIBridge.ts';
+import { Div, Button } from '@common/bridges/UIBridge.ts';
+import { exportVideo } from '@common/utils/exportVideo';
 
-interface VideoModuleProps {
-    cvValData: CVValData;
-    currentFrame: number;
-    strategies: IVideoStrategy[];
-    settings: Record<string, any>; // 각 전략별 설정 맵 (e.g., { pose: { color: 'red' }, bat: { ... } })
+/**
+ * VideoModule에서 사용될 데이터의 공통 인터페이스
+ */
+export interface VideoModuleData {
+    getRawImgList?(index: number): HTMLImageElement[] | undefined;
+    getFrameCnt?(): number | undefined;
+    getVideoMetadata?(index: number): { fps: number } | undefined;
 }
 
 /**
- * 통합 비디오 모듈: 여러 분석 결과를 하나의 캔버스에 중첩하여 렌더링합니다.
+ * VideoModule을 위한 플러그인 추상 클래스
  */
-export const VideoModule: React.FC<VideoModuleProps> = ({ 
-    cvValData, 
-    currentFrame, 
-    strategies, 
-    settings 
-}) => {
-    const rendererRef = useRef<CanvasRendererHandle>(null);
+export abstract class VideoModulePlugin<TSettings, TContext = any> {
+    abstract id: string;
+    abstract title: string;
+    abstract defaultSettings: TSettings;
 
-    const renderFrame = useCallback(() => {
-        if (!rendererRef.current) return;
+    /**
+     * 오버레이 그리기에 필요한 상태나 훅을 관리합니다.
+     * React Component 내부에서 호출되므로 훅을 사용할 수 있습니다.
+     */
+    abstract usePluginContext(data: any | null, settings: TSettings): TContext;
 
-        // 1. 배경 이미지 찾기 (데이터가 존재하는 첫 번째 소스에서 이미지를 가져옴)
-        let backgroundImage: HTMLImageElement | HTMLCanvasElement | null = null;
-        const activeTypes = strategies.map(s => s.type);
+    /**
+     * 배경 이미지 위에 오버레이를 그립니다.
+     */
+    abstract drawOverlay(ctx: CanvasRenderingContext2D, frameIdx: number, data: any, settings: TSettings, context: TContext): void;
+    
+    /**
+     * 설정 UI 컴포넌트를 반환합니다.
+     */
+    abstract getSettingComponent(props: AnalysisSettingsProps<any, TSettings>): React.ReactNode;
+}
+
+/**
+ * 공통 비디오 모듈 생성 함수
+ */
+export function createVideoModule<TData extends VideoModuleData>(
+    plugins: VideoModulePlugin<any, any>[],
+    moduleId: string,
+    moduleTitle: string
+): AnalysisModule<TData, Record<string, any>> {
+    
+    const VideoView: React.FC<AnalysisViewProps<TData, Record<string, any>>> = ({ data, currentFrame, settings }) => {
+        const rendererRef = useRef<CanvasRendererHandle>(null);
         
-        for (const type of activeTypes) {
-            const data = cvValData.get(type);
-            if (data && typeof data.getRawImgList === 'function') {
-                backgroundImage = data.getRawImgList(0)?.[currentFrame];
-                if (backgroundImage) break;
-            }
-        }
+        // 각 플러그인의 훅을 순서대로 호출하여 컨텍스트 획득
+        const contexts = plugins.map(p => 
+            p.usePluginContext(data, settings[p.id] ?? p.defaultSettings)
+        );
 
-        if (!backgroundImage) return;
+        const drawImageAt = useCallback((frameIdx: number) => {
+            if (!data) return null;
+            const rawImgList = data.getRawImgList?.(0);
+            const backgroundImage = rawImgList ? rawImgList[frameIdx] : null;
+            if (!backgroundImage) return null;
 
-        // 2. 오프스크린 캔버스에 합성
-        const canvas = document.createElement('canvas');
-        canvas.width = backgroundImage.width;
-        canvas.height = backgroundImage.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+            const compositeCanvas = document.createElement('canvas');
+            compositeCanvas.width = backgroundImage.width;
+            compositeCanvas.height = backgroundImage.height;
+            const ctx = compositeCanvas.getContext('2d');
+            if (!ctx) return null;
 
-        // 배경 그리기 (설정에 따라 배경을 숨길 수 있음)
-        const showBackground = settings.global?.showBackground !== false;
-        if (showBackground) {
             ctx.drawImage(backgroundImage, 0, 0);
-        } else {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
+            
+            // 모든 플러그인의 오버레이를 순차적으로 그림
+            plugins.forEach((p, i) => {
+                p.drawOverlay(ctx, frameIdx, data, settings[p.id] ?? p.defaultSettings, contexts[i]);
+            });
 
-        // 3. 전략 패턴을 이용한 레이어 추가 (Strategy Execution)
-        strategies.forEach(strategy => {
-            if (cvValData.exist(strategy.type)) {
-                const data = cvValData.get(strategy.type);
-                const strategySettings = settings[strategy.type] || {};
-                strategy.draw(ctx, data, currentFrame, strategySettings);
+            return compositeCanvas;
+        }, [data, settings, contexts]);
+
+        useEffect(() => {
+            if (!data || !rendererRef.current) return;
+            const composite = drawImageAt(currentFrame);
+            if (composite) {
+                rendererRef.current.updateLayout(composite.width, composite.height);
+                rendererRef.current.drawImage(composite);
             }
-        });
+        }, [data, currentFrame, drawImageAt]);
 
-        // 4. 최종 결과 출력
-        rendererRef.current.updateLayout(canvas.width, canvas.height);
-        rendererRef.current.drawImage(canvas);
-    }, [cvValData, currentFrame, strategies, settings]);
+        return (
+            <Div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                <CanvasRenderer ref={rendererRef} style={{ position: 'absolute', top: 0, left: 0 }} />
+            </Div>
+        );
+    };
 
-    useEffect(() => {
-        renderFrame();
-    }, [renderFrame]);
+    const VideoSettings: React.FC<AnalysisSettingsProps<TData, Record<string, any>>> = (props) => {
+        const { data, settings, onSettingsChange } = props;
+        const [isExporting, setIsExporting] = useState(false);
 
-    return (
-        <Div style={{ width: '100%', height: '100%', position: 'relative' }}>
-            <CanvasRenderer 
-                ref={rendererRef} 
-                style={{ position: 'absolute', top: 0, left: 0 }} 
-            />
-        </Div>
-    );
-};
+        const contexts = plugins.map(p => 
+            p.usePluginContext(data, settings[p.id] ?? p.defaultSettings)
+        );
+
+        const drawImageAt = (frameIdx: number) => {
+            if (!data) return null;
+            const rawImgList = data.getRawImgList?.(0);
+            const backgroundImage = rawImgList ? rawImgList[frameIdx] : null;
+            if (!backgroundImage) return null;
+
+            const compositeCanvas = document.createElement('canvas');
+            compositeCanvas.width = backgroundImage.width;
+            compositeCanvas.height = backgroundImage.height;
+            const ctx = compositeCanvas.getContext('2d');
+            if (!ctx) return null;
+
+            ctx.drawImage(backgroundImage, 0, 0);
+            
+            plugins.forEach((p, i) => {
+                p.drawOverlay(ctx, frameIdx, data, settings[p.id] ?? p.defaultSettings, contexts[i]);
+            });
+            return compositeCanvas;
+        };
+
+        const handleExportVideo = async () => {
+            if (!data || isExporting) return;
+            setIsExporting(true);
+            const frameCnt = data.getFrameCnt?.() || 0;
+            const fps = data.getVideoMetadata?.(0)?.fps || 30;
+
+            await exportVideo(drawImageAt, frameCnt, {
+                fps: fps,
+                name: `${moduleId}_${Date.now()}.mp4`
+            });
+            setIsExporting(false);
+        };
+
+        return (
+            <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
+                <Button
+                    onClick={handleExportVideo}
+                    disabled={isExporting || !data}
+                    style={{ margin: 0, padding: '8px 15px', width: '100%', cursor: isExporting || !data ? 'not-allowed' : 'pointer' }}
+                >
+                    {isExporting ? '저장 중...' : '비디오 저장'}
+                </Button>
+                {plugins.map(p => (
+                    <React.Fragment key={p.id}>
+                        <Div style={{ fontWeight: 'bold', borderBottom: '1px solid #ccc', marginTop: '10px', paddingBottom: '3px' }}>
+                            {p.title}
+                        </Div>
+                        {p.getSettingComponent({
+                            ...props,
+                            settings: settings[p.id] ?? p.defaultSettings,
+                            onSettingsChange: (newVal: any) => onSettingsChange({
+                                ...settings,
+                                [p.id]: newVal
+                            })
+                        } as any)}
+                    </React.Fragment>
+                ))}
+            </Div>
+        );
+    };
+
+    const defaultSettings = plugins.reduce((acc, p) => ({
+        ...acc,
+        [p.id]: p.defaultSettings
+    }), {});
+
+    return {
+        id: moduleId,
+        title: moduleTitle,
+        View: VideoView,
+        Settings: VideoSettings,
+        defaultSettings
+    };
+}
+
+/**
+ * 여러 플러그인을 조립하기 위한 빌더 클래스
+ */
+export class VideoModuleBuilder {
+    private plugins: VideoModulePlugin<any, any>[] = [];
+
+    addPlugin<TSettings, TContext>(plugin: VideoModulePlugin<TSettings, TContext>) {
+        this.plugins.push(plugin);
+        return this;
+    }
+
+    build(id: string, title: string): AnalysisModule<any, Record<string, any>> {
+        return createVideoModule(this.plugins, id, title);
+    }
+}
