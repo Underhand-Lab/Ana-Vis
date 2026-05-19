@@ -9,10 +9,17 @@ import {
     FixedFooter, Box, Button, Wrapper
 } from '@common/bridges/UIBridge.ts';
 
+import { CVValData } from '@features/cv-val/core/cvval-data';
+
+import { useProcessor } from '@/features/cv-val/hooks/useProcessor';
+import { usePluginLoader } from '@features/cv-val/hooks/usePluginLoader';
+
 import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/AnalysisGridContainer';
 import VideoProcessorModal from '@/features/cv-val/component/VideoProcessorModal';
 import TrackingEditorModal from '@/features/cv-val/component/TrackingEditorModal';
-import { useProcessor } from '@/features/cv-val/hooks/useProcessor';
+
+import { VideoModuleBuilder } from '@/features/cv-val/modules/VideoModule';
+
 import { AnalysisModule } from '@/features/cv-val/types/analysis-module';
 
 // 라이브러리 import
@@ -20,8 +27,7 @@ import { TrackBatData } from "@features/track-bat/core/track-bat-data";
 import * as BatDetector from '@features/track-bat/core/bat-detector/index';
 import { BatDetectedObject } from '@features/track-bat/types';
 import { useTrackBatFrame } from '@features/track-bat/hooks/useTrackBatFrame';
-import TrackBatVideoModule from "@features/track-bat/modules/TrackBatVideoModule";
-import { CVValData } from '@/features/cv-val/core/cvval-data';
+import { TrackBatVideoPlugin } from '@/features/track-bat/plugin/TrackBatVideoPlugin';
 
 interface LocationState {
     externalFile?: File;
@@ -43,7 +49,9 @@ const DETECTORS: Record<string, BatDetector.YOLOBatDetector> = {
 const ANALYSIS_TOOLS: Record<string, any> = {};
 
 const AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
-    "video": TrackBatVideoModule,
+    "video": new VideoModuleBuilder()
+        .addPlugin(new TrackBatVideoPlugin())
+        .build(),
 };
 
 const TrackBatPage: React.FC = () => {
@@ -55,7 +63,7 @@ const TrackBatPage: React.FC = () => {
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.55); // 기본값 0.55
     const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
-        { ...TrackBatVideoModule, id: 'bat-video-default' },
+        { ...AVAILABLE_MODULES['video'], id: 'bat-video-default' },
     ]);
 
     // 편집용 독립 인덱스 및 시각화 훅
@@ -133,30 +141,9 @@ const TrackBatPage: React.FC = () => {
         }
     };
 
-    // 플러그인 파일 불러오기 핸들러 (.js)
-    const handleLoadPlugin = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const content = event.target?.result as string;
-                    // eslint-disable-next-line no-new-func
-                    const plugin = new Function('React', 'AnalysisTools', `return ${content}`)(React, ANALYSIS_TOOLS);
-
-                    if (plugin && plugin.View && plugin.title) {
-                        setActiveModules(prev => [...prev, { ...plugin, id: `plugin-${Date.now()}` }]);
-                    } else {
-                        throw new Error("Invalid format");
-                    }
-                } catch (err) {
-                    alert("플러그인 로드 실패");
-                }
-            };
-            reader.readAsText(file);
-            e.target.value = "";
-        }
-    };
+    const handleLoadPlugin = usePluginLoader(ANALYSIS_TOOLS, (plugin) => {
+        setActiveModules(prev => [...prev, plugin]);
+    });
 
     // 비디오 처리 실행
     const handleProcessVideo = async (files: FileList, model: string) => {

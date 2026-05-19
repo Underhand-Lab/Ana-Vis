@@ -7,20 +7,25 @@ import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper }
 	from '@common/bridges/UIBridge.ts';
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
 
-import { AnalysisModule } from '@/features/cv-val/types/analysis-module';
-import { useProcessor } from '@/features/cv-val/hooks/useProcessor';
-import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/AnalysisGridContainer';
-import VideoProcessorModal from '@/features/cv-val/component/VideoProcessorModal';
+import { CVValData, IAnalysisTool } from '@features/cv-val/core/cvval-data';
+import { AnalysisModule } from '@features/cv-val/types/analysis-module';
+
+import { useProcessor } from '@features/cv-val/hooks/useProcessor';
+import { usePluginLoader } from '@features/cv-val/hooks/usePluginLoader';
+
+import AnalysisGridContainer from '@features/cv-val/component/analysis-container/AnalysisGridContainer';
+import VideoProcessorModal from '@features/cv-val/component/VideoProcessorModal';
+
+import { VideoModuleBuilder } from '@features/cv-val/modules/VideoModule';
+import GraphModule from '@features/cv-val/modules/GraphModule';
+import TableModule from '@features/cv-val/modules/TableModule';
 
 import { PoseData } from '@features/pose/core/pose-data';
-import * as PoseDetector from '@features/pose/core/pose-detector/index';
-import * as PoseAnalysisTool from "@/features/pose/tool/index";
-import PoseVideoModule from '@features/pose/modules/PoseVideoModule';
-import GraphModule from '@/features/cv-val/modules/GraphModule';
-import TableModule from '@/features/cv-val/modules/TableModule';
-import Pose3DVideoModule from '@features/pose/modules/Pose3DVideoModule';
-import { CVValData, IAnalysisTool } from '@/features/cv-val/core/cvval-data';
+import * as PoseDetector from '@features/pose/core/pose-detector';
+import * as PoseAnalysisTool from "@features/pose/tool";
 
+import { PoseVideoPlugin } from '@/features/pose/plugin/PoseVideoPlugin';
+import Pose3DVideoModule from '@features/pose/modules/Pose3DVideoModule';
 
 interface LocationState {
 	externalFile?: File;
@@ -42,7 +47,7 @@ const ANALYSIS_TOOLS: IAnalysisTool[] = [
 ];
 
 const AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
-	"동영상": PoseVideoModule,
+	"동영상": new VideoModuleBuilder().addPlugin(new PoseVideoPlugin()).build(),
 	"3D 동영상": Pose3DVideoModule,
 	"그래프": GraphModule,
 	"표": TableModule,
@@ -56,8 +61,8 @@ const PosePage: React.FC = () => {
 	const { status, progress, isProcessing, processVideo, reset: resetProcessor } = useProcessor();
 	const [currentIdx, setCurrentIdx] = useState(0);
 	const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
-		{ ...PoseVideoModule, id: 'video-default' },
-		{ ...GraphModule, id: 'graph-default' }
+		{ ...AVAILABLE_MODULES["동영상"], id: 'video-default' },
+		{ ...AVAILABLE_MODULES["그래프"], id: 'graph-default' }
 	]);
 
 	const [isProcessModalOpen, setProcessModalOpen] = useState(false);
@@ -108,31 +113,9 @@ const PosePage: React.FC = () => {
 		}
 	};
 
-	// 플러그인 파일 불러오기 핸들러 (.js)
-	const handleLoadPlugin = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onload = (event) => {
-				try {
-					const content = event.target?.result as string;
-					// 외부 파일로부터 모듈 객체 생성 (React와 정적 도구들을 인자로 전달)
-					// eslint-disable-next-line no-new-func
-					const plugin = new Function('React', 'AnalysisTools', `return ${content}`)(React, ANALYSIS_TOOLS);
-					
-					if (plugin && plugin.View && plugin.title) {
-						setActiveModules(prev => [...prev, { ...plugin, id: `plugin-${Date.now()}` }]);
-					} else {
-						throw new Error("Invalid module format");
-					}
-				} catch (err) {
-					alert("플러그인 파일 형식이 잘못되었거나 호환되지 않습니다.");
-				}
-			};
-			reader.readAsText(file);
-			e.target.value = "";
-		}
-	};
+	const handleLoadPlugin = usePluginLoader(ANALYSIS_TOOLS, (plugin) => {
+		setActiveModules(prev => [...prev, plugin]);
+	});
 
 	// 비디오 처리 핸들러
 	const handleProcessVideo = async (files: FileList, model: string) => {

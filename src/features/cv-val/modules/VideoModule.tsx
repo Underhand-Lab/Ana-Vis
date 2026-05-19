@@ -181,7 +181,7 @@ export class VideoModuleBuilder {
         return this;
     }
 
-    build(id: string, title: string): AnalysisModule<Record<string, any>> {
-        return createVideoModule(this.plugins, id, title);
+    build(): AnalysisModule<Record<string, any>> {
+        return createVideoModule(this.plugins, 'common-video', '동영상');
     }
 }

@@ -4,26 +4,34 @@ import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
 
-import { Div, InputFile, InputSlider, 
-    FixedFooter, Box, Button, Wrapper }
+import {
+    Div, InputFile, InputSlider,
+    FixedFooter, Box, Button, Wrapper
+}
     from '@common/bridges/UIBridge.ts';
 
-import TrackBallVideoModule from "@features/track-ball/modules/TrackBallVideoModule"
-import TableModule from "@/features/cv-val/modules/TableModule"
-import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/AnalysisGridContainer';
-import VideoProcessorModal from '@/features/cv-val/component/VideoProcessorModal';
-import TrackingEditorModal from '@/features/cv-val/component/TrackingEditorModal';
-
 // 라이브러리 import
-import { useProcessor } from '@/features/cv-val/hooks/useProcessor';
+import { CVValData, IAnalysisTool } from '@/features/cv-val/core/cvval-data';
+import { AnalysisModule } from '@features/cv-val/types/analysis-module';
+
+import { useProcessor } from '@features/cv-val/hooks/useProcessor';
+import { usePluginLoader } from '@features/cv-val/hooks/usePluginLoader';
+
+import AnalysisGridContainer from '@features/cv-val/component/analysis-container/AnalysisGridContainer';
+import VideoProcessorModal from '@features/cv-val/component/VideoProcessorModal';
+import TrackingEditorModal from '@features/cv-val/component/TrackingEditorModal';
+
+import { VideoModuleBuilder } from '@/features/cv-val/modules/VideoModule';
+import TableModule from "@features/cv-val/modules/TableModule"
+
 import { TrackBallData } from "@features/track-ball/core/track-ball-data";
 import * as BallDetector from '@features/track-ball/core/ball-detector/index';
 import { DetectedObject } from '@features/track-ball/types';
+import * as Analysis from "@features/track-ball/tool/analysis";
 import { useTrackBallFrame } from '@features/track-ball/hooks/useTrackBallFrame';
-import { AnalysisModule } from '@/features/cv-val/types/analysis-module';
 
-import * as Analysis from "@/features/track-ball/tool/analysis";
-import { CVValData, IAnalysisTool } from '@/features/cv-val/core/cvval-data';
+import { TrackBallVideoPlugin } from '@/features/track-ball/plugin/TrackBallVideoPlugin';
+
 
 interface LocationState {
     externalFile?: File;
@@ -43,7 +51,9 @@ const ANALYSIS_TOOLS: IAnalysisTool[] = [
 ]
 
 const AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
-    "video": TrackBallVideoModule,
+    "video": new VideoModuleBuilder()
+        .addPlugin(new TrackBallVideoPlugin())
+        .build(),
     "table": TableModule
 };
 
@@ -56,8 +66,8 @@ const TrackBallPage: React.FC = () => {
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.01);
     const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
-        { ...TrackBallVideoModule, id: 'video-default' },
-        { ...TableModule, id: 'table-default' }
+        { ...AVAILABLE_MODULES['video'], id: 'video-default' },
+        { ...AVAILABLE_MODULES['table'], id: 'table-default' }
     ]);
 
     // 편집용 독립 인덱스 및 시각화 훅
@@ -110,7 +120,7 @@ const TrackBallPage: React.FC = () => {
             await bdata.loadFromFile(file);
             data.set('ball', bdata);
             data.addAnalysisTools('ball', ANALYSIS_TOOLS); // 데이터 로드 즉시 도구 주입
-			setProcessedData(data);
+            setProcessedData(data);
             setCurrentIdx(0);
         } catch (err) {
             console.error(err);
@@ -139,37 +149,16 @@ const TrackBallPage: React.FC = () => {
         }
     };
 
-    // 플러그인 파일 불러오기 핸들러 (.js)
-    const handleLoadPlugin = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const content = event.target?.result as string;
-                    // eslint-disable-next-line no-new-func
-                    const plugin = new Function('React', 'AnalysisTools', `return ${content}`)(React, ANALYSIS_TOOLS);
-                    
-                    if (plugin && plugin.View && plugin.title) {
-                        setActiveModules(prev => [...prev, { ...plugin, id: `plugin-${Date.now()}` }]);
-                    } else {
-                        throw new Error("Invalid format");
-                    }
-                } catch (err) {
-                    alert("플러그인 로드 실패: 올바른 AnalysisModule 형식이 아닙니다.");
-                }
-            };
-            reader.readAsText(file);
-            e.target.value = "";
-        }
-    };
+    const handleLoadPlugin = usePluginLoader(ANALYSIS_TOOLS, (plugin) => {
+        setActiveModules(prev => [...prev, plugin]);
+    });
 
     // 비디오 처리 실행
     const handleProcessVideo = async (files: FileList, model: string) => {
         if (!files || files.length < 1) return;
 
         try {
-            const trackBallData =  new TrackBallData();
+            const trackBallData = new TrackBallData();
             const result = await processVideo(
                 DETECTORS[model], files, 'ball', new CVValData(), trackBallData
             );
@@ -273,9 +262,11 @@ const TrackBallPage: React.FC = () => {
                             setProcessModalOpen(true);
                         }
                     },
-                    { name: "편집", action: () => {
-                        setEditorModalOpen(true);
-                    }},
+                    {
+                        name: "편집", action: () => {
+                            setEditorModalOpen(true);
+                        }
+                    },
                     { name: "불러오기", action: () => dataInputRef.current?.click() },
                     {
                         name: "저장",
