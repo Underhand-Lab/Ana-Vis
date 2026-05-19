@@ -3,7 +3,7 @@ import { useTrackBallFrame } from '../hooks/useTrackBallFrame';
 import { TrackBallData } from '../core/track-ball-data';
 import { InputColor, InputCheckbox } from '@common/bridges/UIBridge';
 import { AnalysisSettingsProps } from '@common/types/analysis-module';
-import { VideoModulePlugin } from '@/common/module/VideoModule';
+import { VideoModulePlugin } from '@/common/modules/VideoModule';
 import { CVValData } from '@/common/core/cvval-data';
 
 export interface TrackBallSettings {

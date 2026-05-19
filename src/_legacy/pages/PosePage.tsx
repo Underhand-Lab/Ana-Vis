@@ -17,8 +17,8 @@ import { PoseData } from '@features/pose/core/pose-data';
 import * as PoseDetector from '@features/pose/core/pose-detector/index';
 import * as PoseAnalysisTool from "@/features/pose/tool/index";
 import PoseVideoModule from '@features/pose/modules/PoseVideoModule';
-import GraphModule from '@common/module/GraphModule';
-import TableModule from '@common/module/TableModule';
+import GraphModule from '@/common/modules/GraphModule';
+import TableModule from '@/common/modules/TableModule';
 import Pose3DVideoModule from '@features/pose/modules/Pose3DVideoModule';
 import { CVValData, IAnalysisTool } from '@/common/core/cvval-data';
 

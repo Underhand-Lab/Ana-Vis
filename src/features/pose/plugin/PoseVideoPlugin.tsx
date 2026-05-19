@@ -5,7 +5,7 @@ import { usePoseVisualize, PoseSettings } from "../hooks/usePoseVisualize";
 import { Div, InputNumber, InputColor, InputCheckbox, Select }
     from '@common/bridges/UIBridge.ts';
 import { AnalysisSettingsProps } from '@common/types/analysis-module.ts';
-import { VideoModulePlugin, VideoModuleBuilder } from '@/common/module/VideoModule.tsx';
+import { VideoModulePlugin, VideoModuleBuilder } from '@/common/modules/VideoModule.tsx';
 import { Toggle } from '@common/components/ui/react-web/common/Toggle.tsx';
 import { CVValData } from '@/common/core/cvval-data.ts';
 

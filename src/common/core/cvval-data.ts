@@ -64,7 +64,7 @@ export class CVValData {
          
         const typeTools = this.tools.get(key);
         if (typeTools) {
-            typeTools.forEach(tool => tool.setData(data));
+            typeTools.forEach(tool => tool.setData(this));
         }
     }
 

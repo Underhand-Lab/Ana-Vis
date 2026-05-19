@@ -6,7 +6,7 @@ import { useTrackBatFrame } from '../hooks/useTrackBatFrame';
 import { Div, InputColor, InputNumber }
     from '@common/bridges/UIBridge.ts';
 import { AnalysisSettingsProps } from '@common/types/analysis-module.ts';
-import { VideoModulePlugin } from '@/common/module/VideoModule.tsx';
+import { VideoModulePlugin } from '@/common/modules/VideoModule.tsx';
 
 export interface TrackBatSettings {
     batColor: string;

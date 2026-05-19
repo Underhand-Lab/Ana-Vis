@@ -11,7 +11,7 @@ import { Div, InputNumber, InputFile, InputSlider,
     from '@common/bridges/UIBridge.ts';
 
 import TrackBallVideoModule from "@features/track-ball/modules/TrackBallVideoModule"
-import TableModule from "@common/module/TableModule"
+import TableModule from "@/common/modules/TableModule"
 
 // 라이브러리 import
 import { Processor } from '@common/lib/processor.ts';
