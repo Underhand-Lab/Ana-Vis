@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useTrackBallFrame } from '../hooks/useTrackBallFrame';
 import { TrackBallData } from '../core/track-ball-data';
 import { InputColor, InputCheckbox } from '@common/bridges/UIBridge';
-import { AnalysisSettingsProps } from '@common/types/analysis-module';
+import { AnalysisSettingsProps } from '@features/cv-val/types/analysis-module';
 import { VideoModulePlugin } from '@/features/cv-val/modules/VideoModule';
 import { CVValData } from '@/features/cv-val/core/cvval-data';
 
@@ -21,7 +21,7 @@ const defaultSettings: TrackBallSettings = {
 
 export class TrackBallVideoPlugin extends VideoModulePlugin<TrackBallSettings> {
     id = 'track-ball-video';
-    title = '동영상';
+    title = '공 추적';
     defaultSettings = defaultSettings;
 
     usePluginContext(data: CVValData | null, settings: TrackBallSettings) {

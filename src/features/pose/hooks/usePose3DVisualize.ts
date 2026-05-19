@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Landmarks3D } from '../types';
 import { CVValData } from '@/features/cv-val/core/cvval-data';
 import featureName from '../ constant';
 import { PoseData } from '../core/pose-data';

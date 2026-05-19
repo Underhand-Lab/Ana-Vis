@@ -5,7 +5,8 @@ import { useTrackBatFrame } from '../hooks/useTrackBatFrame';
 
 import { Div, InputColor, InputNumber }
     from '@common/bridges/UIBridge.ts';
-import { AnalysisSettingsProps } from '@common/types/analysis-module.ts';
+import { CVValData } from '@/features/cv-val/core/cvval-data.ts';
+import { AnalysisSettingsProps } from '@features/cv-val/types/analysis-module';
 import { VideoModulePlugin } from '@/features/cv-val/modules/VideoModule.tsx';
 
 export interface TrackBatSettings {
@@ -23,10 +24,10 @@ const defaultSettings: TrackBatSettings = {
 
 export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
     id = 'track-bat-video';
-    title = '동영상';
+    title = '배트 궤적';
     defaultSettings = defaultSettings;
 
-    usePluginContext(data: TrackBatData | null, settings: TrackBatSettings) {
+    usePluginContext(data: CVValData | null, settings: TrackBatSettings) {
         const { setColors, setTrailLen, getTrailLayer } = useTrackBatFrame(data);
 
         useEffect(() => {
@@ -44,10 +45,10 @@ export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
     }
 
     drawOverlay(
-        ctx: CanvasRenderingContext2D, 
-        frameIdx: number, 
-        _data: TrackBatData, 
-        _settings: TrackBatSettings, 
+        ctx: CanvasRenderingContext2D,
+        frameIdx: number,
+        _data: TrackBatData,
+        _settings: TrackBatSettings,
         context: { getTrailLayer: (idx: number) => HTMLCanvasElement | null }
     ) {
         const trailLayer = context.getTrailLayer(frameIdx);
@@ -56,29 +57,29 @@ export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
         }
     }
 
-    getSettingComponent({ settings, onSettingsChange, data }: AnalysisSettingsProps<TrackBatData, TrackBatSettings>) {
+    getSettingComponent({ settings, onSettingsChange, data }: AnalysisSettingsProps<TrackBatSettings>) {
         return (
             <>
-                <Div className="control-group">
-                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Trail Length: </label>
-                <InputNumber
-                    style={{ width: '60px' }} 
-                    value={settings.trailLen}
-                    max={data ? data.getFrameCnt() - 1 : 0}
-                    onChange={(e) => onSettingsChange({ ...settings, trailLen: parseInt(e.target.value) })}
-                />
-            </Div>
+                <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>추적 길이</label>
+                    <InputNumber
+                        style={{ width: '60px' }}
+                        value={settings.trailLen}
+                        max={data ? data.getFrameCnt() - 1 : 0}
+                        onChange={(e) => onSettingsChange({ ...settings, trailLen: parseInt(e.target.value) })}
+                    />
+                </Div>
                 <Div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <InputColor
-                    label="Bat Color" 
-                    value={settings.batColor} 
-                    onChange={(c) => onSettingsChange({ ...settings, batColor: c })} 
-                />
-                <InputColor
-                    label="Trail Color" 
-                    value={settings.trailColor} 
-                    onChange={(c) => onSettingsChange({ ...settings, trailColor: c })} 
-                />
+                    <InputColor
+                        label="Bat Color"
+                        value={settings.batColor}
+                        onChange={(c) => onSettingsChange({ ...settings, batColor: c })}
+                    />
+                    <InputColor
+                        label="Trail Color"
+                        value={settings.trailColor}
+                        onChange={(c) => onSettingsChange({ ...settings, trailColor: c })}
+                    />
                 </Div>
             </>
         );

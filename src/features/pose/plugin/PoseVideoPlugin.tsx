@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { PoseData } from '../core/pose-data.ts';
-import { usePoseVisualize, PoseSettings } from "../hooks/usePoseVisualize";
+import { usePoseFrame, SkeletonSettings } from "../hooks/usePoseFrame";
 
 import { Div, InputNumber, InputColor, InputCheckbox, Select }
     from '@common/bridges/UIBridge.ts';
-import { AnalysisSettingsProps } from '@common/types/analysis-module.ts';
-import { VideoModulePlugin, VideoModuleBuilder } from '@/features/cv-val/modules/VideoModule.tsx';
+import { AnalysisSettingsProps } from '@features/cv-val/types/analysis-module.ts';
+import { VideoModulePlugin } from '@/features/cv-val/modules/VideoModule.tsx';
 import { Toggle } from '@/common/components/ui-brick/react-web/common/Toggle.tsx';
 import { CVValData } from '@/features/cv-val/core/cvval-data.ts';
 
@@ -20,7 +20,7 @@ const colorMap = {
     JOINT_STROKE: "JOINT STROKE"
 };
 
-const defaultSettings: PoseSettings = {
+const defaultSettings: SkeletonSettings = {
     COLOR_LEFT_ARM: "rgba(255,0,0,1)",
     COLOR_RIGHT_ARM: "rgba(0,255,0,1)",
     COLOR_LEFT_LEG: "rgba(0,0,255,1)",
@@ -31,21 +31,19 @@ const defaultSettings: PoseSettings = {
     JOINT_STROKE: "rgba(255,255,255,1)",
     lineWidth: 2,
     showBackground: true,
-    jointShape: 'circle',
-    jointRadius: 4,
-    jointStrokeWidth: 2,
-    showPose: true,
-    showGRF: false,
-    grfScale: 0.1,
+    jointShape: 'circle', // This should be part of SkeletonSettings
+    jointRadius: 4,      // This should be part of SkeletonSettings
+    jointStrokeWidth: 2, // This should be part of SkeletonSettings
+    showPose: true,      // This should be part of SkeletonSettings
 };
 
-export class PoseVideoPlugin extends VideoModulePlugin<PoseSettings> {
-    id = 'pose-video';
-    title = '자세 동영상';
-    defaultSettings = defaultSettings;
+export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
+    id = 'pose-video'; // Keep the ID
+    title = '자세'; // Keep the title
+    defaultSettings = defaultSettings; // Update defaultSettings to match SkeletonSettings
 
-    usePluginContext(data: CVValData, settings: PoseSettings) {
-        const { setOptions, getPoseLayer } = usePoseVisualize(data);
+    usePluginContext(data: CVValData, settings: SkeletonSettings) {
+        const { setOptions, getPoseLayer } = usePoseFrame(data);
 
         useEffect(() => {
             if (settings) {
@@ -56,7 +54,7 @@ export class PoseVideoPlugin extends VideoModulePlugin<PoseSettings> {
         return { getPoseLayer };
     }
 
-    drawOverlay(ctx: CanvasRenderingContext2D, frameIdx: number, _data: any, settings: PoseSettings, context: { getPoseLayer: (idx: number) => HTMLCanvasElement | null }) {
+    drawOverlay(ctx: CanvasRenderingContext2D, frameIdx: number, _data: any, settings: SkeletonSettings, context: { getPoseLayer: (idx: number) => HTMLCanvasElement | null }) {
         const poseLayer = context.getPoseLayer(frameIdx);
         
         if (!settings.showBackground) {
@@ -69,22 +67,14 @@ export class PoseVideoPlugin extends VideoModulePlugin<PoseSettings> {
         }
     }
 
-    getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<PoseSettings>) {
+    getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<SkeletonSettings>) {
         const jointShapeOptions = [
-            { label: "원형 (Circle)", value: "circle" },
-            { label: "사각형 (Square)", value: "rect" }
+            { label: "원형", value: "circle" },
+            { label: "사각형", value: "rect" }
         ];
 
         return (
             <>
-            <InputCheckbox
-                label="배경 이미지 표시"
-                checked={settings.showBackground !== false}
-                onChange={(e) => onSettingsChange({ ...settings, showBackground: e.target.checked })}
-                style={{ fontWeight: 'bold', marginBottom: '10px' }}
-            />
-
-            <Toggle title="자세(관절) 시각화 설정">
                 <InputCheckbox
                     label="관절 표시 여부"
                     checked={settings.showPose !== false}
@@ -137,28 +127,6 @@ export class PoseVideoPlugin extends VideoModulePlugin<PoseSettings> {
                         />
                     ))}
                 </Div>
-            </Toggle>
-
-            <Toggle title="지면반력(GRF) 시각화 설정">
-                <InputCheckbox
-                    label="GRF 화살표 표시"
-                    checked={settings.showGRF === true}
-                    onChange={(e) => onSettingsChange({ ...settings, showGRF: e.target.checked })}
-                />
-                <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>화살표 배율</label>
-                    <InputNumber
-                        min="0"
-                        step="0.01"
-                        value={settings.grfScale !== undefined ? settings.grfScale : 0.1}
-                        onChange={(e) => {
-                            const value = parseFloat(e.target.value);
-                            onSettingsChange({ ...settings, grfScale: isNaN(value) ? 0.1 : value });
-                        }}
-                        style={{ maxWidth: '70px', cursor: 'pointer' }}
-                    />
-                </Div>
-            </Toggle>
             </>
         );
     }

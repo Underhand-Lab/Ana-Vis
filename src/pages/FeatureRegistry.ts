@@ -21,6 +21,7 @@ import { TrackBallVideoPlugin } from '@/features/track-ball/plugin/TrackBallVide
 import { TrackBatData } from "@features/track-bat/core/track-bat-data";
 import * as BatDetector from '@features/track-bat/core/bat-detector/index';
 import { TrackBatVideoPlugin } from '@/features/track-bat/plugin/TrackBatVideoPlugin';
+import { GRFVideoPlugin } from '@/features/pose/plugin/GRFVideoPlugin';
 
 export interface FeatureConfig {
     label: string;
@@ -94,6 +95,7 @@ export const ALL_DETECTORS = Object.entries(FEATURE_REGISTRY).reduce((acc, [key,
 
 const UNIVERSAL_VIDEO_MODULE = new VideoModuleBuilder()
     .addPlugin(new PoseVideoPlugin())
+    .addPlugin(new GRFVideoPlugin())
     .addPlugin(new TrackBallVideoPlugin())
     .addPlugin(new TrackBatVideoPlugin())
     .build();

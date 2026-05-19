@@ -8,6 +8,7 @@ import Div from "./Div.tsx"
 import H3 from "./H3.tsx"
 import Button from "./Button.tsx"
 import InputSlider from "./input/InputSlider.tsx"
+import Toggle from "./Toggle.tsx"
 
 export { InputNumber, InputCheckbox, InputFile,
-    InputSlider, Select, Div, H3, Button, InputColor };
+    InputSlider, Select, Div, H3, Button, InputColor, Toggle };

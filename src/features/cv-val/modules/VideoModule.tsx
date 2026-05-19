@@ -3,7 +3,7 @@ import CanvasRenderer, { CanvasRendererHandle }
     from "@/common/components/ui-brick/react-web/custom/CanvasRenderer";
 import { Div, Button } from '@common/bridges/UIBridge.ts';
 import { exportVideo } from '@common/utils/exportVideo';
-
+import { InputCheckbox, Toggle } from '@common/bridges/UIBridge.ts';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@features/cv-val/types/analysis-module.ts';
 
@@ -40,6 +40,10 @@ export function createVideoModule(
     moduleId: string,
     moduleTitle: string
 ): AnalysisModule<Record<string, any>> {
+
+    const defaultModuleSettings = {
+        showBackground: true,
+    };
     
     const VideoView: React.FC<AnalysisViewProps<Record<string, any>>> = ({ data, currentFrame, settings }) => {
         const rendererRef = useRef<CanvasRendererHandle>(null);
@@ -61,7 +65,12 @@ export function createVideoModule(
             const ctx = compositeCanvas.getContext('2d');
             if (!ctx) return null;
 
-            ctx.drawImage(backgroundImage, 0, 0);
+            // Draw background image only if showBackground is true
+            if (settings.showBackground !== false) {
+                ctx.drawImage(backgroundImage, 0, 0);
+            } else {
+                ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height); // Fill with black if no background
+            }
             
             // 모든 플러그인의 오버레이를 순차적으로 그림
             plugins.forEach((p, i) => {
@@ -69,7 +78,7 @@ export function createVideoModule(
             });
 
             return compositeCanvas;
-        }, [data, settings, contexts]);
+        }, [data, settings.showBackground, contexts]);
 
         useEffect(() => {
             if (!data || !rendererRef.current) return;
@@ -90,6 +99,7 @@ export function createVideoModule(
     const VideoSettings: React.FC<AnalysisSettingsProps<Record<string, any>>> = (props) => {
         const { data, settings, onSettingsChange } = props;
         const [isExporting, setIsExporting] = useState(false);
+        const moduleSettings = settings.moduleSettings || defaultModuleSettings;
 
         const contexts = plugins.map(p => 
             p.usePluginContext(data, settings[p.id] ?? p.defaultSettings)
@@ -107,7 +117,12 @@ export function createVideoModule(
             const ctx = compositeCanvas.getContext('2d');
             if (!ctx) return null;
 
-            ctx.drawImage(backgroundImage, 0, 0);
+            // Draw background image only if showBackground is true
+            if (moduleSettings.showBackground !== false) {
+                ctx.drawImage(backgroundImage, 0, 0);
+            } else {
+                ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height); // Fill with black if no background
+            }
             
             plugins.forEach((p, i) => {
                 p.drawOverlay(ctx, frameIdx, data, settings[p.id] ?? p.defaultSettings, contexts[i]);
@@ -129,7 +144,7 @@ export function createVideoModule(
         };
 
         return (
-            <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
+            <Div className="flex-view" style={{ flexDirection: 'column', gap: '10px' }}>
                 <Button
                     onClick={handleExportVideo}
                     disabled={isExporting || !data}
@@ -137,19 +152,27 @@ export function createVideoModule(
                 >
                     {isExporting ? '저장 중...' : '비디오 저장'}
                 </Button>
+                <InputCheckbox
+                    label="배경 이미지 표시"
+                    checked={moduleSettings.showBackground !== false}
+                    onChange={(e) => onSettingsChange({
+                        ...settings,
+                        moduleSettings: { ...moduleSettings, showBackground: e.target.checked }
+                    })}
+                    style={{ fontWeight: 'bold', }}
+                />
                 {plugins.map(p => (
                     <React.Fragment key={p.id}>
-                        <Div style={{ fontWeight: 'bold', borderBottom: '1px solid #ccc', marginTop: '10px', paddingBottom: '3px' }}>
-                            {p.title}
-                        </Div>
-                        {p.getSettingComponent({
-                            ...props,
-                            settings: settings[p.id] ?? p.defaultSettings,
-                            onSettingsChange: (newVal: any) => onSettingsChange({
-                                ...settings,
-                                [p.id]: newVal
-                            })
-                        } as any)}
+                        <Toggle title={p.title}>
+                            {p.getSettingComponent({
+                                ...props,
+                                settings: settings[p.id] ?? p.defaultSettings,
+                                onSettingsChange: (newVal: any) => onSettingsChange({
+                                    ...settings,
+                                    [p.id]: newVal
+                                })
+                            } as any)}
+                        </Toggle>
                     </React.Fragment>
                 ))}
             </Div>
@@ -158,8 +181,8 @@ export function createVideoModule(
 
     const defaultSettings = plugins.reduce((acc, p) => ({
         ...acc,
-        [p.id]: p.defaultSettings
-    }), {});
+        [p.id]: p.defaultSettings,
+    }), { moduleSettings: defaultModuleSettings });
 
     return {
         id: moduleId,
