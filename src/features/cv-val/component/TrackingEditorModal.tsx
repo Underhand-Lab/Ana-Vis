@@ -38,7 +38,7 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
     }, [data, localIdx]);
 
     const localSelectedIdx = useMemo(() => {
-        if (!data || data.exist(type)) return -1;
+        if (!data || !data.exist(type)) return -1;
         const targetData = data.get(type) as any;
         const list = targetData.getBallList ? targetData.getBallList() : targetData.getBatList();
         return list ? (list[localIdx]?.selectedIdx ?? -1) : -1;

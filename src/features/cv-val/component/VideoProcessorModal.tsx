@@ -1,14 +1,13 @@
-import React, { useState, useRef, ChangeEvent, SelectHTMLAttributes } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import Modal from '@common/components/Modal';
-import { InputFile, Div, Select, Button } from '@common/bridges/UIBridge';
+import { Div, Select, Button } from '@common/bridges/UIBridge';
 
 interface VideoProcessorModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  models?: string[];
-  defaultModel?: string;
-  onProcess: (files: FileList, selectedModel: string) => void;
+  analysisMap: Record<string, Record<string, any>>;
+  onProcess: (type: string, modelKey: string) => void;
   isProcessing: boolean;
   progress: { current: number; total: number };
   statusKey?: string;
@@ -18,47 +17,39 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
   isOpen, 
   onClose, 
   title = "비디오 처리",
-  models = [], // [{ value: 'model1', label: '모델1' }, ...]
-  defaultModel,
-  onProcess,   // 실제 처리 함수 (files, selectedModel) => Promise
+  analysisMap = {},
+  onProcess,
   isProcessing,
-  progress,    // { current: 0, total: 0 }
+  progress,
   statusKey 
 }) => {
-  const [SelectedModel, setSelectedModel] = useState<string>(defaultModel || models[0] || '');
-  const [hasFile, setHasFile] = useState(false);
-  const videoInputRef = useRef<HTMLInputElement>(null);
+  const types = Object.keys(analysisMap);
+  const [selectedType, setSelectedType] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>('');
 
-const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      setHasFile(false);
-      return;
+  // 초기값 설정 및 맵 변경 대응
+  useEffect(() => {
+    if (types.length > 0 && !selectedType) {
+      setSelectedType(types[0]);
     }
+  }, [analysisMap, types, selectedType]);
 
-    setHasFile(true);
-    const fileSizeMB = file.size / (1024 * 1024);
-    
-    // 기기 메모리 정보 (단위: GB, 브라우저에 따라 제공 안 될 수 있음)
-    const deviceMemory = (navigator as any).deviceMemory || 8; 
-    
-    // 모델별/메모리별 임계값 설정 (예시)
-    let limit = deviceMemory <= 4 ? 3 : 5; // 저사양 기기는 200MB, 일반은 500MB 기준
-    
-    console.log(deviceMemory);
-
-    if (fileSizeMB > limit) {
-      alert(`⚠️ 파일이 너무 큽니다(${Math.round(fileSizeMB)}MB). 처리 중 브라우저가 멈출 수 있습니다. 짧은 영상을 권장합니다.`);
+  useEffect(() => {
+    if (selectedType && analysisMap[selectedType]) {
+      const models = Object.keys(analysisMap[selectedType]);
+      if (models.length > 0) {
+        setSelectedModel(models[0]);
+      }
     }
-
-    // 미리보기 및 자르기 안내를 위한 URL 생성
-  };
+  }, [selectedType, analysisMap]);
 
   const handleStart = () => {
-    const files = videoInputRef.current?.files;
-    if (!files || files.length < 1) return;
-    onProcess(files, SelectedModel);
+    if (selectedType && selectedModel) {
+      onProcess(selectedType, selectedModel);
+    }
   };
+
+  const currentModels = selectedType ? Object.keys(analysisMap[selectedType] || {}) : [];
 
   return (
     <Modal
@@ -67,35 +58,37 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
       title={title}
     >
       <Div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
-        <Div style={{ display: 'flex', gap: '15px' }}>
-          <Div style={{ flex: '1' }}>
-            <InputFile
-              ref={videoInputRef}
-              accept="video/*"
-              style={{ width: '100%', margin: '0px' }}
-              onChange={handleFileChange}
+        <Div style={{ display: 'flex', flexDirection: 'row', gap: '10px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <Div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label htmlFor="type-select" style={{ minWidth: '80px' }}>분석 방식</label>
+            <Select
+              id="type-select"
+              value={selectedType}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedType(e.target.value)}
               disabled={isProcessing}
+              options={types}
+              style={{ flex: 1 }}
             />
           </Div>
-          {models.length > 0 && (
-            <Div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
-              <label htmlFor="model-Select">모델 선택 </label>
-              <Select
-                id="model-Select"
-                value={SelectedModel}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedModel(e.target.value)}
-                disabled={isProcessing}
-                options={models}
-              />
-            </Div>
-          )}
+
+          <Div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label htmlFor="model-select" style={{ minWidth: '80px' }}>분석 모델</label>
+            <Select
+              id="model-select"
+              value={selectedModel}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedModel(e.target.value)}
+              disabled={isProcessing || currentModels.length === 0}
+              options={currentModels}
+              style={{ flex: 1 }}
+            />
+          </Div>
         </Div>
 
         <Div>
           <Button
             style={{ width: '100%', margin: '0px', padding: '12px 24px', fontSize: '16px' }}
             onClick={handleStart}
-            disabled={!hasFile || isProcessing}
+            disabled={!selectedType || !selectedModel || isProcessing}
           >
             {isProcessing ? '처리 중...' : '분석 시작'}
           </Button>

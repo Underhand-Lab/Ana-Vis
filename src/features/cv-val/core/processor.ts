@@ -20,14 +20,46 @@ export class Processor {
         this.videoConverter = new MediaBunnyVideoToImageList();
     }
 
-    setting(ballDetector: IDetector, onProgress: OnProgressCallback): void {
-        this.detector = ballDetector;
+    setting(detector: IDetector, onProgress: OnProgressCallback): void {
+        this.detector = detector;
         this.onProgressCallback = onProgress;
     }
 
-    async processVideo(videoList: FileList | Blob[], type: string, cvval: CVValData, data: any): Promise<CVValData> {
+    /**
+     * 1단계: 비디오 파일을 프레임 단위의 이미지 리스트(ImageBitmap)로 변환하여 CVValData에 저장합니다.
+     */
+    async loadVideo(videoList: FileList | Blob[], cvval: CVValData): Promise<void> {
+        if (this.onProgressCallback) {
+            this.onProgressCallback.onState("video-loading");
+        }
+
+        const { imageList, metadata } = 
+            await this.videoConverter.convert(videoList[0]);
+
+        cvval.setRawImgList(imageList, 0);
+        cvval.setVideoMetadata([metadata]);
+
+        if (this.onProgressCallback) {
+            this.onProgressCallback.onState("video-ready");
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+    }
+
+    /**
+     * 2단계: CVValData에 로드된 이미지 리스트를 기반으로 지정된 디텍터를 사용하여 분석을 수행합니다.
+     */
+    async runInference(type: string, cvval: CVValData, data: any): Promise<void> {
         if (!this.detector) {
-            throw new Error("Detector is not set. Call setting() before processVideo().");
+            throw new Error("Detector is not set. Call setting() before runInference().");
+        }
+        
+        console.log(cvval);
+
+        const imageList = cvval.getRawImgList(0);
+        const metadata = cvval.getVideoMetadata(0);
+
+        if (!imageList || imageList.length === 0) {
+            throw new Error("No image list found in CVValData. Load video first.");
         }
 
         if (this.onProgressCallback) {
@@ -36,37 +68,25 @@ export class Processor {
         await this.detector.initialize();
 
         if (this.onProgressCallback) {
-            this.onProgressCallback.onState("process-ready");
-            await new Promise(resolve => setTimeout(resolve, 0));
-        }
-        
-        const { imageList, metadata } = 
-            await this.videoConverter.convert(videoList[0]);
-
-        if (this.onProgressCallback) {
             this.onProgressCallback.onState("on-process");
             await new Promise(resolve => setTimeout(resolve, 0));
         }
         
-        let frameIndex = 0;
         data.initialize([metadata]);
-        
-        cvval.setRawImgList(imageList, 0);
-        cvval.setVideoMetadata([metadata]);
 
-        for (const image of imageList) {
+        for (let i = 0; i < imageList.length; i++) {
             if (this.onProgressCallback) {
                 this.onProgressCallback.onProgress(
-                    frameIndex + 1, 
+                    i + 1, 
                     imageList.length
                 );
             }
             
+            const image = imageList[i];
             const frameData = await this.detector.process(image);
             data.addDataAt(0, image, frameData);
 
             await new Promise(resolve => setTimeout(resolve, 0));
-            frameIndex++;
         }
 
         if (this.onProgressCallback) {
@@ -75,7 +95,5 @@ export class Processor {
         }
 
         cvval.set(type, data);
-        
-        return cvval;
     }
 }

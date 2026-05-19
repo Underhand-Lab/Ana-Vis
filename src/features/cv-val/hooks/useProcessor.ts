@@ -11,13 +11,42 @@ export function useProcessor() {
 
     const processor = useMemo(() => new Processor(), []);
 
-    const processVideo = useCallback(async (
-        detector: IDetector,
+    /**
+     * 1단계: 비디오를 지정하여 CVValData에 이미지 리스트(프레임)를 추출 및 추가합니다.
+     */
+    const loadVideo = useCallback(async (
         videoList: FileList | Blob[],
+        cvval: CVValData
+    ): Promise<CVValData> => {
+        setIsProcessing(true);
+        try {
+            processor.setting(null as any, {
+                onState: (state) => setStatus(state),
+                onProgress: (current, total) => setProgress({ current, total })
+            });
+
+            // 비디오 디코딩 및 프레임 추출 로직 수행
+            await processor.loadVideo(videoList, cvval);
+            setStatus("video-loaded");
+            // React의 상태 변경 감지를 위해 객체 참조를 새로 생성하여 반환합니다.
+            return Object.assign(Object.create(Object.getPrototypeOf(cvval)), cvval);
+        } catch (error) {
+            setStatus("error");
+            throw error;
+        } finally {
+            setIsProcessing(false);
+        }
+    }, [processor]);
+
+    /**
+     * 2단계: 이미 로드된 CVValData의 이미지 리스트를 기반으로 디텍터를 실행합니다.
+     */
+    const runInference = useCallback(async (
+        detector: IDetector,
         type: string,
         cvval: CVValData,
         data: any
-    ) => {
+    ): Promise<CVValData> => {
         setIsProcessing(true);
         try {
             processor.setting(detector, {
@@ -25,9 +54,10 @@ export function useProcessor() {
                 onProgress: (current, total) => setProgress({ current, total })
             });
 
-            const result = await processor.processVideo(videoList, type, cvval, data);
+            await processor.runInference(type, cvval, data);
             setStatus("completed");
-            return result;
+            // React의 상태 변경 감지를 위해 객체 참조를 새로 생성하여 반환합니다.
+            return Object.assign(Object.create(Object.getPrototypeOf(cvval)), cvval);
         } catch (error) {
             setStatus("error");
             throw error;
@@ -42,5 +72,5 @@ export function useProcessor() {
         setIsProcessing(false);
     }, []);
 
-    return { status, progress, isProcessing, processVideo, reset };
+    return { status, progress, isProcessing, loadVideo, runInference, reset };
 }

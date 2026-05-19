@@ -57,8 +57,8 @@ const PosePage: React.FC = () => {
 	const location = useLocation();
 	const state = location.state as LocationState;
 	const navigate = useNavigate();
-	const [processedData, setProcessedData] = useState<CVValData | null>(null);
-	const { status, progress, isProcessing, processVideo, reset: resetProcessor } = useProcessor();
+	const [processedData, setProcessedData] = useState<CVValData>(() => new CVValData());
+	const { status, progress, isProcessing, loadVideo, runInference, reset: resetProcessor } = useProcessor();
 	const [currentIdx, setCurrentIdx] = useState(0);
 	const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
 		{ ...AVAILABLE_MODULES["동영상"], id: 'video-default' },
@@ -70,6 +70,7 @@ const PosePage: React.FC = () => {
 
 	const analysisBoxRef = useRef<HTMLDivElement>(null);
 	const dataInputRef = useRef<HTMLInputElement>(null);
+	const videoInputRef = useRef<HTMLInputElement>(null);
 	const pluginInputRef = useRef<HTMLInputElement>(null);
 
 	// 데이터의 총 프레임 수를 계산 (processedData.length 가 존재한다고 가정)
@@ -117,16 +118,30 @@ const PosePage: React.FC = () => {
 		setActiveModules(prev => [...prev, plugin]);
 	});
 
-	// 비디오 처리 핸들러
-	const handleProcessVideo = async (files: FileList, model: string) => {
+	// 1단계: 비디오 파일 선택 및 프레임 로드
+	const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
 		if (!files || files.length < 1) return;
 
 		try {
-			const data = await processVideo(
-				DETECTORS[model], files, 'pose', new CVValData(), new PoseData()
-			);
+			// 고정된 CVValData 인스턴스에 비디오 프레임을 로드합니다.
+			const result = await loadVideo(files, processedData);
+			setProcessedData(result);
+			setCurrentIdx(0);
+			setProcessModalOpen(true);
+		} catch (e) {
+			alert("비디오 로드 중 오류 발생");
+		} finally {
+			e.target.value = "";
+		}
+	};
 
-			data.addAnalysisTools('pose', ANALYSIS_TOOLS);
+	// 3단계 & 4단계: 분석 실행 및 결과 추가
+	const handleProcessVideo = async (type: string, modelKey: string) => {
+		try {
+			const data = await runInference(DETECTORS[modelKey], type, processedData, new PoseData());
+
+			data.addAnalysisTools(type, ANALYSIS_TOOLS);
 			
 			setProcessedData(data);
 			setCurrentIdx(0); // 처리 완료 시 인덱스 초기화
@@ -163,6 +178,12 @@ const PosePage: React.FC = () => {
 				onChange={handleLoadFile}
 			/>
 			<InputFile
+				ref={videoInputRef}
+				style={{ display: 'none' }}
+				accept="video/*"
+				onChange={handleVideoSelect}
+			/>
+			<InputFile
 				ref={pluginInputRef}
 				style={{ display: 'none' }}
 				accept=".js"
@@ -174,7 +195,12 @@ const PosePage: React.FC = () => {
 					{
 						name: "새 분석", action: () => {
 							resetProcessor();
-							setProcessModalOpen(true);
+							// 이미지 리스트가 이미 존재하면 바로 모델 설정 모달을 열고, 없으면 비디오 선택을 유도합니다.
+							if (processedData.getFrameCnt() > 0) {
+								setProcessModalOpen(true);
+							} else {
+								videoInputRef.current?.click();
+							}
 						}
 					},
 					{ name: "불러오기", action: () => dataInputRef.current?.click() },
@@ -237,8 +263,7 @@ const PosePage: React.FC = () => {
 			<VideoProcessorModal
 				isOpen={isProcessModalOpen}
 				onClose={() => setProcessModalOpen(false)}
-				models={Object.keys(DETECTORS)}
-				defaultModel={"mediapipe_full"}
+				analysisMap={{ pose: DETECTORS }}
 				onProcess={handleProcessVideo}
 				isProcessing={isProcessing}
 				progress={progress}

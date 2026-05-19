@@ -58,8 +58,8 @@ const TrackBatPage: React.FC = () => {
     const location = useLocation();
     const state = location.state as LocationState;
     const navigate = useNavigate();
-    const [processedData, setProcessedData] = useState<CVValData | null>(null);
-    const { status, progress, isProcessing, processVideo, reset: resetProcessor } = useProcessor();
+    const [processedData, setProcessedData] = useState<CVValData>(() => new CVValData());
+    const { status, progress, isProcessing, loadVideo, runInference, reset: resetProcessor } = useProcessor();
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.55); // 기본값 0.55
     const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
@@ -78,12 +78,13 @@ const TrackBatPage: React.FC = () => {
     const [isToolModalOpen, setToolModalOpen] = useState(false);
     const [isEditorModalOpen, setEditorModalOpen] = useState(false);
     const dataInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
     const pluginInputRef = useRef<HTMLInputElement>(null);
 
     // 프레임 변경 시 후보군 UI 업데이트 로직
     const updateCandidateState = useCallback((frameIdx: number) => {
 
-        if (!processedData) return;
+        if (!processedData || !processedData.exist('bat')) return;
 
         setCurrentFrameIdx(frameIdx);
 
@@ -145,15 +146,29 @@ const TrackBatPage: React.FC = () => {
         setActiveModules(prev => [...prev, plugin]);
     });
 
-    // 비디오 처리 실행
-    const handleProcessVideo = async (files: FileList, model: string) => {
-
+    // 1단계: 비디오 파일 선택 및 프레임 로드
+    const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
         if (!files || files.length < 1) return;
 
         try {
+            // 고정된 CVValData 인스턴스에 비디오 프레임을 로드합니다.
+            const result = await loadVideo(files, processedData);
+            setProcessedData(result);
+            setCurrentIdx(0);
+            setProcessModalOpen(true);
+        } catch (e) {
+            alert("비디오 로드 중 오류 발생");
+        } finally {
+            e.target.value = "";
+        }
+    };
+
+    // 3단계 & 4단계: 분석 실행 및 결과 추가
+    const handleProcessVideo = async (type: string, modelKey: string) => {
+        try {
             const batData =  new TrackBatData();
-            const result = await processVideo(DETECTORS[model],
-                files, 'bat', new CVValData(), batData);
+            const result = await runInference(DETECTORS[modelKey], type, processedData, batData);
 
             batData.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
             setProcessedData(result);
@@ -235,6 +250,12 @@ const TrackBatPage: React.FC = () => {
         <Wrapper>
             <InputFile ref={dataInputRef} style={{ display: 'none' }} accept=".cvbt" onChange={handleLoadFile} />
             <InputFile
+                ref={videoInputRef}
+                style={{ display: 'none' }}
+                accept="video/*"
+                onChange={handleVideoSelect}
+            />
+            <InputFile
                 ref={pluginInputRef}
                 style={{ display: 'none' }}
                 accept=".js"
@@ -246,7 +267,12 @@ const TrackBatPage: React.FC = () => {
                     {
                         name: "새 분석", action: () => {
                             resetProcessor();
-                            setProcessModalOpen(true);
+                            // 이미지 리스트가 이미 존재하면 바로 모델 설정 모달을 열고, 없으면 비디오 선택을 유도합니다.
+                            if (processedData.getFrameCnt() > 0) {
+                                setProcessModalOpen(true);
+                            } else {
+                                videoInputRef.current?.click();
+                            }
                         }
                     },
                     { name: "편집", action: () => {
@@ -302,8 +328,7 @@ const TrackBatPage: React.FC = () => {
             <VideoProcessorModal
                 isOpen={isProcessModalOpen}
                 onClose={() => setProcessModalOpen(false)}
-                models={Object.keys(DETECTORS)}
-                defaultModel={"yolo11m"}
+                analysisMap={{ bat: DETECTORS }}
                 onProcess={handleProcessVideo}
                 isProcessing={isProcessing}
                 progress={progress}
