@@ -1,6 +1,6 @@
 import React from 'react';
-import ElectronNavigation from '../components/navigation/ElectronNavigation';
-import WebNavigation from '../components/navigation/WebNavigation';
+import ElectronNavigation from '@common/components/navigation/ElectronNavigation';
+import WebNavigation from '@common/components/navigation/WebNavigation';
 
 interface NavigationProps {
   fileButtons?: any[];
