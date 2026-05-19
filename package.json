@@ -35,21 +35,15 @@
     "mac": {
       "artifactName": "${productName}.${ext}"
     },
-    "fileAssociations": [
-      {
-        "ext": "cvp",
-        "name": "Pose Data File",
+    "fileAssociations": [{
+        "ext": ["cvbl", "cvbt", "cvp", "cvval"],
+        "name": "CV-Val Analysis Data",
         "role": "Editor"
       },
       {
-        "ext": "cvbl",
-        "name": "Track Ball Data File",
-        "role": "Editor"
-      },
-      {
-        "ext": "cvbt",
-        "name": "Track Bat Data File",
-        "role": "Editor"
+        "ext": ["mp4", "mov", "avi", "mkv"],
+        "name": "Video File",
+        "role": "Viewer"
       }
     ]
   },
