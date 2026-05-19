@@ -1,5 +1,5 @@
 import React from 'react';
-import { CVValData } from '../../features/cv-val/core/cvval-data';
+import { CVValData } from '@features/cv-val/core/cvval-data';
 
 export interface AnalysisViewProps<S> {
   isSettingsOpen: boolean,

@@ -1,7 +1,8 @@
 import React, { useMemo, useEffect } from 'react';
 import TableRenderer from '@/common/components/ui-brick/react-web/common/TableRenderer';
 import { Div, InputCheckbox, Select } from '@common/bridges/UIBridge';
-import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '@common/types/analysis-module';
+import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
+    from '@features/cv-val/types/analysis-module';
 
 interface TableSettingsData {
     selectedToolKey: string;
@@ -139,8 +140,8 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
 };
 
 export const TableModule: AnalysisModule<TableSettingsData> = {
-    id: 'pose-table',
-    title: '자세 정보 표',
+    id: 'common-table',
+    title: '분석 표',
     View: TableView,
     Settings: TableSettings,
     defaultSettings

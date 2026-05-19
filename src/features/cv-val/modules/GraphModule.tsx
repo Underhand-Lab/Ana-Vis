@@ -3,8 +3,7 @@ import React, { useMemo, useEffect } from 'react';
 import Graph from '@common/components/Graph';
 import { Div, InputColor, InputNumber, InputCheckbox, Select } from '@common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
-    from '@common/types/analysis-module';
-import { IAnalysisTool } from '@/features/cv-val/core/cvval-data';
+    from '@features/cv-val/types/analysis-module';
 
 // Graph.tsx와 동일한 색상 생성 로직 (범례 일치를 위함)
 const getDeterministicColor = (str: string) => {
