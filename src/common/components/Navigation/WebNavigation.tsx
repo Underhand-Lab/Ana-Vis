@@ -56,14 +56,6 @@ const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolBut
                     <li>
                         <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>CV-Val</Link>
                     </li>
-                    <li>
-                        <Select 
-                            className="neumorphism-select"
-                            options={FEATURES}
-                            value={currentPath}
-                            onChange={handleFeatureChange}
-                        />
-                    </li>
                 </ul>
 
                 <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }}>

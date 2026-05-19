@@ -39,19 +39,8 @@ const ElectronFileHandler: React.FC = () => {
         file = new File([blob], fileName);
       }
 
-      const extensionMap: Record<string, string> = {
-        cvp: '/pose',
-        cvbl: '/track-ball',
-        cvbt: '/track-bat'
-      };
-
-      const targetPath = ext ? extensionMap[ext] : null;
-      if (!targetPath) {
-        console.warn(`Unknown extension: ${ext}`);
-        return;
-      }
-
-      navigate(targetPath, { 
+      // 모든 파일 타입에 대해 동일한 경로(/)로 상태만 전달합니다.
+      navigate('/', { 
         state: { 
           externalFile: file, 
           filePath: filePath 

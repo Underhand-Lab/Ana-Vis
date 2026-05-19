@@ -150,22 +150,27 @@ export class TrackBallData implements IAnalysisData {
     }
 
     getFrameCnt(): number {
-        return this.rawImgListList[0]?.length || 0;
+        return this.ballList.length;
     }
 
     getRawImgList(idx: number): ImageBitmap[] {
         return this.rawImgListList[idx];
     }
 
+    clearRawImgList(): void {
+        this.rawImgListList = this.rawImgListList.map(() => []);
+    }
+
     getBallList(): BallFrameData[] {
         return this.ballList;
     }
 
-    async toBlob(): Promise<Blob> {
+    async toBlob(dataOnly: boolean = false): Promise<Blob> {
         const videoBlobs = [];
         
-        // 1. 이미지 리스트를 비디오(MP4)로 인코딩
-        for (let i = 0; i < this.rawImgListList.length; i++) {
+        // 1. 비디오 인코딩 (dataOnly가 아닐 때만)
+        if (!dataOnly) {
+            for (let i = 0; i < this.rawImgListList.length; i++) {
             const imageList = this.getRawImgList(i);
             const metadata = this.getVideoMetadata(i);
             
@@ -182,6 +187,7 @@ export class TrackBallData implements IAnalysisData {
             const videoBlob = await (videoConverter as any).export(metadata.fps || 30);
             videoBlobs.push(videoBlob);
             videoConverter.postprocess();
+        }
         }
 
         // 2. 수치 데이터(ballList 등) JSON 직렬화

@@ -80,16 +80,6 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
                     <li style={interactiveStyle}>
                         <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>CV-Val</Link>
                     </li>
-
-                    <li style={interactiveStyle}>
-                        <Select 
-                            className="neumorphism-select"
-                            style={interactiveStyle}
-                            options={FEATURES}
-                            value={currentPath}
-                            onChange={handleFeatureChange}
-                        />
-                    </li>
                 </ul>
 
                 <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }}>

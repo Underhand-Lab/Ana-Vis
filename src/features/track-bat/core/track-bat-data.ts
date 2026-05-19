@@ -96,22 +96,27 @@ export class TrackBatData implements IAnalysisData {
     }
 
     getFrameCnt(): number {
-        return this.rawImgListList[0]?.length || 0;
+        return this.batList.length;
     }
 
     getRawImgList(idx: number): ImageBitmap[] {
         return this.rawImgListList[idx];
     }
 
+    clearRawImgList(): void {
+        this.rawImgListList = this.rawImgListList.map(() => []);
+    }
+
     getBatList(): BatFrameData[] {
         return this.batList;
     }
 
-    async toBlob(): Promise<Blob> {
+    async toBlob(dataOnly: boolean = false): Promise<Blob> {
         const videoBlobs: Blob[] = [];
         
-        // 1. 이미지 리스트를 비디오(MP4)로 인코딩
-        for (let i = 0; i < this.rawImgListList.length; i++) {
+        // 1. 비디오 인코딩 (dataOnly가 아닐 때만)
+        if (!dataOnly) {
+            for (let i = 0; i < this.rawImgListList.length; i++) {
             const imageList = this.getRawImgList(i);
             const metadata = this.getVideoMetadata(i);
             
@@ -128,6 +133,7 @@ export class TrackBatData implements IAnalysisData {
             const videoBlob = await (videoConverter as any).export(metadata.fps || 30);
             videoBlobs.push(videoBlob);
             videoConverter.postprocess();
+        }
         }
 
         // 2. 수치 데이터(batList 등) JSON 직렬화
@@ -156,7 +162,7 @@ export class TrackBatData implements IAnalysisData {
             finalParts.push(vSizeHeader, vBlob);
         }
 
-        return new Blob(finalParts, { type: "application/cvbl" });
+        return new Blob(finalParts, { type: "application/cvbt" });
     }
 
     /**

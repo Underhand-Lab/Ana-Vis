@@ -51,10 +51,7 @@ export class PoseData implements IAnalysisData {
     }
 
     getFrameCnt(): number {
-        if (this.rawImgListList.length > 0) {
-            return this.rawImgListList[0].length;
-        }
-        return 0;
+        return this.landmarks3dList.length;
     }
 
     getRawImgList(idx: number): ImageBitmap[] {
@@ -131,11 +128,16 @@ export class PoseData implements IAnalysisData {
         this._analysisCache = {};
     }
 
-    async toBlob(): Promise<Blob> {
+    clearRawImgList(): void {
+        this.rawImgListList = this.rawImgListList.map(() => []);
+    }
+
+    async toBlob(dataOnly: boolean = false): Promise<Blob> {
         const videoBlobs: Blob[] = [];
         
-        // 1. 각 시점별 이미지를 비디오(MP4)로 인코딩
-        for (let i = 0; i < this.rawImgListList.length; i++) {
+        // 1. 비디오 인코딩 (dataOnly가 아닐 때만 수행)
+        if (!dataOnly) {
+            for (let i = 0; i < this.rawImgListList.length; i++) {
             const imageList = this.getRawImgList(i);
             const metadata = this.getVideoMetadata(i);
             
@@ -153,6 +155,7 @@ export class PoseData implements IAnalysisData {
             const videoBlob: Blob = await videoConverter.export(metadata.fps || 30);
             videoBlobs.push(videoBlob);
             videoConverter.postprocess();
+        }
         }
 
         // 2. 수치 데이터 구조화
