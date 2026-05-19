@@ -1,6 +1,6 @@
 import React, { useState, useRef, ChangeEvent, SelectHTMLAttributes } from 'react';
-import Modal from './Modal';
-import { InputFile, Div, Select, Button } from '../bridges/UIBridge';
+import Modal from '@common/components/Modal';
+import { InputFile, Div, Select, Button } from '@common/bridges/UIBridge';
 
 interface VideoProcessorModalProps {
   isOpen: boolean;

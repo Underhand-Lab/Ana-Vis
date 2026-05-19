@@ -1,5 +1,5 @@
 import { MediaBunnyVideoToImageList, VideoMetadata }
-    from "@common/lib/video-to-img-list/media-bunny";
+    from "@/common/service/video-to-img-list/media-bunny";
 /**
  * 분석 타입을 문자열로 정의하여 확장성을 확보합니다.
  * 기본적으로 AnalysisDataMap의 키들을 포함하지만, 임의의 문자열도 허용합니다.

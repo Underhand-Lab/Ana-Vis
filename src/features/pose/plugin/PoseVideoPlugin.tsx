@@ -5,9 +5,9 @@ import { usePoseVisualize, PoseSettings } from "../hooks/usePoseVisualize";
 import { Div, InputNumber, InputColor, InputCheckbox, Select }
     from '@common/bridges/UIBridge.ts';
 import { AnalysisSettingsProps } from '@common/types/analysis-module.ts';
-import { VideoModulePlugin, VideoModuleBuilder } from '@/common/modules/VideoModule.tsx';
-import { Toggle } from '@common/components/ui/react-web/common/Toggle.tsx';
-import { CVValData } from '@/common/core/cvval-data.ts';
+import { VideoModulePlugin, VideoModuleBuilder } from '@/features/cv-val/modules/VideoModule.tsx';
+import { Toggle } from '@/common/components/ui-brick/react-web/common/Toggle.tsx';
+import { CVValData } from '@/features/cv-val/core/cvval-data.ts';
 
 const colorMap = {
     COLOR_LEFT_ARM: "L_ARM",

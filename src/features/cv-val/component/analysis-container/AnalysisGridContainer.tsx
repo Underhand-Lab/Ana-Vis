@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Responsive } from 'react-grid-layout';
+import { Div } from "@common/bridges/UIBridge";
+import vars from '@/common/components/ui-brick/Variables';
+
+import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 import AnalysisGridItem from './AnalysisGridItem';
-import { AnalysisModule } from '../../types/analysis-module';
-import { Div } from "../../bridges/UIBridge";
-import vars from '../ui/Variables';
 
 interface Props {
   modules: AnalysisModule[];

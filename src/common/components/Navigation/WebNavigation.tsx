@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import Select from '../ui/react-web/common/Select';
+import Select from '../ui-brick/react-web/common/Select';
 
 export const FEATURES = [
     { label: '자세', value: '/pose' },

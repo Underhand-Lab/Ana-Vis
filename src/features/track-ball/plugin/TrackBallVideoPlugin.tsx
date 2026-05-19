@@ -3,8 +3,8 @@ import { useTrackBallFrame } from '../hooks/useTrackBallFrame';
 import { TrackBallData } from '../core/track-ball-data';
 import { InputColor, InputCheckbox } from '@common/bridges/UIBridge';
 import { AnalysisSettingsProps } from '@common/types/analysis-module';
-import { VideoModulePlugin } from '@/common/modules/VideoModule';
-import { CVValData } from '@/common/core/cvval-data';
+import { VideoModulePlugin } from '@/features/cv-val/modules/VideoModule';
+import { CVValData } from '@/features/cv-val/core/cvval-data';
 
 export interface TrackBallSettings {
     showConfidence: boolean;

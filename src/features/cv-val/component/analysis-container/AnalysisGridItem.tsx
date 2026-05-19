@@ -1,7 +1,7 @@
 import React, { useState, forwardRef, useRef } from 'react';
-import { AnalysisModule } from '../../types/analysis-module';
-import { Div } from "../../bridges/UIBridge";
-import vars from '../ui/Variables';
+import { Div } from "@common/bridges/UIBridge";
+import vars from '@/common/components/ui-brick/Variables';
+import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 
 interface Props {
   module: AnalysisModule;

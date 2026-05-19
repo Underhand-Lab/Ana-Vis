@@ -1,18 +1,19 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo, ChangeEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
 import { saveBlobWithPicker } from "@common/utils/save-blob.ts";
-import AnalysisGridContainer from '@common/components/analysis-container/AnalysisGridContainer';
-import VideoProcessorModal from '@common/components/VideoProcessorModal';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
-import TrackingEditorModal from '@common/components/TrackingEditorModal';
-import { useProcessor } from '@common/hooks/useProcessor';
-import { AnalysisModule } from '@/common/types/analysis-module';
 import {
     Div, InputFile, InputSlider,
     FixedFooter, Box, Button, Wrapper
-} from
-    '@common/bridges/UIBridge.ts';
+} from '@common/bridges/UIBridge.ts';
+
+import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/AnalysisGridContainer';
+import VideoProcessorModal from '@/features/cv-val/component/VideoProcessorModal';
+import TrackingEditorModal from '@/features/cv-val/component/TrackingEditorModal';
+import { useProcessor } from '@/features/cv-val/hooks/useProcessor';
+import { AnalysisModule } from '@/features/cv-val/types/analysis-module';
 
 // 라이브러리 import
 import { TrackBatData } from "@features/track-bat/core/track-bat-data";
@@ -20,7 +21,7 @@ import * as BatDetector from '@features/track-bat/core/bat-detector/index';
 import { BatDetectedObject } from '@features/track-bat/types';
 import { useTrackBatFrame } from '@features/track-bat/hooks/useTrackBatFrame';
 import TrackBatVideoModule from "@features/track-bat/modules/TrackBatVideoModule";
-import { CVValData } from '@/common/core/cvval-data';
+import { CVValData } from '@/features/cv-val/core/cvval-data';
 
 interface LocationState {
     externalFile?: File;

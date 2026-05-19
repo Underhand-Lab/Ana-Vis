@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { TrackBallData } from '../core/track-ball-data';
 import { DetectedObject } from '../types';
-import { CVValData } from '@/common/core/cvval-data';
+import { CVValData } from '@/features/cv-val/core/cvval-data';
 import featureName from '../constant';
 
 interface TrackFrameOptions {

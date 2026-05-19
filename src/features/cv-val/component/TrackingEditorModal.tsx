@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import Modal from './Modal';
-import { Div, InputNumber, Button } from '../bridges/UIBridge.ts';
-import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
-import { CVValData } from '../core/cvval-data.ts';
+import Modal from '@common/components/Modal.tsx';
+import { Div, InputNumber, Button } from '@common/bridges/UIBridge.ts';
+import CanvasRenderer, { CanvasRendererHandle } from "@/common/components/ui-brick/react-web/custom/CanvasRenderer";
+import { CVValData } from '@/features/cv-val/core/cvval-data';
 
 interface TrackingEditorModalProps {
     isOpen: boolean;

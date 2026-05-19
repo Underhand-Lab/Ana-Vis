@@ -1,4 +1,4 @@
-import { CVValData, IAnalysisTool } from "@/common/core/cvval-data";
+import { CVValData, IAnalysisTool } from "@/features/cv-val/core/cvval-data";
 import * as Calc from "./velocity";
 import { BallData } from "./velocity";
 import featureName from "../constant";

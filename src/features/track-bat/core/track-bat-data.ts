@@ -1,8 +1,8 @@
 import { MediaBunnyVideoToImageList, VideoMetadata }
-    from "@common/lib/video-to-img-list/media-bunny";
+    from "@/common/service/video-to-img-list/media-bunny";
 import { MediabunnyImageListToVideo }
-    from "@common/lib/image-list-to-video/media-bunny";
-import { IAnalysisData } from "@/common/core/cvval-data";
+    from "@/common/service/image-list-to-video/media-bunny";
+import { IAnalysisData } from "@/features/cv-val/core/cvval-data";
 import { BatDetectedObject } from "../types";
 
 

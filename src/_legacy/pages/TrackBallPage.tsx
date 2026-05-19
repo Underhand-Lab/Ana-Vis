@@ -1,29 +1,29 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import AnalysisGridContainer from '@common/components/analysis-container/AnalysisGridContainer.tsx';
-import VideoProcessorModal from '@common/components/VideoProcessorModal';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
-import TrackingEditorModal from '@common/components/TrackingEditorModal';
+import { saveBlobWithPicker } from "@/common/utils/save-blob";
 
-import { Div, InputNumber, InputFile, InputSlider, 
-    Select, FixedFooter, Box, Button, Wrapper }
+import { Div, InputFile, InputSlider, 
+    FixedFooter, Box, Button, Wrapper }
     from '@common/bridges/UIBridge.ts';
 
 import TrackBallVideoModule from "@features/track-ball/modules/TrackBallVideoModule"
-import TableModule from "@/common/modules/TableModule"
+import TableModule from "@/features/cv-val/modules/TableModule"
+import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/AnalysisGridContainer';
+import VideoProcessorModal from '@/features/cv-val/component/VideoProcessorModal';
+import TrackingEditorModal from '@/features/cv-val/component/TrackingEditorModal';
 
 // 라이브러리 import
-import { useProcessor } from '@common/hooks/useProcessor';
+import { useProcessor } from '@/features/cv-val/hooks/useProcessor';
 import { TrackBallData } from "@features/track-ball/core/track-ball-data";
 import * as BallDetector from '@features/track-ball/core/ball-detector/index';
 import { DetectedObject } from '@features/track-ball/types';
 import { useTrackBallFrame } from '@features/track-ball/hooks/useTrackBallFrame';
-import { AnalysisModule } from '@common/types/analysis-module.ts';
+import { AnalysisModule } from '@/features/cv-val/types/analysis-module';
 
 import * as Analysis from "@/features/track-ball/tool/analysis";
-import { saveBlobWithPicker } from "@/common/utils/save-blob";
-import { CVValData, IAnalysisTool } from '@/common/core/cvval-data';
+import { CVValData, IAnalysisTool } from '@/features/cv-val/core/cvval-data';
 
 interface LocationState {
     externalFile?: File;

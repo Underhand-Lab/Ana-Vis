@@ -1,5 +1,6 @@
-import { CVValData } from '../core/cvval-data.js';
-import { MediaBunnyVideoToImageList } from './video-to-img-list/media-bunny.js';
+import { MediaBunnyVideoToImageList } from '@/common/service/video-to-img-list/media-bunny.js';
+
+import { CVValData } from './cvval-data.js';
 import type { IDetector } from '../types/detector.js';
 export interface OnProgressCallback {
     onState: (state: string) => void;

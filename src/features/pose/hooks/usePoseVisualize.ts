@@ -1,4 +1,4 @@
-import { CVValData } from '@/common/core/cvval-data';
+import { CVValData } from '@/features/cv-val/core/cvval-data';
 import { useState, useCallback, useRef } from 'react';
 import featureName from '../ constant';
 import { PoseData } from '../core/pose-data';

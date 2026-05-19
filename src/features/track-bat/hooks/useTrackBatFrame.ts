@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { TrackBatData } from '../core/track-bat-data';
 import { BatDetectedObject } from '../types';
-import { CVValData } from '@/common/core/cvval-data';
+import { CVValData } from '@/features/cv-val/core/cvval-data';
 import featureName from '../constant';
 
 interface ColorsState {

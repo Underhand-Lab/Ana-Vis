@@ -1,26 +1,25 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import AnalysisGridContainer from '@common/components/analysis-container/AnalysisGridContainer.tsx';
-import VideoProcessorModal from '@common/components/VideoProcessorModal';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
-import { useProcessor } from '@common/hooks/useProcessor';
-
-// 라이브러리 import
-import { saveBlobWithPicker } from "@/common/utils/save-blob";
-import { AnalysisModule } from '@common/types/analysis-module.ts';
 import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper }
 	from '@common/bridges/UIBridge.ts';
+import { saveBlobWithPicker } from "@/common/utils/save-blob";
+
+import { AnalysisModule } from '@/features/cv-val/types/analysis-module';
+import { useProcessor } from '@/features/cv-val/hooks/useProcessor';
+import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/AnalysisGridContainer';
+import VideoProcessorModal from '@/features/cv-val/component/VideoProcessorModal';
 
 import { PoseData } from '@features/pose/core/pose-data';
 import * as PoseDetector from '@features/pose/core/pose-detector/index';
 import * as PoseAnalysisTool from "@/features/pose/tool/index";
 import PoseVideoModule from '@features/pose/modules/PoseVideoModule';
-import GraphModule from '@/common/modules/GraphModule';
-import TableModule from '@/common/modules/TableModule';
+import GraphModule from '@/features/cv-val/modules/GraphModule';
+import TableModule from '@/features/cv-val/modules/TableModule';
 import Pose3DVideoModule from '@features/pose/modules/Pose3DVideoModule';
-import { CVValData, IAnalysisTool } from '@/common/core/cvval-data';
+import { CVValData, IAnalysisTool } from '@/features/cv-val/core/cvval-data';
 
 
 interface LocationState {

@@ -1,4 +1,4 @@
-import { Vector3 } from "../../types/vector";
+export type Vector3 = [number, number, number];
 
 export function magVec(vec: Vector3): number {
     let sum = 0;

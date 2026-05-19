@@ -1,5 +1,5 @@
 import { TrackBatVideoPlugin } from '../plugin/TrackBatVideoPlugin.tsx';
-import { VideoModuleBuilder } from '@/common/modules/VideoModule.tsx';
+import { VideoModuleBuilder } from '@/features/cv-val/modules/VideoModule.tsx';
 
 export const TrackBatVideoModule = new VideoModuleBuilder()
     .addPlugin(new TrackBatVideoPlugin())

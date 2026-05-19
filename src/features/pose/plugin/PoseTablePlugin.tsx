@@ -1,5 +1,5 @@
 import React from 'react';
-import { TableModulePlugin } from '@/common/modules/TableModule';
+import { TableModulePlugin } from '@/features/cv-val/modules/TableModule';
 import { AnalysisSettingsProps } from '@common/types/analysis-module';
 import { Div, InputCheckbox } from '@common/bridges/UIBridge';
 import featureName from '../ constant';

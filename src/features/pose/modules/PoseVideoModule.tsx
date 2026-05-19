@@ -1,5 +1,5 @@
 import { PoseVideoPlugin } from '../plugin/PoseVideoPlugin';
-import { VideoModuleBuilder } from '@/common/modules/VideoModule';
+import { VideoModuleBuilder } from '@/features/cv-val/modules/VideoModule';
 
 export const PoseVideoModule = new VideoModuleBuilder()
     .addPlugin(new PoseVideoPlugin())

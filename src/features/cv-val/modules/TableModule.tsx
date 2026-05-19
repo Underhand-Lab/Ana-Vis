@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from 'react';
-import TableRenderer from '@common/components/ui/react-web/common/TableRenderer';
+import TableRenderer from '@/common/components/ui-brick/react-web/common/TableRenderer';
 import { Div, InputCheckbox, Select } from '@common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '@common/types/analysis-module';
 

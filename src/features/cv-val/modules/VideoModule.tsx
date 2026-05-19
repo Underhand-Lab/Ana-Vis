@@ -1,9 +1,9 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule } from '@common/types/analysis-module.ts';
-import CanvasRenderer, { CanvasRendererHandle } from "@common/components/ui/react-web/custom/CanvasRenderer.tsx";
+import CanvasRenderer, { CanvasRendererHandle } from "@/common/components/ui-brick/react-web/custom/CanvasRenderer";
 import { Div, Button } from '@common/bridges/UIBridge.ts';
 import { exportVideo } from '@common/utils/exportVideo';
-import { IAnalysisData } from '@/common/core/cvval-data';
+import { IAnalysisData } from '@/features/cv-val/core/cvval-data';
 
 /**
  * VideoModule을 위한 플러그인 추상 클래스

@@ -1,4 +1,4 @@
-import { CVValData } from "@common/core/cvval-data";
+import { CVValData } from "@/features/cv-val/core/cvval-data";
 
 /**
  * 비디오 레이어 렌더링을 위한 전략 인터페이스

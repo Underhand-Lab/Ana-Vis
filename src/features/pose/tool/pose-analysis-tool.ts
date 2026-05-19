@@ -1,4 +1,4 @@
-import { CVValData, IAnalysisTool } from "@/common/core/cvval-data";
+import { CVValData, IAnalysisTool } from "@/features/cv-val/core/cvval-data";
 import featureName from "../ constant";
 import { PoseData } from "../core/pose-data";
 
