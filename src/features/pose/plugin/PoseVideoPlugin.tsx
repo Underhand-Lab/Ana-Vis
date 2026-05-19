@@ -30,7 +30,6 @@ const defaultSettings: SkeletonSettings = {
     COLOR_JOINT: "rgba(255,255,255,1)",
     JOINT_STROKE: "rgba(255,255,255,1)",
     lineWidth: 2,
-    showBackground: true,
     jointShape: 'circle', // This should be part of SkeletonSettings
     jointRadius: 4,      // This should be part of SkeletonSettings
     jointStrokeWidth: 2, // This should be part of SkeletonSettings
@@ -57,11 +56,6 @@ export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
     drawOverlay(ctx: CanvasRenderingContext2D, frameIdx: number, _data: any, settings: SkeletonSettings, context: { getPoseLayer: (idx: number) => HTMLCanvasElement | null }) {
         const poseLayer = context.getPoseLayer(frameIdx);
         
-        if (!settings.showBackground) {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        }
-
         if (poseLayer) {
             ctx.drawImage(poseLayer, 0, 0);
         }

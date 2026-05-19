@@ -6,9 +6,7 @@ import featureName from '../constant';
 
 interface ColorsState {
   batColor: string;
-  batAlpha: number;
   trailColor: string;
-  trailAlpha: number;
 }
 
 interface Point {
@@ -31,27 +29,24 @@ export const useTrackBatFrame = (trackData: CVValData | null) => {
   const [trailLen, setTrailLen] = useState<number>(3);
   const [colors, setColors] = useState<ColorsState>({
     batColor: '#ff8000',
-    batAlpha: 100,
-    trailColor: '#00ff00',
-    trailAlpha: 100
+    trailColor: '#00ff00'
   });
 
   const offscreenRef = useRef<HTMLCanvasElement | null>(null);
   const cachedImageData = useRef<ImageData | null>(null);
 
   // 색상 문자열(Hex 또는 RGBA)을 [R, G, B, A(0-255)] 배열로 변환
-  const getRgba = (colorStr: string, alphaOverride?: number): [number, number, number, number] => {
+  const getRgba = (colorStr: string): [number, number, number, number] => {
     if (!colorStr) return [0, 0, 0, 0];
 
-    // 1. RGBA 문자열 케이스 (rgba(255, 255, 255, 1.0))
-    const rgbaMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    // 1. RGBA 문자열 케이스 (rgba(255, 255, 255, 1.0) - 공백에 유연하게 대응)
+    const rgbaMatch = colorStr.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/);
     if (rgbaMatch) {
       const r = parseInt(rgbaMatch[1]);
       const g = parseInt(rgbaMatch[2]);
       const b = parseInt(rgbaMatch[3]);
-      // alphaOverride가 있으면 우선 사용(0-255), 없으면 문자열 내 alpha(0-1)를 255 스케일로 변환
-      const a = alphaOverride !== undefined ? Math.round(alphaOverride) : 
-               (rgbaMatch[4] ? Math.round(parseFloat(rgbaMatch[4]) * 255) : 255);
+      // alpha(0-1)를 255 스케일로 변환. 값이 없으면 불투명(255) 처리
+      const a = (rgbaMatch[4] !== undefined && rgbaMatch[4] !== "") ? Math.round(parseFloat(rgbaMatch[4]) * 255) : 255;
       return [r, g, b, a];
     }
 
@@ -60,7 +55,7 @@ export const useTrackBatFrame = (trackData: CVValData | null) => {
       const r = parseInt(colorStr.slice(1, 3), 16);
       const g = parseInt(colorStr.slice(3, 5), 16);
       const b = parseInt(colorStr.slice(5, 7), 16);
-      const a = alphaOverride !== undefined ? Math.round(alphaOverride) : 255;
+      const a = 255;
       return [r, g, b, a];
     }
 
@@ -211,9 +206,8 @@ export const useTrackBatFrame = (trackData: CVValData | null) => {
 
     const actualConf = (trackData as any).getConf ? (trackData as any).getConf() : 0.1;
 
-    // colors 객체 내에 이미 rgba 정보가 포함되어 있으므로 alphaOverride 없이 호출 가능
-    const batRGBA = getRgba(colors.batColor, colors.batAlpha);
-    const trailRGBA = getRgba(colors.trailColor, colors.trailAlpha);
+    const batRGBA = getRgba(colors.batColor);
+    const trailRGBA = getRgba(colors.trailColor);
 
     // 2. 궤적 및 배트 마스킹 (픽셀 데이터 생성)
     const effectiveLen = length !== undefined ? length : trailLen;

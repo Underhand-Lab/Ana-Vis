@@ -55,6 +55,7 @@ export function createVideoModule(
 
         const drawImageAt = useCallback((frameIdx: number) => {
             if (!data) return null;
+            const moduleSettings = settings.moduleSettings || defaultModuleSettings;
             const rawImgList = data.getRawImgList?.(0);
             const backgroundImage = rawImgList ? rawImgList[frameIdx] : null;
             if (!backgroundImage) return null;
@@ -65,10 +66,11 @@ export function createVideoModule(
             const ctx = compositeCanvas.getContext('2d');
             if (!ctx) return null;
 
-            // Draw background image only if showBackground is true
-            if (settings.showBackground !== false) {
+            // moduleSettings.showBackground 값에 따라 배경 출력 결정
+            if (moduleSettings.showBackground !== false) {
                 ctx.drawImage(backgroundImage, 0, 0);
             } else {
+                ctx.fillStyle = 'black';
                 ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height); // Fill with black if no background
             }
             
@@ -78,7 +80,7 @@ export function createVideoModule(
             });
 
             return compositeCanvas;
-        }, [data, settings.showBackground, contexts]);
+        }, [data, settings.moduleSettings, contexts]);
 
         useEffect(() => {
             if (!data || !rendererRef.current) return;
