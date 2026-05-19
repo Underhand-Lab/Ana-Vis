@@ -5,7 +5,7 @@ import AnalysisGridContainer from '@common/components/analysis-container/Analysi
 import VideoProcessorModal from '@common/components/VideoProcessorModal';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
-import { Processor } from '@common/lib/processor.ts';
+import { useProcessor } from '@common/hooks/useProcessor';
 
 // 라이브러리 import
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
@@ -25,11 +25,6 @@ import { CVValData, IAnalysisTool } from '@/common/core/cvval-data';
 
 interface LocationState {
 	externalFile?: File;
-}
-
-interface Progress {
-	current: number;
-	total: number;
 }
 
 // 정적 설정값
@@ -59,9 +54,7 @@ const PosePage: React.FC = () => {
 	const state = location.state as LocationState;
 	const navigate = useNavigate();
 	const [processedData, setProcessedData] = useState<CVValData | null>(null);
-	const [isProcessing, setIsProcessing] = useState(false);
-	const [progress, setProgress] = useState<Progress>({ current: 0, total: 0 });
-	const [statusKey, setStatusKey] = useState('label-before-process');
+	const { status, progress, isProcessing, processVideo, reset: resetProcessor } = useProcessor();
 	const [currentIdx, setCurrentIdx] = useState(0);
 	const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
 		{ ...PoseVideoModule, id: 'video-default' },
@@ -146,17 +139,10 @@ const PosePage: React.FC = () => {
 	const handleProcessVideo = async (files: FileList, model: string) => {
 		if (!files || files.length < 1) return;
 
-		setProgress({ current: 0, total: 0 });
-		setIsProcessing(true);
-
-		const processor = new Processor();
 		try {
-			processor.setting(DETECTORS[model], {
-				onState: (state: string) => setStatusKey(`label-${state}`),
-				onProgress: (current: number, total: number) => setProgress({ current, total })
-			});
-
-			const data = await processor.processVideo(files, 'pose', new CVValData(), new PoseData());
+			const data = await processVideo(
+				DETECTORS[model], files, 'pose', new CVValData(), new PoseData()
+			);
 
 			data.addAnalysisTools('pose', ANALYSIS_TOOLS);
 			
@@ -166,8 +152,6 @@ const PosePage: React.FC = () => {
 		} catch (e) {
 			console.error(e);
 			alert("처리 중 오류가 발생했습니다.");
-		} finally {
-			setIsProcessing(false);
 		}
 	};
 
@@ -207,6 +191,7 @@ const PosePage: React.FC = () => {
 				fileButtons={[
 					{
 						name: "새 분석", action: () => {
+							resetProcessor();
 							setProcessModalOpen(true);
 						}
 					},
@@ -275,7 +260,7 @@ const PosePage: React.FC = () => {
 				onProcess={handleProcessVideo}
 				isProcessing={isProcessing}
 				progress={progress}
-				statusKey={statusKey}
+				statusKey={`label-${status}`}
 			/>
 
 			<Modal

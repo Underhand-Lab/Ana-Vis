@@ -14,7 +14,7 @@ import TrackBallVideoModule from "@features/track-ball/modules/TrackBallVideoMod
 import TableModule from "@/common/modules/TableModule"
 
 // 라이브러리 import
-import { Processor } from '@common/lib/processor.ts';
+import { useProcessor } from '@common/hooks/useProcessor';
 import { TrackBallData } from "@features/track-ball/core/track-ball-data";
 import * as BallDetector from '@features/track-ball/core/ball-detector/index';
 import { DetectedObject } from '@features/track-ball/types';
@@ -27,11 +27,6 @@ import { CVValData, IAnalysisTool } from '@/common/core/cvval-data';
 
 interface LocationState {
     externalFile?: File;
-}
-
-interface Progress {
-    current: number;
-    total: number;
 }
 
 // YOLO 탐지기 설정
@@ -57,9 +52,7 @@ const TrackBallPage: React.FC = () => {
     const state = location.state as LocationState;
     const navigate = useNavigate();
     const [processedData, setProcessedData] = useState<CVValData | null>(null);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [progress, setProgress] = useState<Progress>({ current: 0, total: 0 });
-    const [statusKey, setStatusKey] = useState('label-before-process');
+    const { status, progress, isProcessing, processVideo, reset: resetProcessor } = useProcessor();
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.01);
     const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
@@ -175,20 +168,11 @@ const TrackBallPage: React.FC = () => {
     const handleProcessVideo = async (files: FileList, model: string) => {
         if (!files || files.length < 1) return;
 
-        // 수정사항: 초기화 로직
-        setProgress({ current: 0, total: 0 });
-        setIsProcessing(true);
-
-        const processor = new Processor();
         try {
-            processor.setting(DETECTORS[model], {
-                onState: (state: string) => setStatusKey(`label-${state}`),
-                onProgress: (current: number, total: number) => setProgress({ current, total })
-            });
-            
             const trackBallData =  new TrackBallData();
-            const result = await processor.processVideo(
-                files, 'ball', new CVValData(), trackBallData);
+            const result = await processVideo(
+                DETECTORS[model], files, 'ball', new CVValData(), trackBallData
+            );
 
             result.addAnalysisTools('ball', ANALYSIS_TOOLS);
             trackBallData.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
@@ -198,8 +182,6 @@ const TrackBallPage: React.FC = () => {
         } catch (e) {
             console.error(e);
             alert("비디오 처리 중 오류 발생");
-        } finally {
-            setIsProcessing(false);
         }
     };
 
@@ -287,8 +269,7 @@ const TrackBallPage: React.FC = () => {
                     {
                         name: "새 분석",
                         action: () => {
-                            setProgress({ current: 0, total: 0 }); // 진행도 초기화
-                            setStatusKey('label-before-process'); // 상태 메시지 초기화
+                            resetProcessor();
                             setProcessModalOpen(true);
                         }
                     },
@@ -358,7 +339,7 @@ const TrackBallPage: React.FC = () => {
                 onProcess={handleProcessVideo}
                 isProcessing={isProcessing}
                 progress={progress}
-                statusKey={statusKey}
+                statusKey={`label-${status}`}
             />
 
             <TrackingEditorModal

@@ -6,7 +6,7 @@ import VideoProcessorModal from '@common/components/VideoProcessorModal';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
 import TrackingEditorModal from '@common/components/TrackingEditorModal';
-import { Processor } from '@common/lib/processor';
+import { useProcessor } from '@common/hooks/useProcessor';
 import { AnalysisModule } from '@/common/types/analysis-module';
 import {
     Div, InputFile, InputSlider,
@@ -24,11 +24,6 @@ import { CVValData } from '@/common/core/cvval-data';
 
 interface LocationState {
     externalFile?: File;
-}
-
-interface Progress {
-    current: number;
-    total: number;
 }
 
 type TrackBatDataWithAnalysis = TrackBatData & {
@@ -55,9 +50,7 @@ const TrackBatPage: React.FC = () => {
     const state = location.state as LocationState;
     const navigate = useNavigate();
     const [processedData, setProcessedData] = useState<CVValData | null>(null);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [progress, setProgress] = useState<Progress>({ current: 0, total: 0 });
-    const [statusKey, setStatusKey] = useState('label-before-process');
+    const { status, progress, isProcessing, processVideo, reset: resetProcessor } = useProcessor();
     const [currentIdx, setCurrentIdx] = useState(0);
     const [confValue, setConfValue] = useState(0.55); // 기본값 0.55
     const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
@@ -169,16 +162,9 @@ const TrackBatPage: React.FC = () => {
 
         if (!files || files.length < 1) return;
 
-        setProgress({ current: 0, total: 0 });
-        setIsProcessing(true);
-        const processor = new Processor();
         try {
-            processor.setting(DETECTORS[model], {
-                onState: (state: string) => setStatusKey(`label-${state}`),
-                onProgress: (current: number, total: number) => setProgress({ current, total })
-            });
             const batData =  new TrackBatData();
-            const result = await processor.processVideo(
+            const result = await processVideo(DETECTORS[model],
                 files, 'bat', new CVValData(), batData);
 
             batData.setConf(confValue); // 데이터 처리 직후 UI의 CONF 값 적용
@@ -187,8 +173,6 @@ const TrackBatPage: React.FC = () => {
             setProcessModalOpen(false);
         } catch (e) {
             alert("비디오 처리 중 오류 발생");
-        } finally {
-            setIsProcessing(false);
         }
     };
 
@@ -273,6 +257,7 @@ const TrackBatPage: React.FC = () => {
                 fileButtons={[
                     {
                         name: "새 분석", action: () => {
+                            resetProcessor();
                             setProcessModalOpen(true);
                         }
                     },
@@ -334,7 +319,7 @@ const TrackBatPage: React.FC = () => {
                 onProcess={handleProcessVideo}
                 isProcessing={isProcessing}
                 progress={progress}
-                statusKey={statusKey}
+                statusKey={`label-${status}`}
             />
 
             <TrackingEditorModal

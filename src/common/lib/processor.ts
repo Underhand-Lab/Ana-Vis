@@ -1,18 +1,17 @@
 import { CVValData } from '../core/cvval-data.js';
 import { MediaBunnyVideoToImageList } from './video-to-img-list/media-bunny.js';
-
+import type { IDetector } from '../types/detector.js';
 export interface OnProgressCallback {
     onState: (state: string) => void;
     onProgress: (current: number, total: number) => void;
 }
 
-export interface Detector {
-    initialize(): Promise<void>;
-    process(image: any): Promise<any>;
-}
-
+/**
+ * Processor 클래스: 순수 비즈니스 로직 (OO)
+ * React에 의존하지 않으며, 비디오 처리 엔진 역할을 수행합니다.
+ */
 export class Processor {
-    private detector: Detector | null = null;
+    private detector: IDetector | null = null;
     private onProgressCallback: OnProgressCallback | null = null;
     private videoConverter: any; // MediaBunnyVideoConverter의 정확한 타입을 알 수 없는 경우 any 혹은 별도 정의
 
@@ -20,7 +19,7 @@ export class Processor {
         this.videoConverter = new MediaBunnyVideoToImageList();
     }
 
-    setting(ballDetector: Detector, onProgress: OnProgressCallback): void {
+    setting(ballDetector: IDetector, onProgress: OnProgressCallback): void {
         this.detector = ballDetector;
         this.onProgressCallback = onProgress;
     }
