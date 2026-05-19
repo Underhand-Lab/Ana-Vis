@@ -57,26 +57,54 @@ const InputColor: FC<InputColorProps> = ({ label, value, onChange }) => {
     // 로컬 상태를 두어 드래그 시 즉각적인 반응을 보장합니다.
     const [localColor, setLocalColor] = useState(value);
 
-    const toggleOpen = () => {
-        if (!isOpen && triggerRef.current) {
+    const updatePickerPosition = useCallback(() => {
+        if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
             const pickerWidth = 210; // RgbaColorPicker의 기본 너비(200px) + 여백
+            const pickerHeight = 200; // RgbaColorPicker의 기본 높이 대략 200px
             const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
             
             let left = rect.left + window.scrollX;
+            let top = rect.bottom + window.scrollY + 5; // 기본값: 버튼 아래
 
             // 피커가 화면 오른쪽 끝을 벗어나는지 확인하여 위치 조정
             if (rect.left + pickerWidth > viewportWidth) {
                 left = Math.max(10, viewportWidth - pickerWidth - 10) + window.scrollX;
             }
 
+            // 피커가 화면 하단 끝을 벗어나는지 확인하여 위치 조정
+            if (rect.bottom + pickerHeight > viewportHeight) {
+                // 버튼 위로 표시
+                top = rect.top + window.scrollY - pickerHeight - 5;
+            }
+
             setPickerPos({
-                top: rect.bottom + window.scrollY + 5,
+                top: top,
                 left: left
             });
         }
+    }, []);
+
+    const toggleOpen = () => {
+        if (!isOpen) {
+            updatePickerPosition();
+        }
         setIsOpen(!isOpen);
     };
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        window.addEventListener('resize', updatePickerPosition);
+        // 스크롤 시에도 위치 업데이트 (이벤트 캡처링을 사용하여 하위 요소의 스크롤도 감지)
+        window.addEventListener('scroll', updatePickerPosition, true);
+        
+        return () => {
+            window.removeEventListener('resize', updatePickerPosition);
+            window.removeEventListener('scroll', updatePickerPosition, true);
+        };
+    }, [isOpen, updatePickerPosition]);
 
     // 외부에서 들어오는 value가 바뀌면 로컬 상태 동기화
     useEffect(() => {
