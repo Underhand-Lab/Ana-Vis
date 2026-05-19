@@ -5,7 +5,7 @@ import { usePose3DVisualize } from "../hooks/usePose3DVisualize"
 
 import { Div, InputColor } from '@common/bridges/UIBridge';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
-    from '../../../common/types/analysis-module';
+    from '@features/cv-val/types/analysis-module';
 
 /**
  * 모듈 설정 및 기본값
@@ -52,7 +52,7 @@ const defaultSettings: Pose3DVideoSettingsData = {
 /**
  * 출력(View) 컴포넌트
  */
-export const Pose3DVideoView: React.FC<AnalysisViewProps<PoseData, Pose3DVideoSettingsData>> = ({ data, currentFrame, settings }) => {
+export const Pose3DVideoView: React.FC<AnalysisViewProps<Pose3DVideoSettingsData>> = ({ data, currentFrame, settings }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const { setOptions, drawPose } = usePose3DVisualize(data, canvasRef);
 
@@ -71,8 +71,19 @@ export const Pose3DVideoView: React.FC<AnalysisViewProps<PoseData, Pose3DVideoSe
     }, [data, currentFrame, drawPose]);
 
     return (
-        <Div style={{ width: '100%', height: '100%', position: 'relative' }}>
-            <canvas ref={canvasRef} style={{ width: '100%', height: '100%', background: 'black', position: 'absolute', top: 0, left: 0 }} />
+        <Div style={{ flex: 1, width: '100%', height: '100%', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+            <canvas
+                ref={canvasRef}
+                style={{
+                    display: 'block',
+                    width: '100%',
+                    height: '100%',
+                    background: 'black',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
+                }}
+            />
         </Div>
     );
 };
@@ -80,7 +91,7 @@ export const Pose3DVideoView: React.FC<AnalysisViewProps<PoseData, Pose3DVideoSe
 /**
  * 설정(Settings) 컴포넌트
  */
-export const Pose3DVideoSettings: React.FC<AnalysisSettingsProps<PoseData, Pose3DVideoSettingsData>> = ({ settings, onSettingsChange, data }) => {
+export const Pose3DVideoSettings: React.FC<AnalysisSettingsProps<Pose3DVideoSettingsData>> = ({ settings, onSettingsChange, data }) => {
     return (
         <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
 
@@ -101,7 +112,7 @@ export const Pose3DVideoSettings: React.FC<AnalysisSettingsProps<PoseData, Pose3
 /**
  * 최종 모듈 객체
  */
-export const Pose3DVideoModule: AnalysisModule<PoseData, Pose3DVideoSettingsData> = {
+export const Pose3DVideoModule: AnalysisModule<Pose3DVideoSettingsData> = {
     id: 'pose-3d-video',
     title: '3D 자세 동영상',
     View: Pose3DVideoView,
