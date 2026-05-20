@@ -32,6 +32,8 @@ const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolBut
         position: 'sticky',
         top: 0,
         width: '100%',
+        maxWidth: '100vw',
+        boxSizing: 'border-box',
         backgroundColor: 'var(--secondary-color)',
         color: '#aaaaaa',
         fontSize: '15px',
@@ -40,36 +42,59 @@ const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolBut
         transition: 'transform 0.5s ease',
         padding: '10px 0',
         WebkitAppRegion: 'none',
+        overflow: 'hidden',
         borderBottom: 'none',
     };
 
     return (
         <nav style={navStyle}>
             <div style={{
-                padding: '0',
+                padding: '0 20px',
+                width: '100%',
+                boxSizing: 'border-box',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-around',
-                flexWrap: 'wrap'
+                justifyContent: 'space-between',
+                flexWrap: 'nowrap',
+                gap: '50px'
             }}>
-                <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }}>
+                <style>
+                    {`.hide-scrollbar::-webkit-scrollbar { display: none; }`}
+                </style>
+                <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: 0, flexShrink: 0 }}>
                     <li>
                         <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>CV-Val</Link>
                     </li>
                 </ul>
 
-                <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }}>
-                    {fileButtons.map((btn) => (
-                        <li key={btn.name}>
-                            <button
-                                onClick={btn.action}
-                                style={{ padding: '2px 10px' }}
-                            >
-                                {btn.name}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                <div 
+                    className="hide-scrollbar"
+                    style={{ 
+                        flex: 1,
+                        minWidth: 0,
+                        overflowX: 'auto',
+                        display: 'flex',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        WebkitMaskImage: 'linear-gradient(to right, transparent, black 30px, black calc(100% - 30px), transparent)',
+                        maskImage: 'linear-gradient(to right, transparent, black 30px, black calc(100% - 30px), transparent)',
+                        margin: '0 -30px',
+                        padding: '0 30px'
+                    }}
+                >
+                    <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: '0 0 0 auto', width: 'max-content', flexShrink: 0 }}>
+                        {fileButtons.map((btn) => (
+                            <li key={btn.name}>
+                                <button
+                                    onClick={btn.action}
+                                    style={{ padding: '2px 10px', whiteSpace: 'nowrap' }}
+                                >
+                                    {btn.name}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         </nav>
     );
