@@ -135,7 +135,7 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
 
   return (
     <Div 
-      ref={ref}
+      ref={ref} 
       style={{ 
         ...styles.card, 
         backgroundColor: vars.background, 
@@ -151,10 +151,13 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
     >
       {/* 상단 드래그 핸들 오버레이 */}
       <Div 
-        className="grid-item-overlay drag-handle frostedglassmorphism" 
+        className="grid-item-overlay frostedglassmorphism" 
         style={{ ...styles.header, ...((isHovered || isSettingsOpen) ? styles.headerVisible : {}) }}
       >
-        <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#222' }}>{displayTitle}</span>
+        <span 
+          className="drag-handle" // Make only the title span the drag handle
+          style={{ fontSize: '14px', fontWeight: 'bold', color: '#222', cursor: 'grab', flexGrow: 1, textAlign: 'left', textWrap: 'nowrap', overflow: 'visible' }}
+        >{displayTitle}</span>
         <Div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={(e) => { e.stopPropagation(); toggleSettings(); }} 

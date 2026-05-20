@@ -44,10 +44,12 @@
     "next": "Next"
   },
   "status": {
+    "label-video-loaded": "Ready",
     "label-idle": "Ready",
     "label-loading": "Loading Model...",
-    "label-processing": "Analyzing...",
-    "label-done": "Analysis Complete"
+    "label-on-process": "Analyzing...",
+    "label-done": "Analysis Complete",
+    "label-error": "Error"
   },
   "analysisLabels": {}
 }

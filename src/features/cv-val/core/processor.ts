@@ -32,9 +32,14 @@ export class Processor {
         if (this.onProgressCallback) {
             this.onProgressCallback.onState("video-loading");
         }
+        
+        const videoFile = videoList[0];
+        if (videoFile instanceof File) {
+            cvval.setName(videoFile.name);
+        }
 
         const { imageList, metadata } = 
-            await this.videoConverter.convert(videoList[0]);
+            await this.videoConverter.convert(videoFile);
 
         cvval.setRawImgList(imageList, 0);
         cvval.setVideoMetadata([metadata]);

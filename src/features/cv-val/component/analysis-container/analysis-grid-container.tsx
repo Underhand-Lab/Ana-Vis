@@ -53,8 +53,8 @@ const AnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame, o
             y: Infinity, // RGL이 빈 자리에 배치하도록 유도
             w,
             h: 18,
-            minW: 6, // 최소 크기를 명시적으로 크게 설정
-            minH: 12,
+            minW: 3, // 최소 크기를 더 작게 설정
+            minH: 6,
           };
         })
       ];

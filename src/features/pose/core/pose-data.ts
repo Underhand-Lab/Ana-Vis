@@ -31,7 +31,7 @@ export class PoseData implements IAnalysisData {
         this.landmarks2dListList = Array.from({ length: videoMetaDataList.length }, () => []);
         this.visibilityScoreListList = Array.from({ length: videoMetaDataList.length }, () => []);
         if (videoMetaDataList.length > 0) {
-            this.frameRate = videoMetaDataList[0].fps || 30; // Initialize frameRate
+            this.frameRate = videoMetaDataList[0]?.fps || 30; // Initialize frameRate
         }
         this.clearAnalysisCache();
 

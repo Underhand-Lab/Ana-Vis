@@ -32,11 +32,17 @@ export interface IAnalysisTool {
 export class CVValData {
     // 1차 분석 결과 저장소 (임의의 문자열 키를 지원하기 위해 Map 사용)
     private dataStore = new Map<string, IAnalysisData>();
+    private name: string = "";
     private videoMetaDataList: VideoMetadata[] = [];
     private rawImgListList: ImageBitmap[][] = [];
 
     // 2차 분석 플러그인 저장소
     private tools = new Map<string, IAnalysisTool[]>();
+
+    setName(name: string) { 
+        this.name = name.replace(/\.[^/.]+$/, ""); 
+    }
+    getName(): string { return this.name; }
 
     setRawImgList(imgList: ImageBitmap[], _index: number) {
         this.rawImgListList.push(imgList);
@@ -220,6 +226,8 @@ export class CVValData {
         const view = new DataView(buffer);
         
         // 1. 헤더 읽기
+        this.setName(file.name);
+
         const headerSize = view.getUint32(0, false);
         const headerJson = new TextDecoder().decode(buffer.slice(4, 4 + headerSize));
         const header = JSON.parse(headerJson);

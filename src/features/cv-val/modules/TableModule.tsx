@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import TableRenderer from '@/common/components/ui-brick/react-web/common/TableRenderer';
-import { Div, InputCheckbox, Select } from '@common/bridges/UIBridge';
+import { Div, InputCheckbox, Select, Toggle } from '@common/bridges/UIBridge';
 import { useTranslation } from 'react-i18next';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@features/cv-val/types/analysis-module';
@@ -8,6 +8,7 @@ import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
 interface TableSettingsData {
     selectedToolKey: string;
     visibility?: Record<string, boolean>;
+    showTitle?: boolean; // 제목 표시 여부 옵션 추가
 }
 
 /**
@@ -16,6 +17,7 @@ interface TableSettingsData {
 const defaultSettings: TableSettingsData = {
     selectedToolKey: "",
     visibility: {},
+    showTitle: true, // 기본적으로 제목 표시
 };
 
 /**
@@ -23,7 +25,7 @@ const defaultSettings: TableSettingsData = {
  */
 export const TableView: React.FC<AnalysisViewProps<TableSettingsData>> = ({ data, currentFrame, settings }) => {
     const { t } = useTranslation();
-    
+
     // 데이터 계산 및 현재 프레임 값 추출 로직
     const currentFrameData = useMemo(() => {
         if (!data) return null;
@@ -34,7 +36,7 @@ export const TableView: React.FC<AnalysisViewProps<TableSettingsData>> = ({ data
 
         // 선택된 키가 없거나 존재하지 않는 도구인 경우 첫 번째 도구를 사용합니다.
         const toolKey = (settings.selectedToolKey && tools[settings.selectedToolKey]) ? settings.selectedToolKey : toolKeys[0];
-        
+
         const processedData = tools[toolKey].getResult(currentFrame);
         if (!processedData) return null;
 
@@ -43,7 +45,7 @@ export const TableView: React.FC<AnalysisViewProps<TableSettingsData>> = ({ data
             // 설정에서 해당 키의 가시성이 false인 경우 건너뜀
             if (settings.visibility && settings.visibility[key] === false) continue;
             const val = processedData[key];
-            
+
             // 키 번역 적용 (매핑된 값이 없으면 원본 키 표시)
             const label = t(`analysisLabels.${key}`, key);
             ret[label] = (val !== null && val !== undefined)
@@ -53,11 +55,24 @@ export const TableView: React.FC<AnalysisViewProps<TableSettingsData>> = ({ data
         return Object.keys(ret).length > 0 ? ret : null;
     }, [data, settings, currentFrame, t]);
 
+    const displayTitle = useMemo(() => {
+        if (!data) return "";
+        const tools = data.getAnalysisTools();
+        const toolKeys = Object.keys(tools);
+        if (toolKeys.length === 0) return "";
+        const toolKey = (settings.selectedToolKey && tools[settings.selectedToolKey]) ? settings.selectedToolKey : toolKeys[0];
+        return t(`analysisTools.${toolKey}`, toolKey);
+    }, [data, settings.selectedToolKey, t]);
+
+
     return (
         <Div className="viewer_container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <Div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
-                <TableRenderer data={currentFrameData} />
-            </Div>
+            {settings.showTitle && (
+                <Div style={{ padding: '10px 15px 5px 15px', fontSize: '18px', fontWeight: 'bold' }}>
+                    {displayTitle ? displayTitle : "..."}
+                </Div>
+            )}
+            <Div className="table-content-area" style={{ flex: 1, overflowY: 'auto', padding: '15px' }}><TableRenderer data={currentFrameData} /></Div>
         </Div>
     );
 };
@@ -75,6 +90,10 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
     const toolOptions = useMemo(() => {
         if (!data) return [];
         const tools = data.getAnalysisTools();
+        // If no tools are available, return an option indicating that.
+        if (Object.keys(tools).length === 0) {
+            return [{ label: t('common.noToolsAvailable'), value: "" }];
+        }
         return Object.values(tools).map(tool => ({
             label: t(`analysisTools.${tool.name}`, tool.name) as string,
             value: tool.name
@@ -92,7 +111,7 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
     const availableKeys = useMemo(() => {
         if (!data) return [];
 
-        const tools =  data.getAnalysisTools();
+        const tools = data.getAnalysisTools();
         const toolKeys = Object.keys(tools);
         if (toolKeys.length === 0) return [];
 
@@ -103,11 +122,18 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
 
     }, [data, settings.selectedToolKey]);
 
+    const handleShowTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        onSettingsChange({ ...settings, showTitle: e.target.checked });
+    };
+
     return (
         <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
-            <Div>
-                <label style={{ marginRight: '10px' }}> 
-                    <strong>{t('settings.analysisTool')}</strong>:
+            {/* 제목 표시 여부 옵션 */}
+            <InputCheckbox label={t('settings.showTitle')} checked={settings.showTitle} onChange={handleShowTitleChange} />
+
+            <Div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '10px', alignItems: 'center' }}>
+                <label>
+                    {t('settings.analysisTool')}
                 </label>
 
                 <Select
@@ -118,26 +144,27 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
             </Div>
 
             {/* 행 선택(가시성) 설정 영역 */}
-            <Div>
-                <h4 style={{ fontSize: '13px', marginBottom: '8px' }}>{t('settings.selectData')}</h4>
-                <Div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {availableKeys.map((key) => {
-                        const isVisible = settings.visibility?.[key] !== false;
-                        return (
-                            <InputCheckbox
-                                key={key}
-                                label={t(`analysisLabels.${key}`, key)}
-                                checked={isVisible}
-                                onChange={() => {
-                                    const newVisibility = { ... (settings.visibility || {}) };
-                                    newVisibility[key] = !isVisible;
-                                    onSettingsChange({ ...settings, visibility: newVisibility });
-                                }}
-                            />
-                        );
-                    })}
-                </Div>
-            </Div>
+            {availableKeys.length > 0 && (
+                <Toggle title={t('settings.selectData')}>
+                    <Div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {availableKeys.map((key) => {
+                            const isVisible = settings.visibility?.[key] !== false;
+                            return (
+                                <InputCheckbox
+                                    key={key}
+                                    label={t(`analysisLabels.${key}`, key)}
+                                    checked={isVisible}
+                                    onChange={() => {
+                                        const newVisibility = { ... (settings.visibility || {}) };
+                                        newVisibility[key] = !isVisible;
+                                        onSettingsChange({ ...settings, visibility: newVisibility });
+                                    }}
+                                />
+                            );
+                        })}
+                    </Div>
+                </Toggle>
+            )}
         </Div>
     );
 };
@@ -151,11 +178,13 @@ export const TableModule: AnalysisModule<TableSettingsData> = {
     locales: {
         en: {
             analysisTools: { "common-table": "Analysis Table" },
-            settings: { selectData: "Select Data to Display" }
+            common: { noToolsAvailable: "No tools", noDataToDisplay: "No data" },
+            settings: { selectData: "Data to Display", showTitle: "Show Title" }
         },
         ko: {
             analysisTools: { "common-table": "분석 표" },
-            settings: { selectData: "표시할 데이터 선택" }
+            common: { noToolsAvailable: "분석 도구 x", noDataToDisplay: "분석 데이터 x" },
+            settings: { selectData: "표시할 정보", showTitle: "제목 표시" }
         }
     },
     init: (context) => {

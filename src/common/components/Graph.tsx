@@ -104,11 +104,11 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
                 } as any,
                 scales: {
                     x: { 
-                        grid: { color: vars.text + '22' }, // 텍스트 색상에 투명도(22) 추가
+                        grid: { color: vars.surface }, // 텍스트 색상에 투명도(22) 추가
                         ticks: { color: vars.text }
                     },
                     y: { 
-                        grid: { color: vars.text + '22' },
+                        grid: { color: vars.surface },
                         ticks: { color: vars.text }
                     }
                 }
@@ -170,23 +170,23 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
         if (chart.options.scales) {
             const { x, y } = chart.options.scales;
             if (x) {
-                if (x.grid) x.grid.color = vars.text + '22'; // 텍스트 색상에 투명도 추가
+                if (x.grid) x.grid.color = vars.surface; // 텍스트 색상에 투명도 추가
                 if (x.ticks) x.ticks.color = vars.text;
             }
             if (y) {
-                if (y.grid) y.grid.color = vars.text + '22';
+                if (y.grid) y.grid.color = vars.surface;
                 if (y.ticks) y.ticks.color = vars.text;
             }
         }
 
         chartRef.current.update('none');
-    }, [idx, vars.surface]); // 테마 색상 변경 시(vars.surface) 업데이트 트리거
+    }, [idx, vars.box]);
 
     return (
         <div className={className} style={{ 
             width: '100%', 
             height: '100%', 
-            backgroundColor: vars.surface, // 다크모드 시 surface 색상 적용
+            backgroundColor: 'transparent', // 다크모드 시 surface 색상 적용
             borderRadius: '8px',
             transition: 'background-color 0.3s ease'
         }}>

@@ -120,7 +120,7 @@ const InputColor: FC<InputColorProps> = ({ label, value, onChange }) => {
     }, [onChange]);
 
     return (
-        <Div style={{ marginBottom: '10px' }}>
+        <Div>
             <Div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Div 
                     ref={triggerRef}

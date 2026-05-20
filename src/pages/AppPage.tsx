@@ -129,6 +129,7 @@ const AppPage: React.FC = () => {
 				const featureData = new config.DataClass();
 				await featureData.loadFromFile(file);
 				newData.set(type, featureData);
+				newData.setName(file.name); // 레거시 개별 포맷 로드 시 이름 설정
 				if (config.tools.length > 0) newData.addAnalysisTools(type, config.tools);
 			}
 
@@ -176,7 +177,10 @@ const AppPage: React.FC = () => {
 			setProcessedData(result);
 			setCurrentIdx(0);
 			setProcessModalOpen(false);
-		} catch (e) { alert("처리 중 오류 발생"); }
+		} catch (e) {
+			alert("처리 중 오류 발생");
+			console.log(e);
+		}
 	};
 
 	const handleAddModule = (type: string) => {
@@ -238,7 +242,7 @@ const AppPage: React.FC = () => {
 							if (!processedData || processedData.getFrameCnt() === 0) return;
 							try {
 								const blob = await processedData.toBlob();
-								await saveBlobWithPicker(blob, `analysis.cvval`,
+								await saveBlobWithPicker(blob, processedData.getName(),
 									[{ description: '통합 분석 데이터', accept: { 'application/cvval': ['.cvval'] } }], 
 									true, 'cvval');
 							} catch (e) {

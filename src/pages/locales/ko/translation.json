@@ -44,10 +44,12 @@
     "next": "다음"
   },
   "status": {
-    "label-idle": "대기 중",
-    "label-loading": "모델 로드 중...",
-    "label-processing": "분석 중...",
-    "label-done": "분석 완료"
+    "label-video-loaded": "대기 중",
+    "label-before-process": "대기 중",
+    "label-model-loading": "모델 로드 중...",
+    "label-pn-process": "분석 중...",
+    "label-completed": "분석 완료",
+    "label-error": "오류"
   },
   "analysisLabels": {}
 }
