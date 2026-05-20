@@ -124,7 +124,7 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
         if (!data) return [];
         const tools = data.getAnalysisTools();
         return Object.values(tools).map(tool => ({
-            label: t(`analysisTools.${tool.name}`, (tool as any).title || tool.name),
+            label: t(`analysisTools.${tool.name}`, (tool as any).title || tool.name) as string,
             value: tool.name
         }));
     }, [data, t]);
@@ -198,7 +198,7 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
                         return (
                             <LegendItem
                                 key={label}
-                                label={t(`analysisLabels.${label}`, label)}
+                                label={t(`analysisLabels.${label}`, label) as string}
                                 color={settings[label] || defaultSettings[label] || getDeterministicColor(label)}
                                 isVisible={isVisible}
                                 onToggleVisibility={() => {

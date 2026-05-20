@@ -167,7 +167,7 @@ export function createVideoModule(
                 />
                 {plugins.map(p => (
                     <React.Fragment key={p.id}> 
-                        <Toggle title={t(`analysisTools.${p.id}`, p.title)}>
+                        <Toggle title={t(`analysisTools.${p.id}`, p.title) as string}>
                             {p.getSettingComponent({
                                 ...props,
                                 settings: settings[p.id] ?? p.defaultSettings,

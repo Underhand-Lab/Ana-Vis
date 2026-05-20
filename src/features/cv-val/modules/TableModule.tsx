@@ -76,7 +76,7 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
         if (!data) return [];
         const tools = data.getAnalysisTools();
         return Object.values(tools).map(tool => ({
-            label: t(`analysisTools.${tool.name}`, tool.name),
+            label: t(`analysisTools.${tool.name}`, tool.name) as string,
             value: tool.name
         }));
     }, [data, t]);
