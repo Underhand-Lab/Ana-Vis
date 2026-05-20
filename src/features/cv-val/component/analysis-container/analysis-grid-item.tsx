@@ -1,6 +1,6 @@
 import React, { useState, forwardRef, useRef } from 'react';
 import { Div } from "@common/bridges/UIBridge";
-import vars from '@/common/components/ui-brick/Variables';
+import vars from '@/common/components/ui-brick/variables';
 import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 
 interface Props {
@@ -36,7 +36,12 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   return (
     <Div 
       ref={ref}
-      style={{ ...styles.card, ...style }}
+      style={{ 
+        ...styles.card, 
+        backgroundColor: vars.background, 
+        borderColor: vars.surface,
+        ...style 
+      }}
       className={`${className} analysis-grid-item grid-item-card ${isSettingsOpen ? 'isSetting' : ''}`}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
@@ -49,7 +54,7 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
         className="grid-item-overlay drag-handle frostedglassmorphism" 
         style={{ ...styles.header, ...((isHovered || isSettingsOpen) ? styles.headerVisible : {}) }}
       >
-        <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{title}</span>
+        <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'black' }}>{title}</span>
         <Div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={(e) => { e.stopPropagation(); toggleSettings(); }} 
@@ -59,7 +64,13 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
           </button>
           <button 
             onClick={(e) => { e.stopPropagation(); onRemove(module.id); }} 
-            style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'black', fontSize: '16px' }}
+            style={{ 
+                border: 'none', 
+                background: 'none', 
+                cursor: 'pointer', 
+                color: vars.text, 
+                fontSize: '16px' 
+            }}
           >
             ✕
           </button>
@@ -98,12 +109,11 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
 
 const styles: { [key: string]: React.CSSProperties } = {
   card: {
-    background: 'white',
     borderRadius: '12px',
     boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
     overflow: 'hidden',
     fontFamily: vars.font,
-    border: '1px solid #ddd',
+    border: '1px solid',
   },
   header: {
     position: 'absolute',
@@ -140,6 +150,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     zIndex: 20,
     overflowY: 'auto',
     borderLeft: '1px solid rgba(255,255,255,0.3)',
+    color: 'black',
   }
 };
 

@@ -1,4 +1,5 @@
 import React, { forwardRef, ReactNode, HTMLAttributes } from 'react';
+import vars from '../../variables';
 
 interface WrapperProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
@@ -7,7 +8,12 @@ interface WrapperProps extends HTMLAttributes<HTMLDivElement> {
 const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(({ children, style, ...props }, ref) => (
     <div 
         ref={ref} 
-        style={{ ...styles.wrapper, ...style }}
+        style={{ 
+            ...styles.wrapper, 
+            backgroundColor: vars.background,
+            color: vars.text,
+            ...style 
+        }}
         {...props}
     >
         {children}
@@ -19,8 +25,6 @@ const styles: { [key: string]: React.CSSProperties } = {
         width: '100%',
         height: '100%',
         fontFamily: "'KBO-Dia-Gothic_medium', Arial, sans-serif",
-        backgroundColor: '#f0f2f5',
-        color: '#333',
         alignItems: 'center',
         margin: 0,
         textAlign: 'center',

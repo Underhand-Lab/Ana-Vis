@@ -1,6 +1,7 @@
 import React, { ReactNode, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Div, Box, Button } from '../bridges/UIBridge';
+import vars from './ui-brick/variables';
 
 interface ModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
     <Div className="panel frostedglassmorphism" style={overlayStyle} onClick={onClose}>
       <Box
         className="pop-up container" 
-        style={modalStyle} 
+        style={{...modalStyle, color: vars.text}} 
         onClick={(e: MouseEvent) => e.stopPropagation()} // 내부 클릭 시 닫힘 방지
       >
         <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -1,5 +1,5 @@
 import React, { forwardRef, useState, InputHTMLAttributes, useRef, useImperativeHandle } from 'react';
-import vars from '../../../Variables';
+import vars from '../../../variables';
 import Button from '../Button';
 
 interface InputFileProps extends InputHTMLAttributes<HTMLInputElement> {}

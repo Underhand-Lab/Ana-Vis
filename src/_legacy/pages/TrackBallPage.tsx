@@ -17,9 +17,9 @@ import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 import { useProcessor } from '@features/cv-val/hooks/useProcessor';
 import { usePluginLoader } from '@features/cv-val/hooks/usePluginLoader';
 
-import AnalysisGridContainer from '@features/cv-val/component/analysis-container/AnalysisGridContainer';
-import VideoProcessorModal from '@features/cv-val/component/VideoProcessorModal';
-import TrackingEditorModal from '@features/cv-val/component/TrackingEditorModal';
+import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/analysis-grid-container';
+import VideoProcessorModal from '@/features/cv-val/component/video-processor-modal';
+import TrackingEditorModal from '@/features/cv-val/component/tracking-editor-modal';
 
 import { VideoModuleBuilder } from '@/features/cv-val/modules/VideoModule';
 import TableModule from "@features/cv-val/modules/TableModule"

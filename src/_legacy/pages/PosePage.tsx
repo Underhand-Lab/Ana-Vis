@@ -13,8 +13,8 @@ import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 import { useProcessor } from '@features/cv-val/hooks/useProcessor';
 import { usePluginLoader } from '@features/cv-val/hooks/usePluginLoader';
 
-import AnalysisGridContainer from '@features/cv-val/component/analysis-container/AnalysisGridContainer';
-import VideoProcessorModal from '@features/cv-val/component/VideoProcessorModal';
+import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/analysis-grid-container';
+import VideoProcessorModal from '@/features/cv-val/component/video-processor-modal';
 
 import { VideoModuleBuilder } from '@features/cv-val/modules/VideoModule';
 import GraphModule from '@features/cv-val/modules/GraphModule';

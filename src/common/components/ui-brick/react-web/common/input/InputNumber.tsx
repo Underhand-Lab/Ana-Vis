@@ -1,5 +1,5 @@
 import React, { forwardRef, InputHTMLAttributes } from 'react';
-import vars from '../../../Variables';
+import vars from '../../../variables';
 
 interface InputNumberProps extends InputHTMLAttributes<HTMLInputElement> {}
 

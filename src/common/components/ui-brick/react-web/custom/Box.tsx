@@ -1,4 +1,5 @@
 import React, { forwardRef, ReactNode, HTMLAttributes } from 'react';
+import vars from '../../variables';
 
 interface BoxProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
@@ -7,7 +8,11 @@ interface BoxProps extends HTMLAttributes<HTMLDivElement> {
 const Box = forwardRef<HTMLDivElement, BoxProps>(({ children, style, ...props }, ref) => (
     <div 
         ref={ref} 
-        style={{ ...styles.container, ...style }}
+        style={{ 
+            ...styles.container, 
+            backgroundColor: vars.box,
+            ...style 
+        }}
         {...props}
     >
         {children}
@@ -16,7 +21,6 @@ const Box = forwardRef<HTMLDivElement, BoxProps>(({ children, style, ...props },
 
 const styles: { [key: string]: React.CSSProperties } = {
     container: {
-        backgroundColor: '#fff',
         borderRadius: '10px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     },

@@ -1,5 +1,5 @@
 import React, { forwardRef, useState, ButtonHTMLAttributes, ReactNode } from 'react';
-import vars from '../../Variables'
+import vars from '../../variables'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     children?: ReactNode;
@@ -14,6 +14,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, style, no
             ref={ref} 
             style={{ 
                 ...styles.button, 
+                fontFamily: vars.font,
+                backgroundColor: vars.primary,
                 ...(isHovered && !noHover ? styles.buttonHover : {}), // noHover가 아닐 때만 hover 스타일 추가
                 ...style 
             }}
@@ -30,7 +32,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     button: {
         fontFamily: vars.font,
         fontSize: '15px',
-        backgroundColor: vars.primary,
         color: 'white',
         border: 'none',
         borderRadius: '10px', // Box.jsx와 일치

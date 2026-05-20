@@ -1,5 +1,5 @@
 import React, { forwardRef, InputHTMLAttributes } from 'react';
-import vars from '../../../Variables';
+import vars from '../../../variables';
 
 interface InputCheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
     label?: string;

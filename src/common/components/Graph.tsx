@@ -11,6 +11,7 @@ import {
     ChartDataset,
     Plugin
 } from 'chart.js';
+import vars from '@/common/components/ui-brick/variables';
 
 // 필요한 구성 요소 등록
 Chart.register(
@@ -94,12 +95,20 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false },
+                    legend: { 
+                        display: false 
+                    },
                     hideAfterIndex: { idx: idx }
                 } as any,
                 scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.1)' } },
-                    y: { grid: { color: 'rgba(255,255,255,0.1)' } }
+                    x: { 
+                        grid: { color: vars.text + '22' }, // 텍스트 색상에 투명도(22) 추가
+                        ticks: { color: vars.text }
+                    },
+                    y: { 
+                        grid: { color: vars.text + '22' },
+                        ticks: { color: vars.text }
+                    }
                 }
             },
             plugins: [hideAfterIndexPlugin]
@@ -146,15 +155,39 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
         chartRef.current.update('none');
     }, [data, settings]);
 
-    // 3. 인덱스 변경 시 (비디오 재생/탐색 대응) 플러그인 옵션 업데이트
+    // 3. 인덱스 및 테마(vars) 변경 대응
     useEffect(() => {
         if (!chartRef.current) return;
-        (chartRef.current.options.plugins as any).hideAfterIndex.idx = idx;
+        
+        const chart = chartRef.current;
+        
+        // 비디오 재생 인덱스 업데이트
+        (chart.options.plugins as any).hideAfterIndex.idx = idx;
+
+        // 테마 변경에 따른 Chart.js 내부 색상(격자, 텍스트) 동적 업데이트
+        if (chart.options.scales) {
+            const { x, y } = chart.options.scales;
+            if (x) {
+                if (x.grid) x.grid.color = vars.text + '22'; // 텍스트 색상에 투명도 추가
+                if (x.ticks) x.ticks.color = vars.text;
+            }
+            if (y) {
+                if (y.grid) y.grid.color = vars.text + '22';
+                if (y.ticks) y.ticks.color = vars.text;
+            }
+        }
+
         chartRef.current.update('none');
-    }, [idx]);
+    }, [idx, vars.surface]); // 테마 색상 변경 시(vars.surface) 업데이트 트리거
 
     return (
-        <div className={className} style={{ width: '100%', height: '100%' }}>
+        <div className={className} style={{ 
+            width: '100%', 
+            height: '100%', 
+            backgroundColor: vars.surface, // 다크모드 시 surface 색상 적용
+            borderRadius: '8px',
+            transition: 'background-color 0.3s ease'
+        }}>
             <canvas ref={canvasRef} />
         </div>
     );

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
+import { setThemeMode, getSystemTheme } from '@common/components/ui-brick/variables';
 import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper }
 	from '@common/bridges/UIBridge.ts';
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
@@ -12,9 +13,9 @@ import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 import { useProcessor } from '@features/cv-val/hooks/useProcessor';
 import { usePluginLoader } from '@features/cv-val/hooks/usePluginLoader';
 
-import AnalysisGridContainer from '@features/cv-val/component/analysis-container/AnalysisGridContainer';
-import VideoProcessorModal from '@features/cv-val/component/VideoProcessorModal';
-import TrackingEditorModal from '@features/cv-val/component/TrackingEditorModal';
+import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/analysis-grid-container';
+import VideoProcessorModal from '@/features/cv-val/component/video-processor-modal';
+import TrackingEditorModal from '@/features/cv-val/component/tracking-editor-modal';
 
 // 레지스트리 및 훅
 import { FEATURE_REGISTRY, ALL_DETECTORS, ALL_AVAILABLE_MODULES } from './FeatureRegistry';
@@ -35,6 +36,27 @@ const AppPage: React.FC = () => {
 	const { status, progress, isProcessing, loadVideo, runInference, reset: resetProcessor } = useProcessor();
 	const [currentIdx, setCurrentIdx] = useState(0);
 
+	const [themeMode, setThemeModeState] = useState<'light' | 'dark'>(getSystemTheme);
+
+	const toggleTheme = () => {
+		const nextMode = themeMode === 'light' ? 'dark' : 'light';
+		setThemeMode(nextMode);
+		setThemeModeState(nextMode);
+	};
+
+	// 시스템 테마 변경 감지 및 자동 적용
+	useEffect(() => {
+		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+		const handleChange = (e: MediaQueryListEvent) => {
+			const nextMode = e.matches ? 'dark' : 'light';
+			setThemeMode(nextMode);
+			setThemeModeState(nextMode);
+		};
+
+		mediaQuery.addEventListener('change', handleChange);
+		return () => mediaQuery.removeEventListener('change', handleChange);
+	}, []);
+
 	// 통합 페이지에서는 기본적으로 동영상 모듈 하나를 띄워둡니다. (모든 기능에 대한 VideoPlugin을 추가한 상태)
 	const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
 		{ ...ALL_AVAILABLE_MODULES["Video"], id: `video-default-${Date.now()}` }
@@ -45,6 +67,7 @@ const AppPage: React.FC = () => {
 	const [isProcessModalOpen, setProcessModalOpen] = useState(false);
 	const [isToolModalOpen, setToolModalOpen] = useState(false);
 	const [isEditorModalOpen, setEditorModalOpen] = useState(false);
+	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 	const [isEditSelectModalOpen, setEditSelectModalOpen] = useState(false);
 
 	const dataInputRef = useRef<HTMLInputElement>(null);
@@ -196,6 +219,7 @@ const AppPage: React.FC = () => {
 			<InputFile ref={pluginInputRef} style={{ display: 'none' }} accept=".js" onChange={handleLoadPlugin} />
 			<Navigation
 				fileButtons={[
+					{ name: "설정", action: () => setSettingsModalOpen(true) },
 					{ name: "새 분석", action: () => { if (processedData.getFrameCnt() > 0) setProcessModalOpen(true); else videoInputRef.current?.click(); } },
 					...((hasData('ball') || hasData('bat')) ? [{ name: "편집", action: handleEditClick }] : []),
 					{ name: "불러오기", action: () => dataInputRef.current?.click() },
@@ -217,7 +241,7 @@ const AppPage: React.FC = () => {
 				toolButtons={Object.keys(ALL_AVAILABLE_MODULES).map(key => ({ name: `${key} 추가`, action: () => handleAddModule(key) }))}
 			/>
 			<AnalysisGridContainer modules={activeModules} data={processedData} currentFrame={currentIdx} onRemoveModule={(id) => setActiveModules(prev => prev.filter(m => m.id !== id))} />
-			<FixedFooter><Box className="container"><Div className="Divide" style={{ display: 'flex', flexDirection: 'row', gap: '20px', }}>
+			<FixedFooter><Box className="container"><Div style={{ display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'center'}}>
 				<InputSlider min="0" max={maxFrame} step="1" value={currentIdx} onChange={setCurrentIdx} style={{ flex: 1 }} />
 				<Button style={{ whiteSpace: "nowrap" }} onClick={() => setToolModalOpen(true)}>도구 추가</Button>
 			</Div></Box></FixedFooter>
@@ -238,6 +262,14 @@ const AppPage: React.FC = () => {
 				{Object.keys(ALL_AVAILABLE_MODULES).map(key => (<Button key={key} onClick={() => handleAddModule(key)}>{key.toUpperCase()}</Button>))}
 				<Button onClick={() => { setToolModalOpen(false); pluginInputRef.current?.click(); }}>플러그인 파일 불러오기 (.js)</Button>
 			</Div></Div></Modal>
+			<Modal isOpen={isSettingsModalOpen} onClose={() => setSettingsModalOpen(false)} title="설정">
+				<Div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>
+					<Div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+						<span style={{ fontWeight: 'bold' }}>테마 모드</span>
+						<Button onClick={toggleTheme} style={{ minWidth: '120px' }}>{themeMode === 'light' ? '🌙 다크 모드' : '☀️ 라이트 모드'}</Button>
+					</Div>
+				</Div>
+			</Modal>
 		</Wrapper>
 	);
 };

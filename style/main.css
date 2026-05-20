@@ -115,11 +115,6 @@ td {
     overflow-x: auto;
 }
 
-th {
-    background-color: #f2f2f2;
-    /* 헤더 배경색 */
-}
-
 .text-left {
     text-align: left;
 }
