@@ -79,7 +79,7 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 flexWrap: 'nowrap',
-                gap: '20px'
+                gap: '50px'
             }}>
                 <style>
                     {`.hide-scrollbar::-webkit-scrollbar { display: none; }`}
