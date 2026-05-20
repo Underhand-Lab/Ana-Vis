@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import TableRenderer from '@/common/components/ui-brick/react-web/common/TableRenderer';
 import { Div, InputCheckbox, Select } from '@common/bridges/UIBridge';
+import { useTranslation } from 'react-i18next';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@features/cv-val/types/analysis-module';
 
@@ -21,6 +22,7 @@ const defaultSettings: TableSettingsData = {
  * 출력(View) 컴포넌트: 데이터 테이블을 렌더링합니다.
  */
 export const TableView: React.FC<AnalysisViewProps<TableSettingsData>> = ({ data, currentFrame, settings }) => {
+    const { t } = useTranslation();
     
     // 데이터 계산 및 현재 프레임 값 추출 로직
     const currentFrameData = useMemo(() => {
@@ -41,16 +43,15 @@ export const TableView: React.FC<AnalysisViewProps<TableSettingsData>> = ({ data
             // 설정에서 해당 키의 가시성이 false인 경우 건너뜀
             if (settings.visibility && settings.visibility[key] === false) continue;
             const val = processedData[key];
-            if (val) {
-                // 숫자인 경우 소수점 2자리까지 표시
-                ret[key] = typeof val === 'number' ? val.toFixed(2) : val;
-            }
-            else {
-                ret[key] = "?";
-            }
+            
+            // 키 번역 적용 (매핑된 값이 없으면 원본 키 표시)
+            const label = t(`analysisLabels.${key}`, key);
+            ret[label] = (val !== null && val !== undefined)
+                ? (typeof val === 'number' ? val.toFixed(2) : val)
+                : "?";
         }
         return Object.keys(ret).length > 0 ? ret : null;
-    }, [data, settings, currentFrame]);
+    }, [data, settings, currentFrame, t]);
 
     return (
         <Div className="viewer_container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -65,6 +66,8 @@ export const TableView: React.FC<AnalysisViewProps<TableSettingsData>> = ({ data
  * 설정(Settings) 컴포넌트: 분석 도구 선택 UI를 담당합니다.
  */
 export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> = ({ settings, onSettingsChange, data }) => {
+    const { t } = useTranslation();
+
     const handleToolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onSettingsChange({ ...settings, selectedToolKey: e.target.value });
     };
@@ -73,10 +76,10 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
         if (!data) return [];
         const tools = data.getAnalysisTools();
         return Object.values(tools).map(tool => ({
-            label: tool.name,
+            label: t(`analysisTools.${tool.name}`, tool.name),
             value: tool.name
         }));
-    }, [data]);
+    }, [data, t]);
 
     // 초기 선택값이 없거나 설정된 도구가 현재 데이터에 없는 경우 첫 번째 도구를 자동으로 선택합니다.
     useEffect(() => {
@@ -103,8 +106,8 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
     return (
         <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
             <Div>
-                <label style={{ marginRight: '10px' }}>
-                    <strong>도구</strong>:
+                <label style={{ marginRight: '10px' }}> 
+                    <strong>{t('settings.analysisTool')}</strong>:
                 </label>
 
                 <Select
@@ -116,14 +119,14 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
 
             {/* 행 선택(가시성) 설정 영역 */}
             <Div>
-                <h4 style={{ fontSize: '13px', marginBottom: '8px' }}>표시할 데이터 선택</h4>
+                <h4 style={{ fontSize: '13px', marginBottom: '8px' }}>{t('settings.selectData')}</h4>
                 <Div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {availableKeys.map((key) => {
                         const isVisible = settings.visibility?.[key] !== false;
                         return (
                             <InputCheckbox
                                 key={key}
-                                label={key}
+                                label={t(`analysisLabels.${key}`, key)}
                                 checked={isVisible}
                                 onChange={() => {
                                     const newVisibility = { ... (settings.visibility || {}) };
@@ -141,7 +144,7 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
 
 export const TableModule: AnalysisModule<TableSettingsData> = {
     id: 'common-table',
-    title: '분석 표',
+    title: 'common-table', // Use ID as title for translation key lookup
     View: TableView,
     Settings: TableSettings,
     defaultSettings

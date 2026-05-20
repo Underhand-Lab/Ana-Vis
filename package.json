@@ -35,13 +35,24 @@
     "mac": {
       "artifactName": "${productName}.${ext}"
     },
-    "fileAssociations": [{
-        "ext": ["cvbl", "cvbt", "cvp", "cvval"],
+    "fileAssociations": [
+      {
+        "ext": [
+          "cvbl",
+          "cvbt",
+          "cvp",
+          "cvval"
+        ],
         "name": "CV-Val Analysis Data",
         "role": "Editor"
       },
       {
-        "ext": ["mp4", "mov", "avi", "mkv"],
+        "ext": [
+          "mp4",
+          "mov",
+          "avi",
+          "mkv"
+        ],
         "name": "Video File",
         "role": "Viewer"
       }
@@ -55,11 +66,14 @@
     "@shopify/react-native-skia": "^2.6.2",
     "@tensorflow/tfjs": "^4.22.0",
     "chart.js": "^4.5.1",
+    "i18next": "^26.2.0",
+    "i18next-browser-languagedetector": "^8.2.1",
     "mediabunny": "^1.40.0",
     "react": "^19.2.0",
     "react-colorful": "^5.6.1",
     "react-dom": "^19.2.0",
     "react-grid-layout": "^2.2.2",
+    "react-i18next": "^17.0.8",
     "react-markdown": "^10.1.0",
     "react-native": "^0.85.0",
     "react-native-web": "^0.21.2",

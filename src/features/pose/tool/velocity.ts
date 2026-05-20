@@ -5,7 +5,7 @@ import { PoseAnalysisTool } from "./pose-analysis-tool";
 
 export class VelocityAnalysisTool extends PoseAnalysisTool {
     
-    name = 'velocity-analysis-plugin';
+    name = 'velocity';
 
     calc(data: PoseData): Record<string, (number | null)[]> {
         const results: Record<string, (number | null)[]> = {};

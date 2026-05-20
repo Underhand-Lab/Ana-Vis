@@ -4,7 +4,7 @@ import { PoseAnalysisTool } from "./pose-analysis-tool";
 
 export class AngleVelocityAnalysisTool extends PoseAnalysisTool {
     
-    name = 'angle-velocity-analysis-plugin';
+    name = 'angleVelocity';
   
     private angleCalcer: AngleAnalysisTool;
 

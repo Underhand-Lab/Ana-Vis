@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, ChangeEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { useTranslation } from 'react-i18next';
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
 import { setThemeMode, getSystemTheme } from '@common/components/ui-brick/variables';
-import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper }
+import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper, Select }
 	from '@common/bridges/UIBridge.ts';
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
 
@@ -28,6 +29,7 @@ const VIDEO_EXTENSIONS = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
 const ALL_EXTENSIONS = [...Object.values(FEATURE_REGISTRY).map(cfg => cfg.extension), '.cvval', ...VIDEO_EXTENSIONS].join(',');
 
 const AppPage: React.FC = () => {
+	const { t, i18n } = useTranslation();
 	const location = useLocation();
 	const navigate = useNavigate();
 	const state = location.state as { externalFile?: File };
@@ -59,7 +61,7 @@ const AppPage: React.FC = () => {
 
 	// 통합 페이지에서는 기본적으로 동영상 모듈 하나를 띄워둡니다. (모든 기능에 대한 VideoPlugin을 추가한 상태)
 	const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
-		{ ...ALL_AVAILABLE_MODULES["Video"], id: `video-default-${Date.now()}` }
+		{ ...ALL_AVAILABLE_MODULES["Video"], id: `common-video-${Date.now()}` }
 	]);
 	const [confValue, setConfValue] = useState(0.5);
 	const [editingType, setEditingType] = useState<'ball' | 'bat' | null>(null);
@@ -219,12 +221,12 @@ const AppPage: React.FC = () => {
 			<InputFile ref={pluginInputRef} style={{ display: 'none' }} accept=".js" onChange={handleLoadPlugin} />
 			<Navigation
 				fileButtons={[
-					{ name: "설정", action: () => setSettingsModalOpen(true) },
-					{ name: "새 분석", action: () => { if (processedData.getFrameCnt() > 0) setProcessModalOpen(true); else videoInputRef.current?.click(); } },
-					...((hasData('ball') || hasData('bat')) ? [{ name: "편집", action: handleEditClick }] : []),
-					{ name: "불러오기", action: () => dataInputRef.current?.click() },
+					{ name: t('settings.title'), action: () => setSettingsModalOpen(true) },
+					{ name: t('navigation.newAnalysis', '새 분석'), action: () => { if (processedData.getFrameCnt() > 0) setProcessModalOpen(true); else videoInputRef.current?.click(); } },
+					...((hasData('ball') || hasData('bat')) ? [{ name: t('navigation.edit', '편집'), action: handleEditClick }] : []),
+					{ name: t('navigation.load', '불러오기'), action: () => dataInputRef.current?.click() },
 					{
-						name: "저장", action: async () => {
+						name: t('navigation.save', '저장'), action: async () => {
 							if (!processedData || processedData.getFrameCnt() === 0) return;
 							try {
 								const blob = await processedData.toBlob();
@@ -238,35 +240,62 @@ const AppPage: React.FC = () => {
 						}
 					}
 				]}
-				toolButtons={Object.keys(ALL_AVAILABLE_MODULES).map(key => ({ name: `${key} 추가`, action: () => handleAddModule(key) }))}
+				toolButtons={Object.keys(ALL_AVAILABLE_MODULES).map(key => ({ name: `${t(`analysisTools.${key.toLowerCase()}`, key)} ${t('common.add', '추가')}`, action: () => handleAddModule(key) }))}
 			/>
-			<AnalysisGridContainer modules={activeModules} data={processedData} currentFrame={currentIdx} onRemoveModule={(id) => setActiveModules(prev => prev.filter(m => m.id !== id))} />
+			<AnalysisGridContainer 
+				modules={useMemo(() => activeModules.map(m => { // m.id will be like "common-video-timestamp" or "table-timestamp"
+					let baseId = m.id;
+					// Remove timestamp suffix if present (e.g., "common-video-12345" -> "common-video")
+					const lastHyphenIndex = m.id.lastIndexOf('-');
+					if (lastHyphenIndex !== -1 && !isNaN(Number(m.id.substring(lastHyphenIndex + 1)))) {
+						baseId = m.id.substring(0, lastHyphenIndex);
+					}
+					// baseId should now be "common-video", "common-table", "track-bat-video", etc.
+					const translationKey = `analysisTools.${baseId}`;
+					return {
+						...m,
+						title: t(translationKey, m.title)
+					};
+				}), [activeModules, t])} 
+				data={processedData} 
+				currentFrame={currentIdx} 
+				onRemoveModule={(id) => setActiveModules(prev => prev.filter(m => m.id !== id))} 
+			/>
 			<FixedFooter><Box className="container"><Div style={{ display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'center'}}>
 				<InputSlider min="0" max={maxFrame} step="1" value={currentIdx} onChange={setCurrentIdx} style={{ flex: 1 }} />
-				<Button style={{ whiteSpace: "nowrap" }} onClick={() => setToolModalOpen(true)}>도구 추가</Button>
+				<Button style={{ whiteSpace: "nowrap" }} onClick={() => setToolModalOpen(true)}>{t('common.addTool')}</Button>
 			</Div></Box></FixedFooter>
 			<VideoProcessorModal isOpen={isProcessModalOpen} onClose={() => setProcessModalOpen(false)} analysisMap={ALL_DETECTORS} onProcess={handleProcessVideo} isProcessing={isProcessing} progress={progress} statusKey={`label-${status}`} />
 			{editingType && (<TrackingEditorModal
 				isOpen={isEditorModalOpen} onClose={() => setEditorModalOpen(false)} initialFrame={currentIdx} maxFrame={maxFrame} confValue={confValue} onConfChange={(e) => handleConfChange(editingType, e)} data={processedData} type={editingType}
 				getTrailLayer={editingType === 'ball' ? ballFrame.getTrailLayer : batFrame.getTrailLayer} getEditLayer={editingType === 'ball' ? ballFrame.getEditLayer : batFrame.getEditLayer} onCandidateSelect={(f, c) => handleEditorCandidateSelect(editingType, f, c)}
 			/>)}
-			<Modal isOpen={isEditSelectModalOpen} onClose={() => setEditSelectModalOpen(false)} title="편집 대상 선택">
+			<Modal isOpen={isEditSelectModalOpen} onClose={() => setEditSelectModalOpen(false)} title={t('navigation.selectEditTarget')}>
 				<Div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
 					<Div style={{ display: 'flex', flexDirection: 'row', gap: '10px', justifyContent: 'center' }}>
-						<Button onClick={() => { setEditingType('ball'); setEditorModalOpen(true); setEditSelectModalOpen(false); }}>공(Ball) 편집</Button>
-						<Button onClick={() => { setEditingType('bat'); setEditorModalOpen(true); setEditSelectModalOpen(false); }}>배트(Bat) 편집</Button>
+						<Button onClick={() => { setEditingType('ball'); setEditorModalOpen(true); setEditSelectModalOpen(false); }}>{t('navigation.editBall')}</Button>
+						<Button onClick={() => { setEditingType('bat'); setEditorModalOpen(true); setEditSelectModalOpen(false); }}>{t('navigation.editBat')}</Button>
 					</Div>
 				</Div>
 			</Modal>
-			<Modal isOpen={isToolModalOpen} onClose={() => setToolModalOpen(false)} title="분석 도구 추가"><Div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}><Div style={{ display: 'flex', flexDirection: 'row', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
-				{Object.keys(ALL_AVAILABLE_MODULES).map(key => (<Button key={key} onClick={() => handleAddModule(key)}>{key.toUpperCase()}</Button>))}
-				<Button onClick={() => { setToolModalOpen(false); pluginInputRef.current?.click(); }}>플러그인 파일 불러오기 (.js)</Button>
+			<Modal isOpen={isToolModalOpen} onClose={() => setToolModalOpen(false)} title={t('navigation.addTool')}><Div style={{ display: 'flex', flexDirection: 'column', gap: '15px', }}><Div style={{ display: 'flex', flexDirection: 'row', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', padding: '15px' }}>
+				{Object.keys(ALL_AVAILABLE_MODULES).map(key => (<Button key={key} onClick={() => handleAddModule(key)}>{t(`analysisTools.${key.toLowerCase()}`, key)}</Button>))}
+				<Button onClick={() => { setToolModalOpen(false); pluginInputRef.current?.click(); }}>{t('navigation.loadPlugin')}</Button>
 			</Div></Div></Modal>
-			<Modal isOpen={isSettingsModalOpen} onClose={() => setSettingsModalOpen(false)} title="설정">
+			<Modal isOpen={isSettingsModalOpen} onClose={() => setSettingsModalOpen(false)} title={t('settings.title')}>
 				<Div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>
 					<Div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-						<span style={{ fontWeight: 'bold' }}>테마 모드</span>
-						<Button onClick={toggleTheme} style={{ minWidth: '120px' }}>{themeMode === 'light' ? '🌙 다크 모드' : '☀️ 라이트 모드'}</Button>
+						<span style={{ fontWeight: 'bold' }}>{t('settings.themeMode')}</span>
+						<Button onClick={toggleTheme} style={{ minWidth: '120px' }}>{themeMode === 'light' ? t('settings.darkMode') : t('settings.lightMode')}</Button>
+					</Div>
+					<Div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+						<span style={{ fontWeight: 'bold' }}>{t('settings.language')}</span>
+						<Select
+							value={i18n.language}
+							onChange={(e: ChangeEvent<HTMLSelectElement>) => i18n.changeLanguage(e.target.value)}
+							options={[{ label: '한국어', value: 'ko' }, { label: 'English', value: 'en' }]}
+							style={{ minWidth: '120px' }}
+						/>
 					</Div>
 				</Div>
 			</Modal>

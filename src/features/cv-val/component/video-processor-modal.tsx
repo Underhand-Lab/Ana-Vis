@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import Modal from '@common/components/Modal';
 import { Div, Select, Button } from '@common/bridges/UIBridge';
+import { useTranslation } from 'react-i18next';
 
 interface VideoProcessorModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
   progress,
   statusKey 
 }) => {
+  const { t } = useTranslation();
   const types = Object.keys(analysisMap);
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>('');
@@ -55,12 +57,12 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={() => !isProcessing && onClose()}
-      title={title}
+      title={t('navigation.newAnalysis', title)}
     >
       <Div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
         <Div style={{ display: 'flex', flexDirection: 'row', gap: '10px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
           <Div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <label htmlFor="type-select" style={{ minWidth: '80px' }}>분석 방식</label>
+            <label htmlFor="type-select" style={{ minWidth: '80px' }}>{t('settings.analysisType', '분석 방식')}</label>
             <Select
               id="type-select"
               value={selectedType}
@@ -72,7 +74,7 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
           </Div>
 
           <Div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <label htmlFor="model-select" style={{ minWidth: '80px' }}>분석 모델</label>
+            <label htmlFor="model-select" style={{ minWidth: '80px' }}>{t('settings.analysisModel', '분석 모델')}</label>
             <Select
               id="model-select"
               value={selectedModel}
@@ -90,12 +92,12 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
             onClick={handleStart}
             disabled={!selectedType || !selectedModel || isProcessing}
           >
-            {isProcessing ? '처리 중...' : '분석 시작'}
+            {isProcessing ? t('common.processing', '처리 중...') : t('common.startAnalysis', '분석 시작')}
           </Button>
 
           <Div id="status-section" style={{ marginTop: '15px' }}>
             <p style={{ fontSize: '14px', color: '#666' }}>
-              {statusKey}
+              {statusKey ? t(`status.${statusKey}`, statusKey) : ''}
               {isProcessing && progress.total > 0 && ` : ${progress.current} / ${progress.total}`}
             </p>
 

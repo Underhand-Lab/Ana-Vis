@@ -3,6 +3,7 @@ import Modal from '@common/components/Modal.tsx';
 import { Div, InputNumber, Button } from '@common/bridges/UIBridge.ts';
 import CanvasRenderer, { CanvasRendererHandle } from "@/common/components/ui-brick/react-web/custom/CanvasRenderer";
 import { CVValData } from '@/features/cv-val/core/cvval-data';
+import { useTranslation } from 'react-i18next';
 
 interface TrackingEditorModalProps {
     isOpen: boolean;
@@ -22,6 +23,7 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
     isOpen, onClose, initialFrame, maxFrame,
     confValue, onConfChange, data, type, getTrailLayer, getEditLayer, onCandidateSelect
 }) => {
+    const { t } = useTranslation();
     const rendererRef = useRef<CanvasRendererHandle>(null);
     const [localIdx, setLocalIdx] = useState(initialFrame);
 
@@ -207,7 +209,7 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="추적 결과 편집">
+        <Modal isOpen={isOpen} onClose={onClose} title={t('navigation.editTracking')}>
             <Div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>
                 
                 {/* 시각화 및 선택 영역 */}
@@ -223,7 +225,7 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
                     alignItems: 'center',
                 }} onClick={handleCanvasClick}>
                     {!data ? (
-                        <span style={{ color: 'white' }}>이미지를 불러오는 중...</span>
+                        <span style={{ color: 'white' }}>{t('common.loading')}</span>
                     ) : (
                         <CanvasRenderer 
                             ref={rendererRef} 
@@ -234,7 +236,7 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
 
                 <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>프레임:</span>
+                        <span>{t('navigation.frame')}:</span>
                         <InputNumber
                             value={localIdx}
                             min={0}
@@ -245,7 +247,7 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
                         <span>/ {maxFrame}</span>
                     </Div>
                     <Div style={{ display: 'flex', gap: '5px' }}>
-                        <Button onClick={() => setLocalIdx(Math.max(0, localIdx - 1))}>이전</Button>
+                        <Button onClick={() => setLocalIdx(Math.max(0, localIdx - 1))}>{t('navigation.prev')}</Button>
                         
                         <Button 
                             style={{ 
@@ -254,14 +256,14 @@ const TrackingEditorModal: React.FC<TrackingEditorModalProps> = ({
                             }} 
                             onClick={() => handleLocalCandidateSelect(-1)}
                         >
-                            None
+                            {t('common.none')}
                         </Button>
-                        <Button onClick={() => setLocalIdx(Math.min(maxFrame, localIdx + 1))}>다음</Button>
+                        <Button onClick={() => setLocalIdx(Math.min(maxFrame, localIdx + 1))}>{t('navigation.next')}</Button>
                     </Div>
                 </Div>
 
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <label>CONF (임계값):</label>
+                    <label>CONF ({t('settings.confThreshold', '임계값')}):</label>
                     <InputNumber
                         value={confValue}
                         step="0.01"

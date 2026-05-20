@@ -2,6 +2,7 @@ import React, { ReactNode, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Div, Box, Button } from '../bridges/UIBridge';
 import vars from './ui-brick/variables';
+import { useTranslation } from 'react-i18next';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+  const { t } = useTranslation();
   // 팝업이 닫혀있으면 아무것도 렌더링하지 않음
   if (!isOpen) return null;
   const rootBody = document.body;
@@ -30,7 +32,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         <Div style= {{maxHeight: '60vh'}}>
           {children}
         </Div>
-        <Button onClick={onClose}>닫기</Button>
+        <Button onClick={onClose}>{t('common.close')}</Button>
       </Box>
     </Div>,
     rootBody

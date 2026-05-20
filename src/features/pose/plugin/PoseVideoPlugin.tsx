@@ -5,6 +5,7 @@ import { usePoseFrame, SkeletonSettings } from "../hooks/usePoseFrame";
 import { Div, InputNumber, InputColor, InputCheckbox, Select }
     from '@common/bridges/UIBridge.ts';
 import { AnalysisSettingsProps } from '@features/cv-val/types/analysis-module.ts';
+import { useTranslation } from 'react-i18next';
 import { VideoModulePlugin } from '@/features/cv-val/modules/VideoModule.tsx';
 import { Toggle } from '@/common/components/ui-brick/react-web/common/Toggle.tsx';
 import { CVValData } from '@/features/cv-val/core/cvval-data.ts';
@@ -16,8 +17,8 @@ const colorMap = {
     COLOR_RIGHT_LEG: "R_LEG",
     COLOR_TORSO: "BODY",
     COLOR_HEAD_NECK: "HEAD",
-    COLOR_JOINT: "JOINT FILL",
-    JOINT_STROKE: "JOINT STROKE"
+    COLOR_JOINT: "JOINT_FILL",
+    JOINT_STROKE: "JOINT_STROKE"
 };
 
 const defaultSettings: SkeletonSettings = {
@@ -38,7 +39,7 @@ const defaultSettings: SkeletonSettings = {
 
 export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
     id = 'pose-video'; // Keep the ID
-    title = '자세'; // Keep the title
+    title = 'pose-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings; // Update defaultSettings to match SkeletonSettings
 
     usePluginContext(data: CVValData, settings: SkeletonSettings) {
@@ -62,20 +63,21 @@ export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
     }
 
     getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<SkeletonSettings>) {
+        const { t } = useTranslation();
         const jointShapeOptions = [
-            { label: "원형", value: "circle" },
-            { label: "사각형", value: "rect" }
+            { label: t('settings.jointShapeCircle'), value: "circle" },
+            { label: t('settings.jointShapeRect'), value: "rect" }
         ];
 
         return (
             <>
                 <InputCheckbox
-                    label="관절 표시 여부"
+                    label={t('settings.showJoints')}
                     checked={settings.showPose !== false}
                     onChange={(e) => onSettingsChange({ ...settings, showPose: e.target.checked })}
                 />
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>선 굵기</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>{t('settings.lineWidth')}</label>
                     <InputNumber
                         min="1"
                         value={settings.lineWidth || 2}
@@ -84,7 +86,7 @@ export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
                     />
                 </Div>
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>관절 모양</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>{t('settings.jointShape')}</label>
                     <Select
                         value={settings.jointShape || 'circle'}
                         onChange={(e) => onSettingsChange({ ...settings, jointShape: e.target.value })}
@@ -93,7 +95,7 @@ export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
                     />
                 </Div>
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>관절 크기</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>{t('settings.jointRadius')}</label>
                     <InputNumber
                         min="0"
                         value={settings.jointRadius !== undefined ? settings.jointRadius : 4}
@@ -102,7 +104,7 @@ export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
                     />
                 </Div>
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>관절 테두리</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>{t('settings.jointStrokeWidth')}</label>
                     <InputNumber
                         min="0"
                         value={settings.jointStrokeWidth !== undefined ? settings.jointStrokeWidth : 2}
@@ -111,11 +113,11 @@ export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
                     />
                 </Div>
                 <Div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>색상 설정</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>{t('settings.colorSettings')}</label>
                     {Object.entries(colorMap).map(([key, label]) => (
                         <InputColor
                             key={key}
-                            label={label}
+                            label={t(`analysisLabels.${label}`, label)}
                                 value={settings[key] || (defaultSettings as any)[key]}
                             onChange={(newColor) => onSettingsChange({ ...settings, [key]: newColor })}
                         />

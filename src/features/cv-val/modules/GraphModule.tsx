@@ -2,6 +2,7 @@ import React, { useMemo, useEffect } from 'react';
 
 import Graph from '@common/components/Graph';
 import { Div, InputColor, InputNumber, InputCheckbox, Select } from '@common/bridges/UIBridge';
+import { useTranslation } from 'react-i18next';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@features/cv-val/types/analysis-module';
 
@@ -113,6 +114,8 @@ export const GraphView: React.FC<AnalysisViewProps<GraphSettingsData>> = ({
  * 설정(Settings) 컴포넌트: 분석 도구 선택 및 범례 UI를 담당합니다.
  */
 export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> = ({ settings, onSettingsChange, data }) => {
+    const { t } = useTranslation();
+
     const handleToolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onSettingsChange({ ...settings, selectedToolKey: e.target.value });
     };
@@ -121,10 +124,10 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
         if (!data) return [];
         const tools = data.getAnalysisTools();
         return Object.values(tools).map(tool => ({
-            label: (tool as any).title || tool.name,
+            label: t(`analysisTools.${tool.name}`, (tool as any).title || tool.name),
             value: tool.name
         }));
-    }, [data]);
+    }, [data, t]);
 
     // 초기 선택값이 없거나 설정된 도구가 현재 데이터에 없는 경우 첫 번째 도구를 자동으로 선택합니다.
     useEffect(() => {
@@ -153,7 +156,7 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
             {/* 도구 선택 영역 */}
             <Div>
                 <label style={{ marginRight: '10px' }}>
-                    <strong>도구</strong>:
+                    <strong>{t('settings.analysisTool')}</strong>:
                 </label>
                 <Select
                     value={settings.selectedToolKey}
@@ -164,7 +167,7 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
 
             {/* 선 굵기 설정 추가 */}
             <Div style={{ display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>선 굵기</label>
+                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>{t('settings.lineWidth')}</label>
                 <InputNumber
                     min="1"
                     value={settings.lineWidth || 2}
@@ -184,7 +187,7 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
 
             {/* 그래프 범례 및 색상 선택 영역 (React로 직접 렌더링) */}
             <Div>
-                <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>그래프 범례</h4>
+                <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>{t('settings.graphLegend')}</h4>
                 <Div
                     className="custom-legend-container flex-view"
                     style={{ textAlign: 'left' }}
@@ -195,7 +198,7 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
                         return (
                             <LegendItem
                                 key={label}
-                                label={label}
+                                label={t(`analysisLabels.${label}`, label)}
                                 color={settings[label] || defaultSettings[label] || getDeterministicColor(label)}
                                 isVisible={isVisible}
                                 onToggleVisibility={() => {
@@ -224,7 +227,7 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
 
 export const GraphModule: AnalysisModule<GraphSettingsData> = {
     id: 'common-graph',
-    title: '분석 그래프',
+    title: 'common-graph', // Use ID as title for translation key lookup
     View: GraphView,
     Settings: GraphSettings,
     defaultSettings

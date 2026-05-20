@@ -11,6 +11,7 @@ import {
     ChartDataset,
     Plugin
 } from 'chart.js';
+import { useTranslation } from 'react-i18next';
 import vars from '@/common/components/ui-brick/variables';
 
 // 필요한 구성 요소 등록
@@ -62,6 +63,7 @@ interface GraphProps {
 }
 
 const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) => {
+    const { t } = useTranslation();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<Chart | null>(null);
     const customColorsRef = useRef<Record<string, string>>({});
@@ -136,7 +138,7 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
             const isVisible = visibility[key] !== false;
 
             datasets.push({
-                label: key,
+                label: t(`analysisLabels.${key}`, key),
                 data: data[key] as any,
                 borderColor: color,
                 backgroundColor: color,

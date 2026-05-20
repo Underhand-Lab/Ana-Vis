@@ -77,7 +77,7 @@ const lowPassFilter = (data: (number | null)[], windowSize: number): (number | n
 export class GRFAnalysisTool extends PoseAnalysisTool {
     
     name = 'grf';
-    title = '지면반력 (GRF)';
+    title = 'grf'; // Use name as title for translation key lookup
 
     calc(data: PoseData, options?: { userWeight?: number }) {
         const frames = data.getFrameCnt();
@@ -153,9 +153,9 @@ export class GRFAnalysisTool extends PoseAnalysisTool {
         }
 
         return { 
-            "Total GRF (N)": totalGRF,
-            "Left GRF (N)": leftGRF,
-            "Right GRF (N)": rightGRF 
+            "Total_GRF_N": totalGRF,
+            "Left_GRF_N": leftGRF,
+            "Right_GRF_N": rightGRF 
         };
     }
 }

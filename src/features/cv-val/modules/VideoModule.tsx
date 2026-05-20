@@ -6,6 +6,7 @@ import { exportVideo } from '@common/utils/exportVideo';
 import { InputCheckbox, Toggle } from '@common/bridges/UIBridge.ts';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@features/cv-val/types/analysis-module.ts';
+import { useTranslation } from 'react-i18next';
 
 /**
  * VideoModule을 위한 플러그인 추상 클래스
@@ -99,6 +100,7 @@ export function createVideoModule(
     };
 
     const VideoSettings: React.FC<AnalysisSettingsProps<Record<string, any>>> = (props) => {
+        const { t } = useTranslation();
         const { data, settings, onSettingsChange } = props;
         const [isExporting, setIsExporting] = useState(false);
         const moduleSettings = settings.moduleSettings || defaultModuleSettings;
@@ -152,10 +154,10 @@ export function createVideoModule(
                     disabled={isExporting || !data}
                     style={{ margin: 0, padding: '8px 15px', width: '100%', cursor: isExporting || !data ? 'not-allowed' : 'pointer' }}
                 >
-                    {isExporting ? '저장 중...' : '비디오 저장'}
+                    {isExporting ? t('common.saving', '저장 중...') : t('common.saveVideo', '비디오 저장')}
                 </Button>
                 <InputCheckbox
-                    label="배경 이미지 표시"
+                    label={t('settings.showBackground', '배경 이미지 표시')}
                     checked={moduleSettings.showBackground !== false}
                     onChange={(e) => onSettingsChange({
                         ...settings,
@@ -164,8 +166,8 @@ export function createVideoModule(
                     style={{ fontWeight: 'bold', }}
                 />
                 {plugins.map(p => (
-                    <React.Fragment key={p.id}>
-                        <Toggle title={p.title}>
+                    <React.Fragment key={p.id}> 
+                        <Toggle title={t(`analysisTools.${p.id}`, p.title)}>
                             {p.getSettingComponent({
                                 ...props,
                                 settings: settings[p.id] ?? p.defaultSettings,
@@ -207,6 +209,6 @@ export class VideoModuleBuilder {
     }
 
     build(): AnalysisModule<Record<string, any>> {
-        return createVideoModule(this.plugins, 'common-video', '동영상');
+        return createVideoModule(this.plugins, 'common-video', 'common-video'); // Use ID as title for translation key lookup
     }
 }

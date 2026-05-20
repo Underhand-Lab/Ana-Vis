@@ -4,6 +4,7 @@ import { useGRFFrame, GRFSettings } from "../hooks/useGRFFrame";
 import { Div, InputNumber, InputCheckbox }
     from '@common/bridges/UIBridge.ts';
 import { AnalysisSettingsProps } from '@features/cv-val/types/analysis-module.ts';
+import { useTranslation } from 'react-i18next';
 import { VideoModulePlugin } from '@/features/cv-val/modules/VideoModule.tsx';
 import { Toggle } from '@/common/components/ui-brick/react-web/common/Toggle.tsx';
 import { CVValData } from '@/features/cv-val/core/cvval-data.ts';
@@ -15,7 +16,7 @@ const defaultSettings: GRFSettings = {
 
 export class GRFVideoPlugin extends VideoModulePlugin<GRFSettings> {
     id = 'grf-video';
-    title = '지면반력';
+    title = 'grf-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 
     usePluginContext(data: CVValData, settings: GRFSettings) {
@@ -39,15 +40,16 @@ export class GRFVideoPlugin extends VideoModulePlugin<GRFSettings> {
     }
 
     getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<GRFSettings>) {
+        const { t } = useTranslation();
         return (
             <>
                 <InputCheckbox
-                    label="GRF 화살표 표시"
+                    label={t('settings.showGRFArrows')}
                     checked={settings.showGRF === true}
                     onChange={(e) => onSettingsChange({ ...settings, showGRF: e.target.checked })}
                 />
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>화살표 배율</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', width: '80px' }}>{t('settings.arrowScale')}</label>
                     <InputNumber
                         min="0"
                         step="0.01"

@@ -36,7 +36,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         border: 'none',
         borderRadius: '10px', // Box.jsx와 일치
         padding: '8px 16px',
-        margin: '5px',
+        margin: 0,
         boxShadow: '0 4px 6px rgba(103, 153, 250, 0.3)', // 브랜드 색상에 맞춘 부드러운 그림자
         cursor: 'pointer',
     },

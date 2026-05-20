@@ -3,6 +3,7 @@ import { useTrackBallFrame } from '../hooks/useTrackBallFrame';
 import { TrackBallData } from '../core/track-ball-data';
 import { InputColor, InputCheckbox } from '@common/bridges/UIBridge';
 import { AnalysisSettingsProps } from '@features/cv-val/types/analysis-module';
+import { useTranslation } from 'react-i18next';
 import { VideoModulePlugin } from '@/features/cv-val/modules/VideoModule';
 import { CVValData } from '@/features/cv-val/core/cvval-data';
 
@@ -21,7 +22,7 @@ const defaultSettings: TrackBallSettings = {
 
 export class TrackBallVideoPlugin extends VideoModulePlugin<TrackBallSettings> {
     id = 'track-ball-video';
-    title = '공 추적';
+    title = 'track-ball-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 
     usePluginContext(data: CVValData | null, settings: TrackBallSettings) {
@@ -44,20 +45,21 @@ export class TrackBallVideoPlugin extends VideoModulePlugin<TrackBallSettings> {
     }
 
     getSettingComponent({ settings, onSettingsChange }: AnalysisSettingsProps<TrackBallSettings>) {
+        const { t } = useTranslation();
         return (
             <>
                 <InputCheckbox
-                    label="Confidence 표시"
+                    label={t('settings.showConfidence')}
                     checked={settings.showConfidence}
                     onChange={(e) => onSettingsChange({ ...settings, showConfidence: e.target.checked })}
                 />
                 <InputColor
-                    label="Box 색상" 
+                    label={t('settings.boxColor')}
                     value={settings.boxColor} 
                     onChange={(c) => onSettingsChange({ ...settings, boxColor: c })} 
                 />
                 <InputColor
-                    label="Trail 색상" 
+                    label={t('settings.trailColor')}
                     value={settings.trailColor} 
                     onChange={(c) => onSettingsChange({ ...settings, trailColor: c })} 
                 />

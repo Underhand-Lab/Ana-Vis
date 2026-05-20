@@ -6,6 +6,7 @@ import { useTrackBatFrame } from '../hooks/useTrackBatFrame';
 import { Div, InputColor, InputNumber }
     from '@common/bridges/UIBridge.ts';
 import { CVValData } from '@/features/cv-val/core/cvval-data.ts';
+import { useTranslation } from 'react-i18next';
 import { AnalysisSettingsProps } from '@features/cv-val/types/analysis-module';
 import { VideoModulePlugin } from '@/features/cv-val/modules/VideoModule.tsx';
 
@@ -24,7 +25,7 @@ const defaultSettings: TrackBatSettings = {
 
 export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
     id = 'track-bat-video';
-    title = '배트 궤적';
+    title = 'track-bat-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 
     usePluginContext(data: CVValData | null, settings: TrackBatSettings) {
@@ -58,10 +59,11 @@ export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
     }
 
     getSettingComponent({ settings, onSettingsChange, data }: AnalysisSettingsProps<TrackBatSettings>) {
+        const { t } = useTranslation();
         return (
             <>
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>추적 길이</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>{t('settings.trackLength')}</label>
                     <InputNumber
                         style={{ width: '60px' }}
                         value={settings.trailLen}
@@ -71,12 +73,12 @@ export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
                 </Div>
                 <Div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <InputColor
-                        label="Bat Color"
+                        label={t('settings.batColor')}
                         value={settings.batColor}
                         onChange={(c) => onSettingsChange({ ...settings, batColor: c })}
                     />
                     <InputColor
-                        label="Trail Color"
+                        label={t('settings.trailColor')}
                         value={settings.trailColor}
                         onChange={(c) => onSettingsChange({ ...settings, trailColor: c })}
                     />

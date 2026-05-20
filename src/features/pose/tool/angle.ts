@@ -1,7 +1,7 @@
 import { magVec, dotVec, subVec } from "@common/lib/math/vector"
 import { Landmarks3D } from "../types";
 import { PoseData } from "../core/pose-data";
-import { Vector3 } from "@/common/types/vector";
+import { Vector3 } from "@/common/lib/math/vector";
 import { PoseAnalysisTool } from "./pose-analysis-tool";
 
 const jointCalcParameter: Record<string, string[]> = {
@@ -17,7 +17,7 @@ const jointCalcParameter: Record<string, string[]> = {
 
 export class AngleAnalysisTool extends PoseAnalysisTool {
     
-    name = 'angle-analysis-plugin';
+    name = 'angle';
 
     calc(data: PoseData): Record<string, (number | null)[]> {
         const results: Record<string, (number | null)[]> = {};

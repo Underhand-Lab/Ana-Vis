@@ -4,7 +4,7 @@ import { PoseAnalysisTool } from "./pose-analysis-tool";
 
 export class HeightAnalysisTool extends PoseAnalysisTool {
     
-    name = 'height-analysis-plugin';
+    name = 'height';
 
     calc(data: PoseData): Record<string, (number | null)[]> {
         const results: Record<string, (number | null)[]> = {};
