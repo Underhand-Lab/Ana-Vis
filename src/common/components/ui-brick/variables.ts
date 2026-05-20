@@ -12,8 +12,8 @@ export const lightTheme: ThemeVars = {
     primary: '#6799fa',
     secondary: 'rgb(28, 36, 74)',
     background: '#ccc',
-    surface: '#d8d8d8',
-    box: '#ddd',
+    surface: '#f8f8f8',
+    box: '#f0f0f0',
     text: '#1c244a',
     font: "'KBO-Dia-Gothic_medium', Arial, sans-serif",
 };

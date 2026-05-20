@@ -117,7 +117,13 @@ export const Pose3DVideoModule: AnalysisModule<Pose3DVideoSettingsData> = {
     title: '3D 자세 동영상',
     View: Pose3DVideoView,
     Settings: Pose3DVideoSettings,
-    defaultSettings
+    defaultSettings,
+    init: (context) => {
+        console.log(`[Pose3DVideoModule] Initialized`);
+    },
+    cleanup: () => {
+        console.log(`[Pose3DVideoModule] WebGL or 3D Resources cleaned up`);
+    }
 };
 
 export default Pose3DVideoModule;

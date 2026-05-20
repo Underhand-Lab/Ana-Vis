@@ -32,6 +32,16 @@ export abstract class VideoModulePlugin<TSettings, TContext = any> {
      * 설정 UI 컴포넌트를 반환합니다.
      */
     abstract getSettingComponent(props: AnalysisSettingsProps<TSettings>): React.ReactNode;
+
+    /**
+     * 시각화 모듈 초기화
+     */
+    init?(context: { data: any | null; settings: TSettings }): void;
+
+    /**
+     * 시각화 리소스 해제
+     */
+    cleanup?(): void;
 }
 
 /**
@@ -222,7 +232,18 @@ export function createVideoModule(
         View: VideoView,
         Settings: VideoSettings,
         defaultSettings,
-        locales: aggregatedLocales
+        locales: aggregatedLocales,
+        init: (context) => {
+            plugins.forEach(p => {
+                p.init?.({
+                    data: context.data,
+                    settings: context.settings[p.id] ?? p.defaultSettings
+                });
+            });
+        },
+        cleanup: () => {
+            plugins.forEach(p => p.cleanup?.());
+        }
     };
 }
 

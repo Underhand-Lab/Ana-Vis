@@ -246,6 +246,12 @@ export const GraphModule: AnalysisModule<GraphSettingsData> = {
                 lineWidth: "선 굵기"
             }
         }
+    },
+    init: (context) => {
+        console.log(`[GraphModule] Initialized with tool: ${context.settings.selectedToolKey}`);
+    },
+    cleanup: () => {
+        console.log(`[GraphModule] Resources cleaned up`);
     }
 };
 

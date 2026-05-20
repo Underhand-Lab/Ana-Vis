@@ -46,7 +46,7 @@ const overlayStyle: React.CSSProperties = {
 };
 
 const modalStyle: React.CSSProperties = {
-  minWidth: '300px', maxWidth: '500px', padding: '10px 25px', 
+  maxWidth: '500px', padding: '10px 25px', 
 };
 
 export default Modal;

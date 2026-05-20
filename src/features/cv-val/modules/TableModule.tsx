@@ -157,6 +157,12 @@ export const TableModule: AnalysisModule<TableSettingsData> = {
             analysisTools: { "common-table": "분석 표" },
             settings: { selectData: "표시할 데이터 선택" }
         }
+    },
+    init: (context) => {
+        console.log(`[TableModule] Initialized with id: ${context.settings.selectedToolKey}`);
+    },
+    cleanup: () => {
+        console.log(`[TableModule] Resources cleaned up`);
     }
 };
 

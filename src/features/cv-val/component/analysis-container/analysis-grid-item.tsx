@@ -5,8 +5,54 @@ import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../core/i18n';
 
-// 모듈별 로케일 정보가 이미 i18n에 등록되었는지 추적하기 위한 집합
-const registeredLocales = new WeakSet<object>();
+// 모듈 타입별로 로케일 등록 여부를 관리 (중복 등록 방지)
+const registeredModuleTypes = new Set<string>();
+
+/**
+ * 개별 분석 모듈의 런타임 에러를 격리하기 위한 Error Boundary
+ */
+class ModuleErrorBoundary extends React.Component<{ children: React.ReactNode; title: string }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode; title: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error(`Error in module [${this.props.title}]:`, error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '100%', 
+          padding: '20px',
+          textAlign: 'center',
+          backgroundColor: 'rgba(255, 0, 0, 0.05)',
+        }}>
+          <span style={{ fontSize: '24px', marginBottom: '10px' }}>⚠️</span>
+          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>오류 발생</span>
+          <span style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>{this.props.title} 모듈에서 문제가 발생했습니다.</span>
+          <button 
+            onClick={() => this.setState({ hasError: false })}
+            style={{ marginTop: '12px', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc' }}
+          >
+            다시 시도
+          </button>
+        </Div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface Props {
   module: AnalysisModule;
@@ -32,20 +78,28 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [settings, setSettings] = useState(module.defaultSettings);
+
+  // 모듈의 베이스 ID 추출 (예: 'pose-17123...' -> 'pose')
+  const moduleType = useMemo(() => {
+    const lastHyphenIndex = module.id.lastIndexOf('-');
+    return (lastHyphenIndex !== -1 && !isNaN(Number(module.id.substring(lastHyphenIndex + 1))))
+      ? module.id.substring(0, lastHyphenIndex)
+      : module.id;
+  }, [module.id]);
+
   // 이미 등록된 리소스인지 확인하여 초기 상태 설정
   const [localesLoaded, setLocalesLoaded] = useState(() => 
-    !module.locales || registeredLocales.has(module.locales)
+    !module.locales || registeredModuleTypes.has(moduleType)
   );
 
   // 모듈에 정의된 로케일 정보를 i18n에 동적으로 등록
   useEffect(() => {
     const locales = module.locales;
-    if (locales && !registeredLocales.has(locales)) {
+    if (locales && !registeredModuleTypes.has(moduleType)) {
       Object.entries(locales).forEach(([lng, resources]) => {
         i18n.addResourceBundle(lng, 'translation', resources as any, true, true);
       });
-      // locales 객체 참조를 저장하여 동일 타입 모듈의 중복 등록 방지
-      registeredLocales.add(locales);
+      registeredModuleTypes.add(moduleType);
       setLocalesLoaded(true); // 리소스 주입 완료 시 상태 업데이트하여 재렌더링 유도
     } else {
       setLocalesLoaded(true);
@@ -55,18 +109,27 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   // 시각화 인스턴스를 공유하기 위한 Ref
   const visualizerRef = useRef<any>(null);
 
+  // 모듈의 생명주기 관리 (Init & Cleanup)
+  useEffect(() => {
+    // 1. 초기화 메서드 호출
+    // 시각화 모듈의 초기 설정에 필요한 data나 settings가 있다면 전달할 수 있습니다.
+    if (module.init) {
+      module.init({ data, settings }); 
+    }
+
+    return () => {
+      // 2. 자원 해제 메서드 호출
+      if (module.cleanup) {
+        module.cleanup();
+      }
+    };
+  }, [module.id]); // 모듈이 변경되거나 삭제될 때만 실행
+
   const { View, Settings } = module;
 
-  // 모듈의 ID에서 베이스 ID(접미사 제외)를 추출하여 번역 키 생성 및 번역 적용
   const displayTitle = useMemo(() => {
-    let baseId = module.id;
-    const lastHyphenIndex = module.id.lastIndexOf('-');
-    // ID가 'name-timestamp' 형식인 경우 timestamp 제거하여 원본 키(baseId) 획득
-    if (lastHyphenIndex !== -1 && !isNaN(Number(module.id.substring(lastHyphenIndex + 1)))) {
-      baseId = module.id.substring(0, lastHyphenIndex);
-    }
-    return t(`analysisTools.${baseId}`, module.title);
-  }, [module.id, module.title, t, localesLoaded]);
+    return t(`analysisTools.${moduleType}`, module.title);
+  }, [moduleType, module.title, t, localesLoaded]);
 
   const toggleSettings = () => setIsSettingsOpen((prev) => !prev);
 
@@ -116,12 +179,14 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
 
       <Div className="item-content no-drag" style={{ width: '100%', height: '100%', position: 'relative' }}>
         {/* 실제 시각화 결과물 */}
-        <View 
-          data={data}
-          currentFrame={currentFrame} 
-          settings={settings} 
-          isSettingsOpen={isSettingsOpen}
-        />
+        <ModuleErrorBoundary title={displayTitle}>
+          <View 
+            data={data}
+            currentFrame={currentFrame} 
+            settings={settings} 
+            isSettingsOpen={isSettingsOpen}
+          />
+        </ModuleErrorBoundary>
 
         {/* 설정 레이어 (우측 사이드 패널 형태) */}
         {isSettingsOpen && (
@@ -129,11 +194,13 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
             ...styles.sidePanel
           }}>
             {/* data와 currentFrame을 Settings 컴포넌트에 전달 */}
-            <Settings 
-              settings={settings} 
-              onSettingsChange={setSettings} 
-              data={data}
-            />
+            <ModuleErrorBoundary title={`${displayTitle} Settings`}>
+              <Settings 
+                settings={settings} 
+                onSettingsChange={setSettings} 
+                data={data}
+              />
+            </ModuleErrorBoundary>
           </Div>
         )}
       </Div>

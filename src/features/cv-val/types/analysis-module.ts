@@ -21,4 +21,6 @@ export interface AnalysisModule<S = any> {
   Settings: React.FC<AnalysisSettingsProps<S>>;
   defaultSettings: S;
   locales?: Record<string, any>;
+  init?: (context: { data: CVValData | null; settings: S }) => void;
+  cleanup?: () => void;
 }
