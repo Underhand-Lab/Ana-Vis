@@ -6,7 +6,7 @@ import { AnalysisModule } from '../types/analysis-module';
  * @param analysisTools 플러그인에 주입할 분석 도구들 (객체 또는 배열)
  * @param onLoad 플러그인이 성공적으로 로드되었을 때 호출될 콜백 함수
  */
-export const usePluginLoader = (
+export const useModuleLoader = (
     analysisTools: any,
     onLoad: (module: AnalysisModule<any>) => void
 ) => {

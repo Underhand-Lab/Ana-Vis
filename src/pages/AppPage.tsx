@@ -8,10 +8,10 @@ import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper }
 	from '@common/bridges/UIBridge.ts';
 import { saveBlobWithPicker } from "@/common/utils/save-blob";
 
-import { CVValData, IAnalysisTool } from '@features/cv-val/core/cvval-data';
+import { CVValData } from '@features/cv-val/core/cvval-data';
 import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 import { useProcessor } from '@features/cv-val/hooks/useProcessor';
-import { usePluginLoader } from '@features/cv-val/hooks/usePluginLoader';
+import { useModuleLoader } from '@/features/cv-val/hooks/useModuleLoader';
 
 import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/analysis-grid-container';
 import VideoProcessorModal from '@/features/cv-val/component/video-processor-modal';
@@ -142,7 +142,7 @@ const AppPage: React.FC = () => {
 		if (file) { await loadData(file); e.target.value = ""; }
 	};
 
-	const handleLoadPlugin = usePluginLoader([], (plugin) => setActiveModules(prev => [...prev, plugin]));
+	const handleLoadPlugin = useModuleLoader([], (plugin) => setActiveModules(prev => [...prev, plugin]));
 
 	const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;

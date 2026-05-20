@@ -38,14 +38,16 @@
 
 ```text
 src/
-├── common/           # UI 브릿지, 공통 컴포넌트, 유틸리티(Video 변환 등) 및 타입 정의
-├── features/         # 도메인별 독립 모듈 (Pose, Track-Ball, Track-Bat)
-│   └── [feature]/    # 표준 피처 구조 (아래 'Feature 구조' 섹션 참고)
-│       ├── core/     # 데이터 처리 및 비즈니스 로직 (Data 엔진)
-│       ├── hooks/    # UI 상태 관리 및 데이터 연동 Hook
-│       └── modules/  # AnalysisGrid용 UI 컴포넌트 세트
-├── electron/         # Electron 메인 프로세스 및 네이티브 설정
-└── pages/            # 어플리케이션 주요 화면 구성
+├── common/             # UI 브릿지, 공통 컴포넌트, 유틸리티(Video 변환 등) 및 타입 정의
+├── features/           # 도메인별 독립 모듈 (Pose, Track-Ball, Track-Bat)
+│   ├──cv-val/          # 분석 프레임워크 제공
+│   └── [feature]/      # 표준 피처 구조 (아래 'Feature 구조' 섹션 참고)
+│       ├── core/       # 데이터 처리 및 비즈니스 로직 (Data 엔진)
+│       ├── hooks/      # UI 상태 관리 및 데이터 연동 Hook
+│       ├── component/  # AnalysisGrid용 UI 컴포넌트 세트
+│       └── plugin/     # VideoModule 그리기 로직, 설정 세트
+├── electron/           # Electron 메인 프로세스 및 네이티브 설정
+└── pages/              # 어플리케이션 주요 화면 구성
 ```
 
 ## 🚀 시작하기
@@ -67,4 +69,4 @@ npm run electron:dev
 ```
 
 ---
-© 2024 Underland Lab. All rights reserved.
+© 2026 Underland Lab. All rights reserved.

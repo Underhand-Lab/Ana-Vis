@@ -15,7 +15,7 @@ import { CVValData, IAnalysisTool } from '@/features/cv-val/core/cvval-data';
 import { AnalysisModule } from '@features/cv-val/types/analysis-module';
 
 import { useProcessor } from '@features/cv-val/hooks/useProcessor';
-import { usePluginLoader } from '@features/cv-val/hooks/usePluginLoader';
+import { useModuleLoader } from '@/features/cv-val/hooks/useModuleLoader';
 
 import AnalysisGridContainer from '@/features/cv-val/component/analysis-container/analysis-grid-container';
 import VideoProcessorModal from '@/features/cv-val/component/video-processor-modal';
@@ -150,7 +150,7 @@ const TrackBallPage: React.FC = () => {
         }
     };
 
-    const handleLoadPlugin = usePluginLoader(ANALYSIS_TOOLS, (plugin) => {
+    const handleLoadPlugin = useModuleLoader(ANALYSIS_TOOLS, (plugin) => {
         setActiveModules(prev => [...prev, plugin]);
     });
 
