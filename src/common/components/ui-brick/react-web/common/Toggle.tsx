@@ -19,7 +19,8 @@ export const Toggle: React.FC<ToggleProps> = ({ title, children }) => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    userSelect: 'none'
+                    userSelect: 'none',
+                    gap: '10px',
                 }}
             >
                 <span style={{ textAlign: 'left' }}>{title}</span>

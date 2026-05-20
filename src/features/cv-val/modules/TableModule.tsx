@@ -147,7 +147,17 @@ export const TableModule: AnalysisModule<TableSettingsData> = {
     title: 'common-table', // Use ID as title for translation key lookup
     View: TableView,
     Settings: TableSettings,
-    defaultSettings
+    defaultSettings,
+    locales: {
+        en: {
+            analysisTools: { "common-table": "Analysis Table" },
+            settings: { selectData: "Select Data to Display" }
+        },
+        ko: {
+            analysisTools: { "common-table": "분석 표" },
+            settings: { selectData: "표시할 데이터 선택" }
+        }
+    }
 };
 
 export default TableModule;

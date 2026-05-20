@@ -15,6 +15,7 @@ export abstract class VideoModulePlugin<TSettings, TContext = any> {
     abstract id: string;
     abstract title: string;
     abstract defaultSettings: TSettings;
+    locales?: Record<string, any>;
 
     /**
      * 오버레이 그리기에 필요한 상태나 훅을 관리합니다.
@@ -188,12 +189,40 @@ export function createVideoModule(
         [p.id]: p.defaultSettings,
     }), { moduleSettings: defaultModuleSettings });
 
+    // 플러그인들의 로케일 정보를 하나로 통합
+    const aggregatedLocales: Record<string, any> = {
+        en: {
+            analysisTools: { "common-video": "Video" },
+            settings: { showBackground: "Show Background Image" }
+        },
+        ko: {
+            analysisTools: { "common-video": "동영상" },
+            settings: { showBackground: "배경 이미지 표시" }
+        }
+    };
+
+    plugins.forEach(p => {
+        if (p.locales) {
+            Object.entries(p.locales).forEach(([lng, res]) => {
+                if (!aggregatedLocales[lng]) aggregatedLocales[lng] = {};
+                // 각 섹션별(analysisTools, settings, analysisLabels 등)로 병합
+                Object.keys(res).forEach(section => {
+                    aggregatedLocales[lng][section] = {
+                        ...(aggregatedLocales[lng][section] || {}),
+                        ...res[section]
+                    };
+                });
+            });
+        }
+    });
+
     return {
         id: moduleId,
         title: moduleTitle,
         View: VideoView,
         Settings: VideoSettings,
-        defaultSettings
+        defaultSettings,
+        locales: aggregatedLocales
     };
 }
 

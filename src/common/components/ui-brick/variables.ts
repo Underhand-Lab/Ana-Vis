@@ -11,9 +11,9 @@ export interface ThemeVars {
 export const lightTheme: ThemeVars = {
     primary: '#6799fa',
     secondary: 'rgb(28, 36, 74)',
-    background: '#ffffff',
-    surface: '#f8f9fa',
-    box: '#ffffff',
+    background: '#ccc',
+    surface: '#d8d8d8',
+    box: '#ddd',
     text: '#1c244a',
     font: "'KBO-Dia-Gothic_medium', Arial, sans-serif",
 };
@@ -21,10 +21,10 @@ export const lightTheme: ThemeVars = {
 export const darkTheme: ThemeVars = {
     primary: '#6799fa',
     secondary: 'rgb(28, 36, 74)',
-    background: '#121212',
-    surface: '#1e1e1e',
-    box: '#1e1e1e',
-    text: '#ececec',
+    background: '#101010',
+    surface: '#313131',
+    box: '#212121',
+    text: '#ddd',
     font: "'KBO-Dia-Gothic_medium', Arial, sans-serif",
 };
 

@@ -79,6 +79,25 @@ export class GRFAnalysisTool extends PoseAnalysisTool {
     name = 'grf';
     title = 'grf'; // Use name as title for translation key lookup
 
+    locales = {
+        en: {
+            analysisTools: { grf: "Ground Reaction Force (GRF)" },
+            analysisLabels: {
+                Total_GRF_N: "Total GRF (N)",
+                Left_GRF_N: "Left GRF (N)",
+                Right_GRF_N: "Right GRF (N)"
+            }
+        },
+        ko: {
+            analysisTools: { grf: "지면반력 (GRF)" },
+            analysisLabels: {
+                Total_GRF_N: "총 지면반력 (N)",
+                Left_GRF_N: "왼쪽 지면반력 (N)",
+                Right_GRF_N: "오른쪽 지면반력 (N)"
+            }
+        }
+    };
+
     calc(data: PoseData, options?: { userWeight?: number }) {
         const frames = data.getFrameCnt();
         const fps = data.getFPS(); // Use data.getFPS()

@@ -20,4 +20,5 @@ export interface AnalysisModule<S = any> {
   View: React.FC<AnalysisViewProps<S>>;
   Settings: React.FC<AnalysisSettingsProps<S>>;
   defaultSettings: S;
+  locales?: Record<string, any>;
 }

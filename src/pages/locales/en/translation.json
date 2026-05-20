@@ -1,0 +1,53 @@
+{
+  "settings": {
+    "title": "Settings",
+    "themeMode": "Theme Mode",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "analysisType": "Analysis Type",
+    "analysisModel": "Analysis Model",
+    "confThreshold": "Threshold",
+    "analysisTool": "Analysis Tool"
+  },
+  "analysisTools": {
+    "video": "Video",
+    "table": "Table",
+    "graph": "Graph"
+  },
+  "common": {
+    "add": "Add",
+    "addTool": "Add Tool",
+    "save": "Save",
+    "saveVideo": "Save Video",
+    "saving": "Saving...",
+    "close": "Close",
+    "processing": "Processing...",
+    "startAnalysis": "Start Analysis",
+    "none": "None",
+    "loading": "Loading..."
+  },
+  "navigation": {
+    "newAnalysis": "New Analysis",
+    "edit": "Edit",
+    "load": "Load",
+    "save": "Save",
+    "selectEditTarget": "Select Edit Target",
+    "editBall": "Edit Ball",
+    "editBat": "Edit Bat",
+    "addTool": "Add Analysis Tool",
+    "loadModule": "Load Module (.js)",
+    "editTracking": "Edit Tracking Result",
+    "frame": "Frame",
+    "prev": "Prev",
+    "next": "Next"
+  },
+  "status": {
+    "label-idle": "Ready",
+    "label-loading": "Loading Model...",
+    "label-processing": "Analyzing...",
+    "label-done": "Analysis Complete"
+  },
+  "analysisLabels": {}
+}

@@ -1,0 +1,53 @@
+{
+  "settings": {
+    "title": "설정",
+    "themeMode": "테마 모드",
+    "darkMode": "다크 모드",
+    "lightMode": "라이트 모드",
+    "language": "언어",
+    "selectLanguage": "언어 선택",
+    "analysisType": "분석 방식",
+    "analysisModel": "분석 모델",
+    "confThreshold": "임계값",
+    "analysisTool": "분석 도구"
+  },
+  "analysisTools": {
+    "video": "동영상",
+    "table": "표",
+    "graph": "그래프"
+  },
+  "common": {
+    "add": "추가",
+    "addTool": "도구 추가",
+    "save": "저장",
+    "saveVideo": "동영상 저장",
+    "saving": "저장 중...",
+    "close": "닫기",
+    "processing": "처리 중...",
+    "startAnalysis": "분석 시작",
+    "none": "없음",
+    "loading": "불러오는 중..."
+  },
+  "navigation": {
+    "newAnalysis": "새 분석",
+    "edit": "편집",
+    "load": "불러오기",
+    "save": "저장",
+    "selectEditTarget": "편집 대상 선택",
+    "editBall": "공(Ball) 편집",
+    "editBat": "배트(Bat) 편집",
+    "addTool": "분석 도구 추가",
+    "loadModule": "모듈 파일 불러오기 (.js)",
+    "editTracking": "추적 결과 편집",
+    "frame": "프레임",
+    "prev": "이전",
+    "next": "다음"
+  },
+  "status": {
+    "label-idle": "대기 중",
+    "label-loading": "모델 로드 중...",
+    "label-processing": "분석 중...",
+    "label-done": "분석 완료"
+  },
+  "analysisLabels": {}
+}

@@ -6,6 +6,43 @@ export class HeightAnalysisTool extends PoseAnalysisTool {
     
     name = 'height';
 
+    locales = {
+        en: {
+            analysisTools: { height: "Height Analysis" },
+            analysisLabels: {
+                R_SHOULDER: "Right Shoulder",
+                L_SHOULDER: "Left Shoulder",
+                R_ELBOW: "Right Elbow",
+                L_ELBOW: "Left Elbow",
+                R_WRIST: "Right Wrist",
+                L_WRIST: "Left Wrist",
+                R_HIP: "Right Hip",
+                L_HIP: "Left Hip",
+                R_KNEE: "Right Knee",
+                L_KNEE: "Left Knee",
+                R_ANKLE: "Right Ankle",
+                L_ANKLE: "Left Ankle"
+            }
+        },
+        ko: {
+            analysisTools: { height: "높이 분석" },
+            analysisLabels: {
+                R_SHOULDER: "오른쪽 어깨",
+                L_SHOULDER: "왼쪽 어깨",
+                R_ELBOW: "오른쪽 팔꿈치",
+                L_ELBOW: "왼쪽 팔꿈치",
+                R_WRIST: "오른쪽 손목",
+                L_WRIST: "왼쪽 손목",
+                R_HIP: "오른쪽 고관절",
+                L_HIP: "왼쪽 고관절",
+                R_KNEE: "오른쪽 무릎",
+                L_KNEE: "왼쪽 무릎",
+                R_ANKLE: "오른쪽 발목",
+                L_ANKLE: "왼쪽 발목"
+            }
+        }
+    };
+
     calc(data: PoseData): Record<string, (number | null)[]> {
         const results: Record<string, (number | null)[]> = {};
 

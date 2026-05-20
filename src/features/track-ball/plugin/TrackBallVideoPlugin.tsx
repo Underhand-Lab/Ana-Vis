@@ -25,6 +25,25 @@ export class TrackBallVideoPlugin extends VideoModulePlugin<TrackBallSettings> {
     title = 'track-ball-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 
+    locales = {
+        en: {
+            analysisTools: { "track-ball-video": "Ball Tracking" },
+            settings: {
+                showConfidence: "Show Confidence",
+                boxColor: "Box Color",
+                trailColor: "Trail Color"
+            }
+        },
+        ko: {
+            analysisTools: { "track-ball-video": "공 추적" },
+            settings: {
+                showConfidence: "신뢰도 표시",
+                boxColor: "박스 색상",
+                trailColor: "궤적 색상"
+            }
+        }
+    };
+
     usePluginContext(data: CVValData | null, settings: TrackBallSettings) {
         const { setOptions, getTrailLayer } = useTrackBallFrame(data);
 

@@ -230,7 +230,23 @@ export const GraphModule: AnalysisModule<GraphSettingsData> = {
     title: 'common-graph', // Use ID as title for translation key lookup
     View: GraphView,
     Settings: GraphSettings,
-    defaultSettings
+    defaultSettings,
+    locales: {
+        en: {
+            analysisTools: { "common-graph": "Analysis Graph" },
+            settings: {
+                graphLegend: "Graph Legend",
+                lineWidth: "Line Width"
+            }
+        },
+        ko: {
+            analysisTools: { "common-graph": "분석 그래프" },
+            settings: {
+                graphLegend: "그래프 범례",
+                lineWidth: "선 굵기"
+            }
+        }
+    }
 };
 
 export default GraphModule;

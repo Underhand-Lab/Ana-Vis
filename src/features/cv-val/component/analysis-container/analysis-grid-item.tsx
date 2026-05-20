@@ -1,7 +1,12 @@
-import React, { useState, forwardRef, useRef } from 'react';
+import React, { useState, forwardRef, useRef, useEffect, useMemo } from 'react';
 import { Div } from "@common/bridges/UIBridge";
 import vars from '@/common/components/ui-brick/variables';
 import { AnalysisModule } from '@features/cv-val/types/analysis-module';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../core/i18n';
+
+// 모듈별 로케일 정보가 이미 i18n에 등록되었는지 추적하기 위한 집합
+const registeredLocales = new WeakSet<object>();
 
 interface Props {
   module: AnalysisModule;
@@ -23,14 +28,46 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
     style, className, onMouseDown, onMouseUp, onTouchEnd, children 
   } = props;
 
+  const { t } = useTranslation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [settings, setSettings] = useState(module.defaultSettings);
+  // 이미 등록된 리소스인지 확인하여 초기 상태 설정
+  const [localesLoaded, setLocalesLoaded] = useState(() => 
+    !module.locales || registeredLocales.has(module.locales)
+  );
+
+  // 모듈에 정의된 로케일 정보를 i18n에 동적으로 등록
+  useEffect(() => {
+    const locales = module.locales;
+    if (locales && !registeredLocales.has(locales)) {
+      Object.entries(locales).forEach(([lng, resources]) => {
+        i18n.addResourceBundle(lng, 'translation', resources as any, true, true);
+      });
+      // locales 객체 참조를 저장하여 동일 타입 모듈의 중복 등록 방지
+      registeredLocales.add(locales);
+      setLocalesLoaded(true); // 리소스 주입 완료 시 상태 업데이트하여 재렌더링 유도
+    } else {
+      setLocalesLoaded(true);
+    }
+  }, [module]);
 
   // 시각화 인스턴스를 공유하기 위한 Ref
   const visualizerRef = useRef<any>(null);
 
-  const { View, Settings, title } = module;
+  const { View, Settings } = module;
+
+  // 모듈의 ID에서 베이스 ID(접미사 제외)를 추출하여 번역 키 생성 및 번역 적용
+  const displayTitle = useMemo(() => {
+    let baseId = module.id;
+    const lastHyphenIndex = module.id.lastIndexOf('-');
+    // ID가 'name-timestamp' 형식인 경우 timestamp 제거하여 원본 키(baseId) 획득
+    if (lastHyphenIndex !== -1 && !isNaN(Number(module.id.substring(lastHyphenIndex + 1)))) {
+      baseId = module.id.substring(0, lastHyphenIndex);
+    }
+    return t(`analysisTools.${baseId}`, module.title);
+  }, [module.id, module.title, t, localesLoaded]);
+
   const toggleSettings = () => setIsSettingsOpen((prev) => !prev);
 
   return (
@@ -54,7 +91,7 @@ const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
         className="grid-item-overlay drag-handle frostedglassmorphism" 
         style={{ ...styles.header, ...((isHovered || isSettingsOpen) ? styles.headerVisible : {}) }}
       >
-        <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'black' }}>{title}</span>
+        <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#222' }}>{displayTitle}</span>
         <Div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={(e) => { e.stopPropagation(); toggleSettings(); }} 
@@ -150,7 +187,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     zIndex: 20,
     overflowY: 'auto',
     borderLeft: '1px solid rgba(255,255,255,0.3)',
-    color: 'black',
+    color: '#222',
   }
 };
 

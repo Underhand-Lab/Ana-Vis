@@ -2,6 +2,10 @@ import { VideoMetadata }
     from "@/common/service/video-to-img-list/media-bunny";
 import { MediabunnyImageListToVideo }
     from "@/common/service/image-list-to-video/media-bunny";
+import i18n from './i18n';
+
+// 모듈별 로케일 정보가 이미 i18n에 등록되었는지 추적하기 위한 집합
+const registeredLocales = new WeakSet<object>();
 /**
  * 분석 타입을 문자열로 정의하여 확장성을 확보합니다.
  * 기본적으로 AnalysisDataMap의 키들을 포함하지만, 임의의 문자열도 허용합니다.
@@ -22,6 +26,7 @@ export interface IAnalysisTool {
     setData(data: CVValData): void;
     getResult(idx: number): Record<string, (number | null)> | null;
     getResults(): Record<string, (number | null)[]> | null;
+    locales?: Record<string, any>;
 }
 
 export class CVValData {
@@ -107,6 +112,14 @@ export class CVValData {
         const existing = this.tools.get(key) || [];
         this.tools.set(key, [...existing, plugin]);
 
+        // 플러그인에 정의된 로케일 정보를 i18n에 동적으로 등록
+        if (plugin.locales && !registeredLocales.has(plugin.locales)) {
+            Object.entries(plugin.locales).forEach(([lng, resources]) => {
+                i18n.addResourceBundle(lng, 'translation', resources as any, true, true);
+            });
+            registeredLocales.add(plugin.locales);
+        }
+
         plugin.setData(this);
     }
 
@@ -114,7 +127,16 @@ export class CVValData {
         const existing = this.tools.get(key) || [];
         this.tools.set(key, [...existing, ...plugins]);
 
-        plugins.forEach(plugin => plugin.setData(this));
+        plugins.forEach(plugin => {
+            // 플러그인에 정의된 로케일 정보를 i18n에 동적으로 등록
+            if (plugin.locales && !registeredLocales.has(plugin.locales)) {
+                Object.entries(plugin.locales).forEach(([lng, resources]) => {
+                    i18n.addResourceBundle(lng, 'translation', resources as any, true, true);
+                });
+                registeredLocales.add(plugin.locales);
+            }
+            plugin.setData(this);
+        });
 
     }
 

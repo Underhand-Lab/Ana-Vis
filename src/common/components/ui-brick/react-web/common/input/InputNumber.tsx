@@ -1,5 +1,5 @@
 import React, { forwardRef, InputHTMLAttributes } from 'react';
-import vars from '../../../variables';
+import { vars } from '../../../variables';
 
 interface InputNumberProps extends InputHTMLAttributes<HTMLInputElement> {}
 
@@ -7,7 +7,7 @@ const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(({ style, ...
     <input 
         ref={ref} 
         type="number" 
-        style={{ ...styles.input, ...style }}
+        style={{ ...styles.input, backgroundColor: vars.surface, color: vars.text, ...style }}
         {...props} 
     />
 ));
@@ -21,6 +21,9 @@ const styles: { [key: string]: React.CSSProperties } = {
         minWidth: 0,
         cursor: 'pointer',
         flex: 1,
+        border: 'none',
+        borderRadius: '10px',
+        padding: '6px 12px',
     },
 };
 

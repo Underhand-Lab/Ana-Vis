@@ -19,6 +19,23 @@ export class GRFVideoPlugin extends VideoModulePlugin<GRFSettings> {
     title = 'grf-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 
+    locales = {
+        en: {
+            analysisTools: { "grf-video": "Ground Reaction Force" },
+            settings: {
+                showGRFArrows: "Show GRF Arrows",
+                arrowScale: "Arrow Scale"
+            }
+        },
+        ko: {
+            analysisTools: { "grf-video": "지면반력" },
+            settings: {
+                showGRFArrows: "GRF 화살표 표시",
+                arrowScale: "화살표 배율"
+            }
+        }
+    };
+
     usePluginContext(data: CVValData, settings: GRFSettings) {
         const { setOptions, getGRFLayer } = useGRFFrame(data);
 

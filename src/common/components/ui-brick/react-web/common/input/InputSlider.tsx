@@ -31,7 +31,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
     const range = nMax - nMin;
 
     // 값에 따른 퍼센트 계산 (0 ~ 100)
-    const percentage = range === 0 ? 0 : ((value - nMin) / range) * 100;
+    const percentage = range <= 0 ? 0 : ((value - nMin) / range) * 100;
 
     const updateValue = useCallback((clientX: number) => {
         if (!containerRef.current) return;
@@ -39,7 +39,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
         const rect = containerRef.current.getBoundingClientRect();
         const pos = (clientX - rect.left) / rect.width;
         const clampedPos = Math.max(0, Math.min(1, pos));
-        
+
         let newValue = nMin + clampedPos * range;
 
         if (nStep > 0) {
@@ -59,7 +59,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
 
     const handleTouchStart = (e: React.TouchEvent) => {
         // touchAction: 'none'이 스타일 에 적용되어 있어 스크롤은 방지되나, 안전하게 전파 차단
-        e.stopPropagation(); 
+        e.stopPropagation();
         setIsDragging(true);
         updateValue(e.touches[0].clientX);
     };
@@ -88,7 +88,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
         <>
             {/* 드래그 중 다른 요소의 간섭을 차단하는 전역 투명 레이어 */}
             {isDragging && (
-                <div 
+                <div
                     style={{
                         position: 'fixed',
                         top: 0,
@@ -98,59 +98,60 @@ const InputSlider: React.FC<InputSliderProps> = ({
                         zIndex: 99999, // 최상단 배치
                         cursor: 'pointer',
                         backgroundColor: 'transparent'
-                    }} 
+                    }}
                 />
             )}
-        <div
-            ref={containerRef}
-            id={id}
-            className={className}
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
-            style={{
-                position: 'relative',
-                width: '100%',
-                height: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                cursor: 'pointer',
-                userSelect: 'none',
-                touchAction: 'none',
-                ...style
-            }}
-        >
-            {/* 바탕 트랙 */}
-            <div style={{
-                position: 'absolute',
-                width: '100%',
-                height: '6px',
-                borderRadius: '3px',
-                backgroundColor: vars.text + '22', // 현재 테마 텍스트 색상의 투명 버전
-            }} />
-            
-            {/* 진행 상태 바 */}
-            <div style={{
-                position: 'absolute',
-                width: `${percentage}%`,
-                height: '6px',
-                borderRadius: '3px',
-                backgroundColor: vars.primary,
-            }} />
+            <div
+                ref={containerRef}
+                id={id}
+                className={className}
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+                style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    touchAction: 'none',
+                    margin: '0 10px',
+                    ...style
+                }}
+            >
+                {/* 바탕 트랙 */}
+                <div style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '6px',
+                    borderRadius: '3px',
+                    backgroundColor: vars.surface, // 현재 테마 텍스트 색상의 투명 버전
+                }} />
 
-            {/* 조절 핸들 (Thumb) */}
-            <div style={{
-                position: 'absolute',
-                left: `${percentage}%`,
-                width: '16px',
-                height: '16px',
-                borderRadius: '50%',
-                backgroundColor: vars.primary,
-                border: `2px solid ${vars.box}`,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                transform: 'translateX(-50%)',
-                transition: isDragging ? 'none' : 'left 0.1s ease-out',
-            }} />
-        </div>
+                {/* 진행 상태 바 */}
+                <div style={{
+                    position: 'absolute',
+                    width: `${percentage}%`,
+                    height: '6px',
+                    borderRadius: '3px',
+                    backgroundColor: vars.primary,
+                }} />
+
+                {/* 조절 핸들 (Thumb) */}
+                <div style={{
+                    position: 'absolute',
+                    left: `${percentage}%`,
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    backgroundColor: vars.primary,
+                    border: `2px solid ${vars.box}`,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    transform: 'translateX(-50%)',
+                    transition: isDragging ? 'none' : 'left 0.1s ease-out',
+                }} />
+            </div>
         </>
     );
 };

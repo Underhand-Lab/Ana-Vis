@@ -2,6 +2,14 @@ import React, { useState, useRef, useEffect, useCallback, useMemo, ChangeEvent }
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
+import i18n from '@features/cv-val/core/i18n';
+import enTranslation from './locales/en/translation.json';
+import koTranslation from './locales/ko/translation.json';
+
+// 다국어 번역 리소스 추가 (언어, 네임스페이스, 데이터, deepMerge여부, overwrite여부)
+i18n.addResourceBundle('en', 'translation', enTranslation, true, true);
+i18n.addResourceBundle('ko', 'translation', koTranslation, true, true);
+
 import Modal from '@common/components/Modal';
 import Navigation from '@common/bridges/NavigationBridge.tsx';
 import { setThemeMode, getSystemTheme } from '@common/components/ui-brick/variables';
@@ -144,7 +152,7 @@ const AppPage: React.FC = () => {
 		if (file) { await loadData(file); e.target.value = ""; }
 	};
 
-	const handleLoadPlugin = useModuleLoader([], (plugin) => setActiveModules(prev => [...prev, plugin]));
+	const handleLoadModule = useModuleLoader([], (plugin) => setActiveModules(prev => [...prev, plugin]));
 
 	const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
@@ -173,7 +181,7 @@ const AppPage: React.FC = () => {
 
 	const handleAddModule = (type: string) => {
 		const moduleBase = ALL_AVAILABLE_MODULES[type];
-		if (moduleBase) setActiveModules((prev) => [...prev, { ...moduleBase, id: `${type}-${Date.now()}` }]);
+		if (moduleBase) setActiveModules((prev) => [...prev, { ...moduleBase, id: `${moduleBase.id}-${Date.now()}` }]);
 		setToolModalOpen(false);
 	};
 
@@ -218,7 +226,7 @@ const AppPage: React.FC = () => {
 		<Wrapper>
 			<InputFile ref={dataInputRef} style={{ display: 'none' }} accept={ALL_EXTENSIONS} onChange={handleLoadFile} />
 			<InputFile ref={videoInputRef} style={{ display: 'none' }} accept="video/*" onChange={handleVideoSelect} />
-			<InputFile ref={pluginInputRef} style={{ display: 'none' }} accept=".js" onChange={handleLoadPlugin} />
+			<InputFile ref={pluginInputRef} style={{ display: 'none' }} accept=".js" onChange={handleLoadModule} />
 			<Navigation
 				fileButtons={[
 					{ name: t('settings.title'), action: () => setSettingsModalOpen(true) },
@@ -242,21 +250,8 @@ const AppPage: React.FC = () => {
 				]}
 				toolButtons={Object.keys(ALL_AVAILABLE_MODULES).map(key => ({ name: `${t(`analysisTools.${key.toLowerCase()}`, key)} ${t('common.add', '추가')}`, action: () => handleAddModule(key) }))}
 			/>
-			<AnalysisGridContainer 
-				modules={useMemo(() => activeModules.map(m => { // m.id will be like "common-video-timestamp" or "table-timestamp"
-					let baseId = m.id;
-					// Remove timestamp suffix if present (e.g., "common-video-12345" -> "common-video")
-					const lastHyphenIndex = m.id.lastIndexOf('-');
-					if (lastHyphenIndex !== -1 && !isNaN(Number(m.id.substring(lastHyphenIndex + 1)))) {
-						baseId = m.id.substring(0, lastHyphenIndex);
-					}
-					// baseId should now be "common-video", "common-table", "track-bat-video", etc.
-					const translationKey = `analysisTools.${baseId}`;
-					return {
-						...m,
-						title: t(translationKey, m.title)
-					};
-				}), [activeModules, t])} 
+			<AnalysisGridContainer
+				modules={activeModules}
 				data={processedData} 
 				currentFrame={currentIdx} 
 				onRemoveModule={(id) => setActiveModules(prev => prev.filter(m => m.id !== id))} 
@@ -280,7 +275,7 @@ const AppPage: React.FC = () => {
 			</Modal>
 			<Modal isOpen={isToolModalOpen} onClose={() => setToolModalOpen(false)} title={t('navigation.addTool')}><Div style={{ display: 'flex', flexDirection: 'column', gap: '15px', }}><Div style={{ display: 'flex', flexDirection: 'row', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', padding: '15px' }}>
 				{Object.keys(ALL_AVAILABLE_MODULES).map(key => (<Button key={key} onClick={() => handleAddModule(key)}>{t(`analysisTools.${key.toLowerCase()}`, key)}</Button>))}
-				<Button onClick={() => { setToolModalOpen(false); pluginInputRef.current?.click(); }}>{t('navigation.loadPlugin')}</Button>
+				<Button onClick={() => { setToolModalOpen(false); pluginInputRef.current?.click(); }}>{t('navigation.loadModule')}</Button>
 			</Div></Div></Modal>
 			<Modal isOpen={isSettingsModalOpen} onClose={() => setSettingsModalOpen(false)} title={t('settings.title')}>
 				<Div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>

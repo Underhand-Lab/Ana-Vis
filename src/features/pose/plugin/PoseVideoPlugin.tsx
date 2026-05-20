@@ -42,6 +42,49 @@ export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
     title = 'pose-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings; // Update defaultSettings to match SkeletonSettings
 
+    locales = {
+        en: {
+            analysisTools: { "pose-video": "Pose" },
+            settings: {
+                showJoints: "Show Joints",
+                lineWidth: "Line Width",
+                jointShape: "Joint Shape",
+                jointRadius: "Joint Size",
+                jointStrokeWidth: "Joint Border",
+                colorSettings: "Color Settings",
+                jointShapeCircle: "Circle",
+                jointShapeRect: "Rectangle"
+            },
+            analysisLabels: {
+                L_ARM: "Left Arm",
+                R_ARM: "Right Arm",
+                L_LEG: "Left Leg",
+                R_LEG: "Right Leg",
+                BODY: "Torso",
+                HEAD: "Head",
+                JOINT_FILL: "Joint Fill",
+                JOINT_STROKE: "Joint Stroke"
+            }
+        },
+        ko: {
+            analysisTools: { "pose-video": "자세" },
+            settings: {
+                showJoints: "관절 표시 여부",
+                lineWidth: "선 굵기",
+                jointShape: "관절 모양",
+                jointRadius: "관절 크기",
+                jointStrokeWidth: "관절 테두리",
+                colorSettings: "색상 설정",
+                jointShapeCircle: "원형",
+                jointShapeRect: "사각형"
+            },
+            analysisLabels: {
+                L_ARM: "왼쪽 팔", R_ARM: "오른쪽 팔", L_LEG: "왼쪽 다리", R_LEG: "오른쪽 다리",
+                BODY: "몸통", HEAD: "머리", JOINT_FILL: "관절 채우기", JOINT_STROKE: "관절 테두리"
+            }
+        }
+    };
+
     usePluginContext(data: CVValData, settings: SkeletonSettings) {
         const { setOptions, getPoseLayer } = usePoseFrame(data);
 

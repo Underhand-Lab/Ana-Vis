@@ -28,6 +28,25 @@ export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
     title = 'track-bat-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 
+    locales = {
+        en: {
+            analysisTools: { "track-bat-video": "Bat Trajectory" },
+            settings: {
+                batColor: "Bat Color",
+                trailColor: "Trail Color",
+                trackLength: "Track Length"
+            }
+        },
+        ko: {
+            analysisTools: { "track-bat-video": "배트 궤적" },
+            settings: {
+                batColor: "배트 색상",
+                trailColor: "궤적 색상",
+                trackLength: "추적 길이"
+            }
+        }
+    };
+
     usePluginContext(data: CVValData | null, settings: TrackBatSettings) {
         const { setColors, setTrailLen, getTrailLayer } = useTrackBatFrame(data);
 
