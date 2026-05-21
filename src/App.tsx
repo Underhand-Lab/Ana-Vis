@@ -1,6 +1,6 @@
 import { HashRouter } from 'react-router-dom';
-import ExternalFileBridge from '@common/bridges/ExternalFileBridge';
-import AppPage from './pages/AppPage';
+import ExternalFileBridge from '@shared/bridges/ExternalFileBridge';
+import AppPage from '@apps/pages/AppPage';
 
 export default function App() {
   return (

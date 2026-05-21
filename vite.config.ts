@@ -9,9 +9,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@common': path.resolve(__dirname, './src/common'),
-      '@features': path.resolve(__dirname, './src/features'),
-      '@legacy': path.resolve(__dirname, './src/_legacy/'),
+      '@packages': path.resolve(__dirname, './@packages'),
+      '@apps': path.resolve(__dirname, './@apps'),
+      '@shared': path.resolve(__dirname, './@shared'),
       'react-native': 'react-native-web',
     },
     // 리액트 인스턴스를 하나로 강제 고정하여 버전 충돌 방지

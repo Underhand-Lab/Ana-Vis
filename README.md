@@ -17,6 +17,10 @@
 - **공 추적 (Ball Tracking)**: 투구 또는 타구된 공의 궤적을 추적하고 데이터를 분석합니다.
 - **배트 궤적 (Bat Trajectory)**: 타격 시 배트의 이동 경로를 시각화합니다.
 - **커스텀 분석 대시보드**: 사용자가 분석 모듈을 자유롭게 배치하고 크기를 조절할 수 있는 유연한 대시보드를 제공합니다. (현재 `react-grid-layout` 기반)
+- **분리형 프레임워크 (Framework-First)**: 분석 엔진(`cv-val-core`)과 도메인 앱(`baseball-app`)을 분리하여 확장성을 확보합니다.
+- **플러그인 아키텍처**: 새로운 분석 모델(Pose, Ball, Bat 등)을 플러그인 형태로 손쉽게 추가할 수 있습니다.
+- **멀티 플랫폼 엔진**: Web, Electron 환경에서 동일한 데이터 처리 로직을 사용합니다.
+- **커스텀 대시보드**: `react-grid-layout` 기반의 유연한 분석 환경을 제공합니다.
 
 ## 📱 멀티 플랫폼 지원
 
@@ -37,17 +41,11 @@
 ## 📂 프로젝트 구조
 
 ```text
-src/
-├── common/             # UI 브릿지, 공통 컴포넌트, 유틸리티(Video 변환 등) 및 타입 정의
-├── features/           # 도메인별 독립 모듈 (Pose, Track-Ball, Track-Bat)
-│   ├──cv-val/          # 분석 프레임워크 제공
-│   └── [feature]/      # 표준 피처 구조 (아래 'Feature 구조' 섹션 참고)
-│       ├── core/       # 데이터 처리 및 비즈니스 로직 (Data 엔진)
-│       ├── hooks/      # UI 상태 관리 및 데이터 연동 Hook
-│       ├── component/  # AnalysisGrid용 UI 컴포넌트 세트
-│       └── plugin/     # VideoModule 그리기 로직, 설정 세트
-├── electron/           # Electron 메인 프로세스 및 네이티브 설정
-└── pages/              # 어플리케이션 주요 화면 구성
+@core/          # CV-Val Core Framework (분석 인터페이스 및 범용 엔진)
+@apps/          # Domain Applications (야구 분석 프로덕트 소스 및 UI)
+@shared/        # Shared Utilities (공통 컴포넌트, 비디오 유틸리티)
+electron/       # Desktop Native (메인 프로세스 및 데스크탑 설정)
+public/         # 정적 자원 (앱 아이콘, 가이드 마크다운 등)
 ```
 
 ## 🚀 시작하기

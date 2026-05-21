@@ -19,12 +19,17 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./src/*"],
       "@mediapipe/tasks-vision": ["./node_modules/@mediapipe/tasks-vision"],
-      "@common/*": ["./src/common/*"],
-      "@features/*": ["./src/features/*"],
-      "@legacy/*": ["./src/_legacy/*"]
+      "@packages/*": ["./@packages/*"],
+      "@apps/*": ["./@apps/*"],
+      "@shared/*": ["./@shared/*"]
     }
   },
-  "include": ["src", "electron"]
+  "include": [
+    "src/**/*",
+    "@packages/**/*",
+    "@apps/**/*",
+    "@shared/**/*",
+    "electron/**/*"
+  ]
 }

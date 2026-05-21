@@ -1,0 +1,110 @@
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { Div, InputColor, InputNumber }
+    from '@shared/bridges/UIBridge.ts';
+    
+import { CVValData } from '@packages/cv-val/core/cvval-data.ts';
+import { AnalysisSettingsProps } from '@packages/cv-val/types/analysis-module';
+import { VideoModulePlugin } from '@packages/cv-val/modules/VideoModule.tsx';
+
+import { TrackBatData } from '../core/track-bat-data.ts';
+import { useTrackBatFrame } from '../hooks/useTrackBatFrame.ts';
+
+
+export interface TrackBatSettings {
+    batColor: string;
+    trailColor: string;
+    trailLen: number;
+    [key: string]: any;
+}
+
+const defaultSettings: TrackBatSettings = {
+    batColor: "rgba(255,128,0,0.4)", // Orange
+    trailColor: "rgba(0,255,0,0.4)", // Green
+    trailLen: 10
+};
+
+export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
+    id = 'track-bat-video';
+    title = 'track-bat-video'; // Use ID as title for translation key lookup
+    defaultSettings = defaultSettings;
+
+    locales = {
+        en: {
+            analysisTools: { "track-bat-video": "Bat Trajectory" },
+            settings: {
+                batColor: "Bat Color",
+                trailColor: "Trail Color",
+                trackLength: "Track Length"
+            }
+        },
+        ko: {
+            analysisTools: { "track-bat-video": "배트 궤적" },
+            settings: {
+                batColor: "배트 색상",
+                trailColor: "궤적 색상",
+                trackLength: "추적 길이"
+            }
+        }
+    };
+
+    usePluginContext(data: CVValData | null, settings: TrackBatSettings) {
+        const { setColors, setTrailLen, getTrailLayer } = useTrackBatFrame(data);
+
+        useEffect(() => {
+            if (settings) {
+                setColors(prev => ({
+                    ...prev,
+                    batColor: settings.batColor,
+                    trailColor: settings.trailColor
+                }));
+                setTrailLen(settings.trailLen);
+            }
+        }, [settings, setColors, setTrailLen]);
+
+        return { getTrailLayer };
+    }
+
+    drawOverlay(
+        ctx: CanvasRenderingContext2D,
+        frameIdx: number,
+        _data: TrackBatData,
+        _settings: TrackBatSettings,
+        context: { getTrailLayer: (idx: number) => HTMLCanvasElement | null }
+    ) {
+        const trailLayer = context.getTrailLayer(frameIdx);
+        if (trailLayer) {
+            ctx.drawImage(trailLayer, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+    }
+
+    getSettingComponent({ settings, onSettingsChange, data }: AnalysisSettingsProps<TrackBatSettings>) {
+        const { t } = useTranslation();
+        return (
+            <>
+                <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>{t('settings.trackLength')}</label>
+                    <InputNumber
+                        style={{ width: '60px' }}
+                        value={settings.trailLen}
+                        max={data ? data.getFrameCnt() - 1 : 0}
+                        onChange={(e) => onSettingsChange({ ...settings, trailLen: parseInt(e.target.value) })}
+                    />
+                </Div>
+                <Div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <InputColor
+                        label={t('settings.batColor')}
+                        value={settings.batColor}
+                        onChange={(c) => onSettingsChange({ ...settings, batColor: c })}
+                    />
+                    <InputColor
+                        label={t('settings.trailColor')}
+                        value={settings.trailColor}
+                        onChange={(c) => onSettingsChange({ ...settings, trailColor: c })}
+                    />
+                </Div>
+            </>
+        );
+    }
+}
