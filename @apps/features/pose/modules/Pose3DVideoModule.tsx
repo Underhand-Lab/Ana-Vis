@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-import { usePose3DVisualize } from "../hooks/usePose3DVisualize"
+import { usePose3DFrame } from "../hooks/usePose3DFrame"
 
 import { Div, InputColor } from '@shared/bridges/UIBridge';
 
@@ -54,7 +54,7 @@ const defaultSettings: Pose3DVideoSettingsData = {
  */
 export const Pose3DVideoView: React.FC<AnalysisViewProps<Pose3DVideoSettingsData>> = ({ data, currentFrame, settings }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const { setOptions, drawPose } = usePose3DVisualize(data, canvasRef);
+    const { setOptions, drawPose } = usePose3DFrame(data, canvasRef);
 
     // 설정값 동기화
     useEffect(() => {

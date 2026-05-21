@@ -5,7 +5,7 @@ import vars from '@shared/components/ui-brick/variables';
 
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 
-import ModuleContainerItem from './ModuleContainerItem';
+import ModuleContainerItem from '../module-container-item/ModuleContainerItem';
 
 interface Props {
   modules: AnalysisModule[];

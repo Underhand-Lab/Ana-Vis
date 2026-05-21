@@ -1,24 +1,15 @@
 import { useState, useCallback, useRef } from 'react';
+import { getRgba } from '@shared/utils/getRgba'
+import { CVValData } from '@packages/cv-val/core/cvval-data';
+
 import { TrackBatData } from '../core/track-bat-data';
 import { BatDetectedObject } from '../types';
-import { CVValData } from '@/features/cv-val/core/cvval-data';
 import featureName from '../constant';
+import { applyMaskToBuffer, processMasking } from '../utils/mask-utils';
 
-interface ColorsState {
-  batColor: string;
-  trailColor: string;
-}
-
-interface Point {
-  x: number;
-  y: number;
-}
-
-interface Vertices {
-  topLeft: Point;
-  topRight: Point;
-  bottomLeft: Point;
-  bottomRight: Point;
+export interface ColorsState {
+	batColor: string;
+	trailColor: string;
 }
 
 /**
@@ -26,252 +17,117 @@ interface Vertices {
  * React 환경에서 사용할 수 있도록 변환한 Custom Hook입니다.
  */
 export const useTrackBatFrame = (trackData: CVValData | null) => {
-  const [trailLen, setTrailLen] = useState<number>(3);
-  const [colors, setColors] = useState<ColorsState>({
-    batColor: '#ff8000',
-    trailColor: '#00ff00'
-  });
+	const [trailLen, setTrailLen] = useState<number>(3);
+	const [colors, setColors] = useState<ColorsState>({
+		batColor: '#ff8000',
+		trailColor: '#00ff00'
+	});
 
-  const offscreenRef = useRef<HTMLCanvasElement | null>(null);
-  const cachedImageData = useRef<ImageData | null>(null);
+	const offscreenRef = useRef<HTMLCanvasElement | null>(null);
+	const cachedImageData = useRef<ImageData | null>(null);
 
-  // 색상 문자열(Hex 또는 RGBA)을 [R, G, B, A(0-255)] 배열로 변환
-  const getRgba = (colorStr: string): [number, number, number, number] => {
-    if (!colorStr) return [0, 0, 0, 0];
+	const getTrailLayer = useCallback((idx: number, length?: number): HTMLCanvasElement | null => {
+		if (!trackData || !trackData.exist(featureName) || idx < 0) return null;
 
-    // 1. RGBA 문자열 케이스 (rgba(255, 255, 255, 1.0) - 공백에 유연하게 대응)
-    const rgbaMatch = colorStr.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/);
-    if (rgbaMatch) {
-      const r = parseInt(rgbaMatch[1]);
-      const g = parseInt(rgbaMatch[2]);
-      const b = parseInt(rgbaMatch[3]);
-      // alpha(0-1)를 255 스케일로 변환. 값이 없으면 불투명(255) 처리
-      const a = (rgbaMatch[4] !== undefined && rgbaMatch[4] !== "") ? Math.round(parseFloat(rgbaMatch[4]) * 255) : 255;
-      return [r, g, b, a];
-    }
+		const batData = trackData.get(featureName) as TrackBatData;
 
-    // 2. Hex 문자열 케이스 (#ffffff)
-    if (colorStr.startsWith('#')) {
-      const r = parseInt(colorStr.slice(1, 3), 16);
-      const g = parseInt(colorStr.slice(3, 5), 16);
-      const b = parseInt(colorStr.slice(5, 7), 16);
-      const a = 255;
-      return [r, g, b, a];
-    }
+		// 1. 마스크 데이터 존재 여부 확인 및 크기 계산
+		let sampleBat: BatDetectedObject | null = null;
+		for (let i = idx; i >= 0; i--) {
+			sampleBat = batData.getSelectedBatAt(i);
+			if (sampleBat?.maskConfidenceMap) break;
+		}
+		if (!sampleBat || !sampleBat.maskConfidenceMap) return null;
 
-    return [255, 255, 255, 255];
-  };
+		const maskW = sampleBat.maskConfidenceMap[0].length;
+		const maskH = sampleBat.maskConfidenceMap.length;
 
-  // 마스크 맵을 픽셀 버퍼에 적용
-  const applyMaskToBuffer = (pixelData: Uint8ClampedArray, maskMap: number[][], threshold: number, color: [number, number, number, number], maskW: number, maskH: number): void => {
-    if (!maskMap) return;
-    for (let y = 0; y < maskH; y++) {
-      const row = maskMap[y];
-      const rowOffset = y * maskW;
-      for (let x = 0; x < maskW; x++) {
-        if (row[x] >= threshold) {
-          const idx = (rowOffset + x) * 4;
-          pixelData[idx] = color[0];
-          pixelData[idx + 1] = color[1];
-          pixelData[idx + 2] = color[2];
-          pixelData[idx + 3] = color[3];
-        }
-      }
-    }
-  };
+		if (!offscreenRef.current) offscreenRef.current = document.createElement('canvas');
+		const canvas = offscreenRef.current;
 
-  // 마스크의 모서리 정점 추출
-  const getMaskVertices = (maskMap: number[][], threshold: number): Vertices | null => {
-    if (!maskMap || maskMap.length === 0) return null;
-    const rows = maskMap.length, cols = maskMap[0].length;
-    let topLeft: Point | null = null, topRight: Point | null = null, bottomLeft: Point | null = null, bottomRight: Point | null = null;
+		if (canvas.width !== maskW || canvas.height !== maskH) {
+			canvas.width = maskW;
+			canvas.height = maskH;
+			const ctx2d = canvas.getContext('2d');
+			if (ctx2d) {
+				cachedImageData.current = ctx2d.createImageData(maskW, maskH);
+			}
+		}
 
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        if (maskMap[y][x] >= threshold) {
-          if (!topLeft || x < topLeft.x) topLeft = { x, y };
-          if (!topRight || x > topRight.x) topRight = { x, y };
-        }
-      }
-      if (topLeft && y > topLeft.y + 3) break;
-    }
+		const ctx = canvas.getContext('2d');
+		if (!ctx || !cachedImageData.current) return null;
 
-    for (let y = rows - 1; y >= 0; y--) {
-      for (let x = 0; x < cols; x++) {
-        if (maskMap[y][x] >= threshold) {
-          if (!bottomLeft || x < bottomLeft.x) bottomLeft = { x, y };
-          if (!bottomRight || x > bottomRight.x) bottomRight = { x, y };
-        }
-      }
-      if (bottomLeft && y < bottomLeft.y - 3) break;
-    }
-    return (topLeft && bottomRight && topRight && bottomLeft) ? { topLeft, topRight, bottomLeft, bottomRight } : null;
-  };
+		const pixelBuffer = cachedImageData.current.data;
+		pixelBuffer.fill(0); // 매 프레임 투명하게 초기화
 
-  // 다각형 내부 판정
-  const isPointInPolygon = (poly: Point[], x: number, y: number): boolean => {
-    let inside = false;
-    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-      const xi = poly[i].x, yi = poly[i].y, xj = poly[j].x, yj = poly[j].y;
-      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
-    }
-    return inside;
-  };
+		const actualConf = (trackData as any).getConf ? (trackData as any).getConf() : 0.1;
 
-  // 다각형 채우기
-  const fillPolygon = (pixelData: Uint8ClampedArray, points: (Point | null)[], color: [number, number, number, number], canvasW: number, canvasH: number): void => {
-    const validPoints = points.filter((p): p is Point => p !== null);
-    if (validPoints.length < 3) return;
+		const batRGBA = getRgba(colors.batColor);
+		const trailRGBA = getRgba(colors.trailColor);
 
-    const center = validPoints.reduce((acc, p) => ({
-      x: acc.x + p.x / validPoints.length,
-      y: acc.y + p.y / validPoints.length
-    }), { x: 0, y: 0 });
+		// 2. 궤적 및 배트 마스킹 (픽셀 데이터 생성)
+		const effectiveLen = length !== undefined ? length : trailLen;
+		const startIdx = Math.max(1, idx - effectiveLen + 1);
+		for (let i = startIdx; i <= idx; i++) {
+			const prev = batData.getSelectedBatAt(i - 1);
+			const curr = batData.getSelectedBatAt(i);
+			processMasking(pixelBuffer, prev, curr, actualConf, trailRGBA, maskW, maskH);
+		}
 
-    const sortedPoints = validPoints.sort((a, b) =>
-      Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x)
-    );
+		const nowBat = batData.getSelectedBatAt(idx);
+		if (nowBat?.maskConfidenceMap) {
+			applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, actualConf, batRGBA, maskW, maskH);
+		}
 
-    let minX = Math.max(0, Math.floor(Math.min(...sortedPoints.map(p => p.x))));
-    let maxX = Math.min(canvasW - 1, Math.ceil(Math.max(...sortedPoints.map(p => p.x))));
-    let minY = Math.max(0, Math.floor(Math.min(...sortedPoints.map(p => p.y))));
-    let maxY = Math.min(canvasH - 1, Math.ceil(Math.max(...sortedPoints.map(p => p.y))));
+		ctx.putImageData(cachedImageData.current, 0, 0);
 
-    for (let y = minY; y <= maxY; y++) {
-      const rowOffset = y * canvasW;
-      for (let x = minX; x <= maxX; x++) {
-        if (isPointInPolygon(sortedPoints, x, y)) {
-          const idx = (rowOffset + x) * 4;
-          pixelData[idx] = color[0];
-          pixelData[idx + 1] = color[1];
-          pixelData[idx + 2] = color[2];
-          pixelData[idx + 3] = color[3];
-        }
-      }
-    }
-  };
+		// 3. ✅ 배경 없이 '마스크 레이어'만 있는 캔버스 반환
+		// (메모리 효율을 위해 새로운 캔버스를 복사해서 반환합니다)
+		const layerCanvas = document.createElement('canvas');
+		layerCanvas.width = maskW;
+		layerCanvas.height = maskH;
+		const layerCtx = layerCanvas.getContext('2d');
+		if (layerCtx) {
+			layerCtx.drawImage(canvas, 0, 0);
+		}
 
-  // 프레임 간 마스킹 및 폴리곤 합성
-  const masking = (pixelData: Uint8ClampedArray, prevBat: BatDetectedObject | null, currBat: BatDetectedObject | null, threshold: number, color: [number, number, number, number], maskW: number, maskH: number): void => {
-    if (prevBat?.maskConfidenceMap) applyMaskToBuffer(pixelData, prevBat.maskConfidenceMap, threshold, color, maskW, maskH);
-    if (currBat?.maskConfidenceMap) applyMaskToBuffer(pixelData, currBat.maskConfidenceMap, threshold, color, maskW, maskH);
+		return layerCanvas;
+	}, [trackData, colors, trailLen]);
 
-    if (prevBat?.maskConfidenceMap && currBat?.maskConfidenceMap) {
-      const vA = getMaskVertices(prevBat.maskConfidenceMap, threshold);
-      const vB = getMaskVertices(currBat.maskConfidenceMap, threshold);
+	/**
+	 * ✅ 편집 모드용 레이어 반환 (모든 후보군 시각화)
+	 */
+	const getEditLayer = useCallback((idx: number, candidates: any[], selectedIdx: number): HTMLCanvasElement | null => {
+		const trailLayer = getTrailLayer(idx, 1);
 
-      if (vA && vB) {
-        const points = [
-          vA.topLeft, vA.topRight, vA.bottomRight, vA.bottomLeft,
-          vB.topLeft, vB.topRight, vB.bottomRight, vB.bottomLeft
-        ];
-        fillPolygon(pixelData, points, color, maskW, maskH);
-      }
-    }
-  };
+		if (!trailLayer || !trackData) return null;
 
-  const getTrailLayer = useCallback((idx: number, length?: number): HTMLCanvasElement | null => {
-    if (!trackData || !trackData.exist(featureName) || idx < 0) return null;
-    
-    const batData = trackData.get(featureName) as TrackBatData;
+		const canvas = document.createElement('canvas');
+		canvas.width = trailLayer.width;
+		canvas.height = trailLayer.height;
+		const ctx = canvas.getContext('2d')!;
 
-    // 1. 마스크 데이터 존재 여부 확인 및 크기 계산
-    let sampleBat: BatDetectedObject | null = null;
-    for (let i = idx; i >= 0; i--) {
-      sampleBat = batData.getSelectedBatAt(i);
-      if (sampleBat?.maskConfidenceMap) break;
-    }
-    if (!sampleBat || !sampleBat.maskConfidenceMap) return null;
+		ctx.drawImage(trailLayer, 0, 0);
 
-    const maskW = sampleBat.maskConfidenceMap[0].length;
-    const maskH = sampleBat.maskConfidenceMap.length;
+		// 모든 후보군 박스 시각화
+		candidates.forEach((cand, i) => {
+			const isSelected = selectedIdx === i;
+			if (!cand.bbox) return;
 
-    if (!offscreenRef.current) offscreenRef.current = document.createElement('canvas');
-    const canvas = offscreenRef.current;
+			const [bx, by, bw, bh] = cand.bbox;
+			ctx.strokeStyle = isSelected ? '#007bff' : 'rgba(255, 255, 0, 0.7)';
+			ctx.lineWidth = isSelected ? 4 : 2;
+			ctx.strokeRect(bx, by, bw, bh);
 
-    if (canvas.width !== maskW || canvas.height !== maskH) {
-      canvas.width = maskW;
-      canvas.height = maskH;
-      const ctx2d = canvas.getContext('2d');
-      if (ctx2d) {
-        cachedImageData.current = ctx2d.createImageData(maskW, maskH);
-      }
-    }
+			ctx.fillStyle = isSelected ? '#007bff' : 'rgba(0, 0, 0, 0.5)';
+			ctx.fillRect(bx, by - 25, 35, 25);
+			ctx.fillStyle = 'white';
+			ctx.font = 'bold 16px Arial';
+			ctx.fillText(`${i + 1}`, bx + 5, by - 7);
+		});
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx || !cachedImageData.current) return null;
+		return canvas;
+	}, [getTrailLayer, trackData]);
 
-    const pixelBuffer = cachedImageData.current.data;
-    pixelBuffer.fill(0); // 매 프레임 투명하게 초기화
-
-    const actualConf = (trackData as any).getConf ? (trackData as any).getConf() : 0.1;
-
-    const batRGBA = getRgba(colors.batColor);
-    const trailRGBA = getRgba(colors.trailColor);
-
-    // 2. 궤적 및 배트 마스킹 (픽셀 데이터 생성)
-    const effectiveLen = length !== undefined ? length : trailLen;
-    const startIdx = Math.max(1, idx - effectiveLen + 1);
-    for (let i = startIdx; i <= idx; i++) {
-      const prev = batData.getSelectedBatAt(i - 1);
-      const curr = batData.getSelectedBatAt(i);
-      masking(pixelBuffer, prev, curr, actualConf, trailRGBA, maskW, maskH);
-    }
-
-    const nowBat = batData.getSelectedBatAt(idx);
-    if (nowBat?.maskConfidenceMap) {
-      applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, actualConf, batRGBA, maskW, maskH);
-    }
-
-    ctx.putImageData(cachedImageData.current, 0, 0);
-
-    // 3. ✅ 배경 없이 '마스크 레이어'만 있는 캔버스 반환
-    // (메모리 효율을 위해 새로운 캔버스를 복사해서 반환합니다)
-    const layerCanvas = document.createElement('canvas');
-    layerCanvas.width = maskW;
-    layerCanvas.height = maskH;
-    const layerCtx = layerCanvas.getContext('2d');
-    if (layerCtx) {
-      layerCtx.drawImage(canvas, 0, 0);
-    }
-
-    return layerCanvas;
-  }, [trackData, colors, trailLen]);
-
-  /**
-   * ✅ 편집 모드용 레이어 반환 (모든 후보군 시각화)
-   */
-  const getEditLayer = useCallback((idx: number, candidates: any[], selectedIdx: number): HTMLCanvasElement | null => {
-    const trailLayer = getTrailLayer(idx, 1);
-    
-    if (!trailLayer || !trackData) return null;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = trailLayer.width;
-    canvas.height = trailLayer.height;
-    const ctx = canvas.getContext('2d')!;
-
-    ctx.drawImage(trailLayer, 0, 0);
-
-    // 모든 후보군 박스 시각화
-    candidates.forEach((cand, i) => {
-      const isSelected = selectedIdx === i;
-      if (!cand.bbox) return;
-      
-      const [bx, by, bw, bh] = cand.bbox;
-      ctx.strokeStyle = isSelected ? '#007bff' : 'rgba(255, 255, 0, 0.7)';
-      ctx.lineWidth = isSelected ? 4 : 2;
-      ctx.strokeRect(bx, by, bw, bh);
-
-      ctx.fillStyle = isSelected ? '#007bff' : 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(bx, by - 25, 35, 25);
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 16px Arial';
-      ctx.fillText(`${i + 1}`, bx + 5, by - 7);
-    });
-
-    return canvas;
-  }, [getTrailLayer, trackData]);
-
-  return { colors, setColors, trailLen, setTrailLen, getTrailLayer, getEditLayer };
+	return { colors, setColors, trailLen, setTrailLen, getTrailLayer, getEditLayer };
 };

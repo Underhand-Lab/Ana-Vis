@@ -6,7 +6,7 @@ import {
     NormalizedLandmark,
     Landmark
 } from "@mediapipe/tasks-vision";
-import { Vector3 } from "@/common/types/vector";
+import { Vector3 } from "@shared/lib/math/vector";
 import { Landmarks3D, PoseDetectionResult } from "../../types";
 
 const MEDIAPIPE_LANDMARK_NAMES: Record<number, string> = {

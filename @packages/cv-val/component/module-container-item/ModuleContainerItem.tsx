@@ -1,58 +1,14 @@
-import React, { useState, forwardRef, useRef, useEffect, useMemo } from 'react';
+import React, { useState, forwardRef, useEffect, useMemo } from 'react';
 import { Div } from "@shared/bridges/UIBridge";
 import vars from '@shared/components/ui-brick/variables';
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../core/i18n';
+import ModuleErrorBoundary from './ModuleErrorBoundary';
+import { styles } from './ModuleContainerItem.styles';
 
 // 모듈 타입별로 로케일 등록 여부를 관리 (중복 등록 방지)
 const registeredModuleTypes = new Set<string>();
-
-/**
- * 개별 분석 모듈의 런타임 에러를 격리하기 위한 Error Boundary
- */
-class ModuleErrorBoundary extends React.Component<{ children: React.ReactNode; title: string }, { hasError: boolean }> {
-  constructor(props: { children: React.ReactNode; title: string }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: any, errorInfo: any) {
-    console.error(`Error in module [${this.props.title}]:`, error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <Div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '100%', 
-          padding: '20px',
-          textAlign: 'center',
-          backgroundColor: 'rgba(255, 0, 0, 0.05)',
-        }}>
-          <span style={{ fontSize: '24px', marginBottom: '10px' }}>⚠️</span>
-          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>오류 발생</span>
-          <span style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>{this.props.title} 모듈에서 문제가 발생했습니다.</span>
-          <button 
-            onClick={() => this.setState({ hasError: false })}
-            style={{ marginTop: '12px', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc' }}
-          >
-            다시 시도
-          </button>
-        </Div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 interface Props {
   module: AnalysisModule;
@@ -105,9 +61,6 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
       setLocalesLoaded(true);
     }
   }, [module]);
-
-  // 시각화 인스턴스를 공유하기 위한 Ref
-  const visualizerRef = useRef<any>(null);
 
   // 모듈의 생명주기 관리 (Init & Cleanup)
   useEffect(() => {
@@ -213,53 +166,6 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
     </Div>
   );
 });
-
-const styles: { [key: string]: React.CSSProperties } = {
-  card: {
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-    overflow: 'hidden',
-    fontFamily: vars.font,
-    border: '1px solid',
-  },
-  header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '40px',
-    zIndex: 30,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0 15px',
-    opacity: 0,
-    pointerEvents: 'none',
-    transition: 'opacity 0.2s ease-in-out',
-  },
-  headerVisible: {
-    opacity: 1,
-    pointerEvents: 'auto',
-  },
-  iconButton: {
-    border: 'none',
-    background: 'none',
-    cursor: 'pointer',
-    color: 'white',
-    fontSize: '16px',
-  },
-  sidePanel: {
-    position: 'absolute',
-    top: '40px',
-    right: 0,
-    bottom: 0,
-    padding: '20px',
-    zIndex: 20,
-    overflowY: 'auto',
-    borderLeft: '1px solid rgba(255,255,255,0.3)',
-    color: '#222',
-  }
-};
 
 ModuleContainerItem.displayName = 'NewAnalysisGridItem';
 export default ModuleContainerItem;
