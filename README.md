@@ -41,11 +41,11 @@
 ## 📂 프로젝트 구조
 
 ```text
-@core/          # CV-Val Core Framework (분석 인터페이스 및 범용 엔진)
-@apps/          # Domain Applications (야구 분석 프로덕트 소스 및 UI)
-@shared/        # Shared Utilities (공통 컴포넌트, 비디오 유틸리티)
-electron/       # Desktop Native (메인 프로세스 및 데스크탑 설정)
-public/         # 정적 자원 (앱 아이콘, 가이드 마크다운 등)
+@packages/cv-val    # CV-Val Core Framework (분석 인터페이스 및 범용 엔진)
+@apps/              # Domain Applications (야구 분석 프로덕트 소스 및 UI)
+@shared/            # Shared Utilities (공통 컴포넌트, 비디오 유틸리티)
+electron/           # Desktop Native (메인 프로세스 및 데스크탑 설정)
+public/             # 정적 자원 (앱 아이콘, 가이드 마크다운 등)
 ```
 
 ## 🚀 시작하기

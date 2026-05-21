@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import { getRgba } from '@shared/utils/getRgba'
-import { CVValData } from '@packages/cv-val/core/cvval-data';
+import { CVValData } from '@packages/cv-val/data/cvval-data';
 
-import { TrackBatData } from '../core/track-bat-data';
+import { TrackBatData } from '../data/track-bat-data';
 import { BatDetectedObject } from '../types';
 import featureName from '../constant';
 import { applyMaskToBuffer, processMasking } from '../utils/mask-utils';

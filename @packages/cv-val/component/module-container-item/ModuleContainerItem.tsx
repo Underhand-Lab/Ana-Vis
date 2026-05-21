@@ -3,7 +3,7 @@ import { Div } from "@shared/bridges/UIBridge";
 import vars from '@shared/components/ui-brick/variables';
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../core/i18n';
+import i18n from '../../../../@shared/utils/i18n';
 import ModuleErrorBoundary from './ModuleErrorBoundary';
 import { styles } from './ModuleContainerItem.styles';
 

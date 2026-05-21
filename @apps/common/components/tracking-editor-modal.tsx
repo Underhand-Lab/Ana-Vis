@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useMemo } from 'react';
 import Modal from '@shared/components/Modal.tsx';
 import { Div, InputNumber, Button } from '@shared/bridges/UIBridge.ts';
 import CanvasRenderer, { CanvasRendererHandle } from "@shared/components/ui-brick/react-web/custom/CanvasRenderer";
-import { CVValData } from '@packages/cv-val/core/cvval-data';
+import { CVValData } from '@packages/cv-val/data/cvval-data';
 import { useTranslation } from 'react-i18next';
 
 interface TrackingEditorModalProps {

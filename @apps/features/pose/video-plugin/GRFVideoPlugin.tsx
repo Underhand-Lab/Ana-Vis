@@ -6,11 +6,11 @@ import { Div, InputNumber, InputCheckbox }
 import { AnalysisSettingsProps } from '@packages/cv-val/types/analysis-module.ts';
 import { useTranslation } from 'react-i18next';
 import { VideoModulePlugin } from '@packages/cv-val/modules/VideoModule.tsx';
-import { CVValData } from '@packages/cv-val/core/cvval-data.ts';
+import { CVValData } from '@packages/cv-val/data/cvval-data';
 
 const defaultSettings: GRFSettings = {
     showGRF: true,
-    grfScale: 0.1,
+    grfScale: 1,
 };
 
 export class GRFVideoPlugin extends VideoModulePlugin<GRFSettings> {

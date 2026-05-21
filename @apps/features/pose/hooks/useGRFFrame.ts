@@ -1,5 +1,7 @@
-import { CVValData } from '@/features/cv-val/core/cvval-data';
 import { useState, useCallback, useRef } from 'react';
+
+import { CVValData } from '@cv-val/data/cvval-data';
+
 import featureName from '../ constant';
 import { PoseData } from '../core/pose-data';
 
@@ -39,24 +41,33 @@ const drawArrow = (ctx: CanvasRenderingContext2D, fromX: number, fromY: number, 
 export function drawGRF(
     ctx: CanvasRenderingContext2D,
     idx: number,
+    data: CVValData,
     poseData: PoseData,
     options: GRFSettings
 ) {
-    const grfData = poseData.getAnalysisResult('grf', idx);
+    const grfTool = data.getAnalysisTool('pose', 'grf');
+
+    if (!grfTool) return;
+
+    const grfData = grfTool.getResult(idx);
+
     if (!grfData) return;
 
-    const leftGRF = grfData["Left GRF (N)"];
-    const rightGRF = grfData["Right GRF (N)"];
+    const leftGRF = grfData["Left_GRF_N"];
+    const rightGRF = grfData["Right_GRF_N"];
     const landmarks2d = poseData.getLandmarks2dList(0)[idx];
     const scale = options.grfScale || 0.1;
 
     if (!landmarks2d) return;
+
     const lKnee = landmarks2d['L_KNEE'];
     const rKnee = landmarks2d['R_KNEE'];
 
     const renderArrow = (jointKey: string, value: number | null, color: string) => {
+        
         if (value === null || value === undefined || isNaN(value) || value <= 0) return;
         const joint = landmarks2d[jointKey];
+
         if (!joint) return;
 
         const startX = joint[0] * ctx.canvas.width;
@@ -117,7 +128,7 @@ export const useGRFFrame = (data: CVValData | null) => {
         offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
 
         if (options.showGRF) {
-            drawGRF(offCtx, idx, poseData, options);
+            drawGRF(offCtx, idx, data, poseData, options);
         }
 
         return offCanvas;

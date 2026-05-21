@@ -2,7 +2,7 @@ import { CVValData, IAnalysisTool } from "@/features/cv-val/core/cvval-data";
 import * as Calc from "./velocity";
 import { BallData } from "./velocity";
 import featureName from "../constant";
-import { TrackBallData } from "../core/track-ball-data";
+import { TrackBallData } from "../data/track-ball-data";
 
 export class BallAnalysisTool implements IAnalysisTool {
     /**

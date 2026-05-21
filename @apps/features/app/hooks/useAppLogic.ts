@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, ChangeEvent, Dispatch, SetStateAction } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CVValData } from '@packages/cv-val/core/cvval-data';
+import { CVValData } from '@packages/cv-val/data/cvval-data';
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { useProcessor } from '@packages/cv-val/hooks/useProcessor';
 import { FEATURE_REGISTRY, ALL_DETECTORS, ALL_AVAILABLE_MODULES } from '../../../FeatureRegistry';

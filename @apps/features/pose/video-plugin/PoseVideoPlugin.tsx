@@ -7,7 +7,7 @@ import { Div, InputNumber, InputColor, InputCheckbox, Select }
 import { AnalysisSettingsProps } from '@packages/cv-val/types/analysis-module.ts';
 import { useTranslation } from 'react-i18next';
 import { VideoModulePlugin } from '@packages/cv-val/modules/VideoModule.tsx';
-import { CVValData } from '@packages/cv-val/core/cvval-data.ts';
+import { CVValData } from '@packages/cv-val/data/cvval-data.ts';
 
 const colorMap = {
     COLOR_LEFT_ARM: "L_ARM",

@@ -1,27 +1,27 @@
-import { IAnalysisTool } from '@packages/cv-val/core/cvval-data';
-import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
-import { VideoModuleBuilder } from '@packages/cv-val/modules/VideoModule';
-import GraphModule from '@packages/cv-val/modules/GraphModule';
-import TableModule from '@packages/cv-val/modules/TableModule';
+import { IAnalysisTool } from '@cv-val/data/cvval-data';
+import { AnalysisModule } from '@cv-val/types/analysis-module';
+import { VideoModuleBuilder } from '@cv-val/modules/VideoModule';
+import GraphModule from '@cv-val/modules/GraphModule';
+import TableModule from '@cv-val/modules/TableModule';
 
 // Pose 관련
 import { PoseData } from '@apps/features/pose/core/pose-data';
 import * as PoseDetector from '@apps/features/pose/core/pose-detector';
 import * as PoseAnalysisTool from "@apps/features/pose/tool";
-import { PoseVideoPlugin } from '@apps/features/pose/plugin/PoseVideoPlugin';
 import Pose3DVideoModule from '@apps/features/pose/modules/Pose3DVideoModule';
+import { PoseVideoPlugin } from '@apps/features/pose/video-plugin/PoseVideoPlugin';
+import { GRFVideoPlugin } from '@apps/features/pose/video-plugin/GRFVideoPlugin';
 
 // Ball 관련
-import { TrackBallData } from "@apps/features/track-ball/core/track-ball-data";
-import * as BallDetector from '@apps/features/track-ball/core/ball-detector/index';
-import * as BallAnalysis from "@apps/features/track-ball/tool/analysis";
+import { TrackBallData } from "@apps/features/track-ball/data/track-ball-data";
+import * as BallDetector from '@apps/features/track-ball/detector';
+import * as BallAnalysis from "@apps/features/track-ball/video-tool/analysis";
 import { TrackBallVideoPlugin } from '@apps/features/track-ball/plugin/TrackBallVideoPlugin';
 
 // Bat 관련
-import { TrackBatData } from "@apps/features/track-bat/core/track-bat-data";
-import * as BatDetector from '@apps/features/track-bat/core/bat-detector/index';
-import { TrackBatVideoPlugin } from '@apps/features/track-bat/plugin/TrackBatVideoPlugin';
-import { GRFVideoPlugin } from '@apps/features/pose/plugin/GRFVideoPlugin';
+import { TrackBatData } from "@apps/features/track-bat/data/track-bat-data";
+import * as BatDetector from '@apps/features/track-bat/detector';
+import { TrackBatVideoPlugin } from '@apps/features/track-bat/video-plugin/TrackBatVideoPlugin';
 
 export interface FeatureConfig {
     label: string;

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { CVValData } from '@packages/cv-val/core/cvval-data';
+import { CVValData } from '@packages/cv-val/data/cvval-data';
 import featureName, { POSE_CONNECTIONS, CONNECTIONS_COLORS_KEY } from '../ constant';
 import { PoseData } from '../core/pose-data';
 import { useThreeScene } from './useThreeScene'

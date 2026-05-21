@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 
-import type { IDetector } from '../types/detector.js';
-import { CVValData } from '../core/cvval-data.js';
-import { Processor } from '../core/processor.js';
+import type { IDetector } from '../detector/detector.js';
+import { CVValData } from '../data/cvval-data.js';
+import { Processor } from '../detector/processor.js';
 
 export function useProcessor() {
     const [status, setStatus] = useState<string>("before-process");

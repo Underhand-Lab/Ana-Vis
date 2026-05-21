@@ -1,4 +1,4 @@
-import { CVValData } from '@packages/cv-val/core/cvval-data';
+import { CVValData } from '@packages/cv-val/data/cvval-data';
 import { useState, useCallback, useRef } from 'react';
 import { PoseData } from '../core/pose-data';
 import featureName, { POSE_CONNECTIONS, CONNECTIONS_COLORS_KEY } from '../ constant';

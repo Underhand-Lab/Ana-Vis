@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '@packages/cv-val/core/i18n';
+import i18n from '@shared/utils/i18n';
 import enTranslation from './locales/en/translation.json';
 import koTranslation from './locales/ko/translation.json';
 i18n.addResourceBundle('en', 'translation', enTranslation, true, true);

@@ -21,6 +21,7 @@
     "paths": {
       "@mediapipe/tasks-vision": ["./node_modules/@mediapipe/tasks-vision"],
       "@packages/*": ["./@packages/*"],
+      "@cv-val/*": ["./@packages/cv-val/*"],
       "@apps/*": ["./@apps/*"],
       "@shared/*": ["./@shared/*"]
     }

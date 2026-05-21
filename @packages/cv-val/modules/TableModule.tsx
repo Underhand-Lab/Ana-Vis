@@ -1,10 +1,12 @@
 import React, { useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import TableRenderer from '@shared/components/ui-brick/react-web/common/TableRenderer';
 import { Div, InputCheckbox, Select, Toggle } from '@shared/bridges/UIBridge';
-import { useTranslation } from 'react-i18next';
+
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
-    from '@packages/cv-val/types/analysis-module';
-import { CVValData } from '../core/cvval-data';
+    from '../types/analysis-module';
+import { CVValData } from '../data/cvval-data';
 
 interface TableSettingsData {
     selectedToolKey: string;

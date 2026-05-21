@@ -36,6 +36,7 @@ export default defineConfig({
       alias: {
         '@': path.resolve(__dirname, './src'),
         '@packages': path.resolve(__dirname, './@packages'),
+        '@cv-val': path.resolve(__dirname, './@packages/cv-val'),
         '@apps': path.resolve(__dirname, './@apps'),
         '@shared': path.resolve(__dirname, './@shared'),
       },

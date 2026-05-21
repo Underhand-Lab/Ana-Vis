@@ -4,7 +4,7 @@ import { InputColor, InputCheckbox } from '@shared/bridges/UIBridge';
 import { AnalysisSettingsProps } from '@packages/cv-val/types/analysis-module';
 import { useTranslation } from 'react-i18next';
 import { VideoModulePlugin } from '@packages/cv-val/modules/VideoModule';
-import { CVValData } from '@packages/cv-val/core/cvval-data';
+import { CVValData } from '@packages/cv-val/data/cvval-data';
 
 export interface TrackBallSettings {
     showConfidence: boolean;

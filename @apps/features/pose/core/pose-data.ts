@@ -4,7 +4,7 @@ import { MediabunnyImageListToVideo }
     from "@shared/service/image-list-to-video/media-bunny"
 import { Landmarks3D, PoseDetectionResult, AnalysisTool,
     JointCoordinate, PoseFrameData } from "../types";
-import { IAnalysisData } from "@packages/cv-val/core/cvval-data";
+import { IAnalysisData } from "@packages/cv-val/data/cvval-data";
 
 export class PoseData implements IAnalysisData {
     private rawImgListList: ImageBitmap[][] = [];

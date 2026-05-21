@@ -5,7 +5,7 @@ import { Div, InputColor, InputNumber, InputCheckbox, Select, Toggle } from '@sh
 import { useTranslation } from 'react-i18next';
 import { AnalysisViewProps, AnalysisSettingsProps, AnalysisModule }
     from '@packages/cv-val/types/analysis-module';
-import { CVValData } from '../core/cvval-data';
+import { CVValData } from '../data/cvval-data';
 
 // Graph.tsx와 동일한 색상 생성 로직 (범례 일치를 위함)
 const getDeterministicColor = (str: string) => {

@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-import { CVValData } from '@packages/cv-val/core/cvval-data';
+import { CVValData } from '@packages/cv-val/data/cvval-data';
 
-import { TrackBallData } from '../core/track-ball-data';
+import { TrackBallData } from '../data/track-ball-data';
 import { DetectedObject } from '../types';
 import featureName from '../constant';
 

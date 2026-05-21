@@ -2,7 +2,7 @@ import { VideoMetadata }
     from "@shared/service/video-to-img-list/media-bunny";
 import { MediabunnyImageListToVideo }
     from "@shared/service/image-list-to-video/media-bunny";
-import i18n from './i18n';
+import i18n from '../../../@shared/utils/i18n';
 
 // 모듈별 로케일 정보가 이미 i18n에 등록되었는지 추적하기 위한 집합
 const registeredLocales = new WeakSet<object>();
@@ -37,7 +37,7 @@ export class CVValData {
     private rawImgListList: ImageBitmap[][] = [];
 
     // 2차 분석 플러그인 저장소
-    private tools = new Map<string, IAnalysisTool[]>();
+    private tools = new Map<string, Map<string, IAnalysisTool>>();
 
     setName(name: string) { 
         this.name = name.replace(/\.[^/.]+$/, ""); 
@@ -115,8 +115,8 @@ export class CVValData {
     addAnalysisTool<K extends string>(
         key: K, plugin: IAnalysisTool
     ): void {
-        const existing = this.tools.get(key) || [];
-        this.tools.set(key, [...existing, plugin]);
+        const existing = this.tools.get(key) || new Map<string, IAnalysisTool>();
+        this.tools.set(key, existing.set(plugin.name, plugin));
 
         // 플러그인에 정의된 로케일 정보를 i18n에 동적으로 등록
         if (plugin.locales && !registeredLocales.has(plugin.locales)) {
@@ -130,10 +130,11 @@ export class CVValData {
     }
 
     addAnalysisTools(key: string, plugins: IAnalysisTool[]) {
-        const existing = this.tools.get(key) || [];
-        this.tools.set(key, [...existing, ...plugins]);
+        const existing = this.tools.get(key) || new Map<string, IAnalysisTool>();
 
         plugins.forEach(plugin => {
+            this.tools.set(key, existing.set(plugin.name, plugin));
+
             // 플러그인에 정의된 로케일 정보를 i18n에 동적으로 등록
             if (plugin.locales && !registeredLocales.has(plugin.locales)) {
                 Object.entries(plugin.locales).forEach(([lng, resources]) => {
@@ -146,13 +147,21 @@ export class CVValData {
 
     }
 
+    getAnalysisTool(type: string, name: string) : IAnalysisTool | undefined {
+        const tools = this.tools.get(type);
+        if (!tools) return undefined;
+        return tools.get(name);
+    }
+
     getAnalysisTools() : Record<string, IAnalysisTool> {
         const ret: Record<string, IAnalysisTool> = {};
 
         // Map의 값(IAnalysisTool[] 배열들)을 순회합니다.
-        for (const toolArray of this.tools.values()) {
-            for (const tool of toolArray) {
-                ret[tool.name] = tool; // tool.name이 모든 도구에서 고유하다고 가정합니다.
+        for (const toolMap of this.tools.values()) {
+            for (const toolName of toolMap.keys()) {
+                const tool = toolMap.get(toolName);
+                if (!tool) continue;
+                ret[toolName] = tool;
             }
         }
         return ret;
