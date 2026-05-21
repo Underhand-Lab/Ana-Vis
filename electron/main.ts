@@ -129,7 +129,7 @@ ipcMain.on('update-native-menu', (event, menuData) => {
 	const win = BrowserWindow.fromWebContents(event.sender);
 	if (!win) return;
 
-	const { features, fileActions, toolActions, currentPath } = menuData;
+	const { fileActions, toolActions } = menuData;
 
 	const fileSubmenu: any[] = [
 		...fileActions.map((action: any) => ({
@@ -159,12 +159,6 @@ ipcMain.on('update-native-menu', (event, menuData) => {
 		},
 		{
 			label: '보기',
-			submenu: features.map((f: any) => ({
-				label: f.label,
-				type: 'radio',
-				checked: currentPath === f.path,
-				click: () => win.webContents.send('menu-command', 'navigate', f.path)
-			}))
 		},
 		{
 			label: '편집',
