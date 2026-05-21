@@ -85,7 +85,7 @@ const GridModuleContainer: React.FC<Props> = ({ modules, data, currentFrame, onR
           flex: 1,
           position:
             'relative',
-          overflowY: 'scroll'
+          overflowY: 'auto'
         }}
     >
       {containerWidth > 0 && (
@@ -131,6 +131,25 @@ const GridModuleContainer: React.FC<Props> = ({ modules, data, currentFrame, onR
         }
         /* 핸들 모양 표시 (삼각형 아이콘) */
         .react-resizable-handle::after { content: "◢"; position: absolute; right: 3px; bottom: 3px; color: ${vars.primary}; opacity: 0.5; font-size: 12px; }
+
+        /* 스크롤바 스타일 및 다크 모드 대응 */
+        .analysis-grid-container {
+          scrollbar-width: thin;
+          scrollbar-color: ${vars.surface} transparent;
+        }
+        .analysis-grid-container::-webkit-scrollbar {
+          width: 6px;
+        }
+        .analysis-grid-container::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .analysis-grid-container::-webkit-scrollbar-thumb {
+          background-color: ${vars.surface};
+          border-radius: 10px;
+        }
+        .analysis-grid-container::-webkit-scrollbar-thumb:hover {
+          background-color: ${vars.primary};
+        }
       `}</style>
     </Div>
   );
@@ -141,7 +160,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: '100%',
     flex: 1,
     position: 'relative',
-    overflowY: 'scroll',
+    overflowY: 'auto',
   }
 };
 

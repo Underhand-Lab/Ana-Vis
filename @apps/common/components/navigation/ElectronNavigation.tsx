@@ -1,4 +1,4 @@
-import React, { useEffect, ChangeEvent, useMemo, useState } from 'react';
+import React, { useEffect, ChangeEvent, useMemo, useState, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { NavButton, FEATURES } from './WebNavigation';
 
@@ -12,6 +12,13 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
     const navigate = useNavigate();
     const location = useLocation();
     const [isFullScreen, setIsFullScreen] = useState(false); // 전체 화면 상태를 관리하는 새로운 state
+
+    // 마우스 드래그 스크롤을 위한 Ref 및 상태
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const isDragging = useRef(false);
+    const lastX = useRef(0);
+    const dragDistance = useRef(0); // 드래그인지 단순 클릭인지 구분하기 위한 누적 거리
+    const [cursor, setCursor] = useState<'pointer' | 'grabbing'>('pointer');
 
     useEffect(() => {
         const menuData = {
@@ -51,6 +58,27 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
         }
     }, [fileButtons, toolButtons, navigate, location.pathname]);
 
+    // 마우스 드래그 핸들러
+    const handleMouseDown = (e: React.MouseEvent) => {
+        isDragging.current = true;
+        lastX.current = e.clientX;
+        dragDistance.current = 0; // 드래그 시작 시 거리 초기화
+        setCursor('grabbing');
+    };
+
+    const handleMouseLeaveOrUp = () => {
+        isDragging.current = false;
+        setCursor('pointer');
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging.current || !scrollRef.current) return;
+        const deltaX = e.clientX - lastX.current;
+        scrollRef.current.scrollLeft -= deltaX;
+        lastX.current = e.clientX;
+        dragDistance.current += Math.abs(deltaX); // 이동 거리 누적
+    };
+
     const handleFeatureChange = (e: ChangeEvent<HTMLSelectElement>) => {
         navigate(e.target.value);
     };
@@ -84,9 +112,12 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
             // macOS: 좌측 Traffic Lights 영역 확보. 전체 화면 시 버튼이 사라지므로 패딩을 줄입니다.
             paddingLeft: isMac ? (isFullScreen ? '20px' : '80px') : '20px',
             // Windows: 우측 시스템 버튼 영역 확보
+            // 전체 화면일 때는 시스템 버튼 영역이 필요 없으므로 20px로 줄입니다.
             // titleBarOverlay 설정 시 env(titlebar-area-width)로 정확한 너비를 가져올 수 있습니다.
-            // 변수가 없을 경우를 대비해 기본값(fallback)으로 140px를 설정합니다.
-            paddingRight: isMac ? '20px' : 'env(titlebar-area-width, 140px)',
+            // 변수가 없을 경우를 대비해 기본값(fallback)을 140px에서 상황에 맞게 조정 가능합니다.
+            paddingRight: isMac 
+                ? '20px' 
+                : (isFullScreen ? '20px' : '140px'),
         };
     }, [isFullScreen]); // isFullScreen 상태가 변경될 때마다 다시 계산
 
@@ -118,8 +149,20 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
 
                 <div 
                     className="hide-scrollbar"
+                    ref={scrollRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseLeave={handleMouseLeaveOrUp}
+                    onMouseUp={handleMouseLeaveOrUp}
+                    onMouseMove={handleMouseMove}
+                    onWheel={(e) => {
+                        // 세로 휠 입력을 가로 스크롤로 변환합니다.
+                        if (e.deltaY !== 0) {
+                            e.currentTarget.scrollLeft += e.deltaY;
+                        }
+                    }}
                     style={{ 
                         ...interactiveStyle,
+                        pointerEvents: 'auto', // 이벤트를 확실히 수신하도록 설정
                         minWidth: 0,
                         overflowX: 'auto',
                         display: 'flex',
@@ -127,16 +170,24 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
                         msOverflowStyle: 'none',
                         WebkitMaskImage: 'linear-gradient(to right, transparent, black 30px, black calc(100% - 30px), transparent)',
                         maskImage: 'linear-gradient(to right, transparent, black 30px, black calc(100% - 30px), transparent)',
-                        margin: '0 -30px',
-                        padding: '0 30px'
+                        padding: '0 10px', // 마진 음수 값 제거하여 드래그 영역과의 겹침 방지
+                        cursor: cursor,
+                        userSelect: 'none', // 드래그 중 텍스트 선택 방지
+                        WebkitUserSelect: 'none'
                     }}
                 >
-                    <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: '0 0 0 auto', width: 'max-content', flexShrink: 0 }}>
+                    {/* 내부 리스트에도 명확하게 interactiveStyle 적용 */}
+                    <ul style={{ ...interactiveStyle, display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: '0 0 0 auto', width: 'max-content', flexShrink: 0 }}>
                         {fileButtons.map((btn) => (
                             <li key={btn.name}>
                                 <button
-                                    onClick={btn.action}
-                                    style={{ padding: '2px 10px', whiteSpace: 'nowrap', cursor: 'pointer' }}
+                                    onClick={() => {
+                                        // 마우스 이동 거리가 5px 미만일 때만 실제 클릭으로 인정합니다.
+                                        if (dragDistance.current < 5) {
+                                            btn.action();
+                                        }
+                                    }}
+                                    style={{ ...interactiveStyle, padding: '2px 10px', whiteSpace: 'nowrap', cursor: 'pointer' }}
                                 >
                                     {btn.name}
                                 </button>
