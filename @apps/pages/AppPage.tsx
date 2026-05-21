@@ -69,7 +69,7 @@ const AppPage: React.FC = () => {
 
 	// 통합 페이지에서는 기본적으로 동영상 모듈 하나를 띄워둡니다. (모든 기능에 대한 VideoPlugin을 추가한 상태)
 	const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
-		{ ...ALL_AVAILABLE_MODULES["Video"], id: `shared-video-${Date.now()}` }
+		{ ...ALL_AVAILABLE_MODULES["Video"], id: `common-video-${Date.now()}` }
 	]);
 	const [confValue, setConfValue] = useState(0.5);
 	const [editingType, setEditingType] = useState<'ball' | 'bat' | null>(null);
