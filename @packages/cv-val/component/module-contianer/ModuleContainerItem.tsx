@@ -68,7 +68,7 @@ interface Props {
   onRemove: (id: string) => void;
 }
 
-const AnalysisGridItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
+const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { 
     module, data, currentFrame, onRemove,
     style, className, onMouseDown, onMouseUp, onTouchEnd, children 
@@ -261,5 +261,5 @@ const styles: { [key: string]: React.CSSProperties } = {
   }
 };
 
-AnalysisGridItem.displayName = 'NewAnalysisGridItem';
-export default AnalysisGridItem;
+ModuleContainerItem.displayName = 'NewAnalysisGridItem';
+export default ModuleContainerItem;

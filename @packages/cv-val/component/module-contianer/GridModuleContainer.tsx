@@ -5,7 +5,7 @@ import vars from '@shared/components/ui-brick/variables';
 
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 
-import AnalysisGridItem from './analysis-grid-item';
+import ModuleContainerItem from './ModuleContainerItem';
 
 interface Props {
   modules: AnalysisModule[];
@@ -16,7 +16,7 @@ interface Props {
 
 const COLUMNS = { lg: 24, md: 20, sm: 12, xs: 8, xxs: 8 };
 
-const AnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame, onRemoveModule }) => {
+const GridModuleContainer: React.FC<Props> = ({ modules, data, currentFrame, onRemoveModule }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [layouts, setLayouts] = useState<{ [key: string]: any[] }>({});
   const gridWrapperRef = useRef<HTMLDivElement>(null);
@@ -103,7 +103,7 @@ const AnalysisGridContainer: React.FC<Props> = ({ modules, data, currentFrame, o
           margin={[15, 15]}
         >
           {modules.map((module) => (
-            <AnalysisGridItem
+            <ModuleContainerItem
               key={module.id}
               module={module}
               data={data}
@@ -145,4 +145,4 @@ const styles: { [key: string]: React.CSSProperties } = {
   }
 };
 
-export default AnalysisGridContainer;
+export default GridModuleContainer;

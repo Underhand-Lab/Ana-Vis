@@ -11,7 +11,7 @@ i18n.addResourceBundle('en', 'translation', enTranslation, true, true);
 i18n.addResourceBundle('ko', 'translation', koTranslation, true, true);
 
 import Modal from '@shared/components/Modal';
-import Navigation from '@shared/bridges/NavigationBridge.tsx';
+import Navigation from '@apps/common/bridges/NavigationBridge';
 import { setThemeMode, getSystemTheme } from '@shared/components/ui-brick/variables';
 import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper, Select }
 	from '@shared/bridges/UIBridge.ts';
@@ -22,9 +22,9 @@ import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { useProcessor } from '@packages/cv-val/hooks/useProcessor';
 import { useModuleLoader } from '@packages/cv-val/hooks/useModuleLoader';
 
-import AnalysisGridContainer from '@packages/cv-val/component/analysis-container/analysis-grid-container';
+import GridModuleContainer from '@packages/cv-val/component/module-contianer/GridModuleContainer';
 import VideoProcessorModal from '@packages/cv-val/component/video-processor-modal';
-import TrackingEditorModal from '@apps/common/tracking-editor-modal';
+import TrackingEditorModal from '@apps/common/components/tracking-editor-modal';
 
 // 레지스트리 및 훅
 import { FEATURE_REGISTRY, ALL_DETECTORS, ALL_AVAILABLE_MODULES } from './FeatureRegistry';
@@ -254,7 +254,7 @@ const AppPage: React.FC = () => {
 				]}
 				toolButtons={Object.keys(ALL_AVAILABLE_MODULES).map(key => ({ name: `${t(`analysisTools.${key.toLowerCase()}`, key)} ${t('common.add', '추가')}`, action: () => handleAddModule(key) }))}
 			/>
-			<AnalysisGridContainer
+			<GridModuleContainer
 				modules={activeModules}
 				data={processedData} 
 				currentFrame={currentIdx} 
