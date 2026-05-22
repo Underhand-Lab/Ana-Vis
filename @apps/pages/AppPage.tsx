@@ -67,6 +67,21 @@ const AppPage: React.FC = () => {
 		setIsPlaying(!isPlaying);
 	};
 
+	const handlePrevFrame = () => {
+		const frameCnt = logic.processedData ? logic.processedData.getFrameCnt() : 0;
+		if (frameCnt <= 0) return;
+		setIsPlaying(false);
+		logic.setCurrentIdx(Math.max(0, logic.currentIdx - 1));
+	};
+
+	const handleNextFrame = () => {
+		const frameCnt = logic.processedData ? logic.processedData.getFrameCnt() : 0;
+		if (frameCnt <= 0) return;
+		setIsPlaying(false);
+		const maxFrame = frameCnt - 1;
+		logic.setCurrentIdx(Math.min(maxFrame, logic.currentIdx + 1));
+	};
+
 	const toggleTheme = () => {
 		const nextMode = themeMode === 'light' ? 'dark' : 'light';
 		setThemeMode(nextMode); setThemeModeState(nextMode);
@@ -115,13 +130,27 @@ const AppPage: React.FC = () => {
 				currentFrame={logic.currentIdx}
 				onRemoveModule={logic.removeModule} 
 			/>
-			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-				<Button 
-					onClick={handleTogglePlay} 
-					style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, alignItems: 'center'}}
-				>
-					{isPlaying ? '⏸' : '▶'}
-				</Button>
+			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+				<Div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+					<Button 
+						onClick={handlePrevFrame} 
+						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center'}}
+					>
+						{'❮'}
+					</Button>
+					<Button 
+						onClick={handleTogglePlay} 
+						style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, alignItems: 'center'}}
+					>
+						{isPlaying ? '⏸' : '▶'}
+					</Button>
+					<Button 
+						onClick={handleNextFrame} 
+						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center'}}
+					>
+						{'❯'}
+					</Button>
+				</Div>
 				<InputSlider 
 					min="0" 
 					max={logic.processedData ? logic.processedData.getFrameCnt() - 1 : 0} 
