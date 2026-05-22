@@ -118,7 +118,7 @@ const AppPage: React.FC = () => {
 			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 				<Button 
 					onClick={handleTogglePlay} 
-					style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, }}
+					style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, alignItems: 'center'}}
 				>
 					{isPlaying ? '⏸' : '▶'}
 				</Button>

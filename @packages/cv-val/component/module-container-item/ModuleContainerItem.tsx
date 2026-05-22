@@ -90,7 +90,7 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
       ref={ref} 
       style={{ 
         ...moduleItemStyles.card, 
-        backgroundColor: vars.background, 
+        backgroundColor: vars.box, 
         borderColor: vars.surface,
         ...style 
       }}
@@ -98,13 +98,13 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onTouchEnd={onTouchEnd}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* 상단 드래그 핸들 오버레이 */}
       <Div 
         className="grid-item-overlay"
         style={{ ...styles.frostedglassmorphism, ...moduleItemStyles.header, ...((isHovered || isSettingsOpen) ? moduleItemStyles.headerVisible : {}) }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <span 
           className="drag-handle" // Make only the title span the drag handle
