@@ -32,11 +32,40 @@ const AppPage: React.FC = () => {
 	const [isEditorModalOpen, setEditorModalOpen] = useState(false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 	const [isEditSelectModalOpen, setEditSelectModalOpen] = useState(false);
+	const [isPlaying, setIsPlaying] = useState(false);
 
 	const dataInputRef = useRef<HTMLInputElement | null>(null);
 	const videoInputRef = useRef<HTMLInputElement | null>(null);
 	const pluginInputRef = useRef<HTMLInputElement | null>(null);
 	const handleLoadModule = useModuleLoader([], (plugin) => logic.setActiveModules(prev => [...prev, plugin]));
+
+	const currentIdxRef = useRef(logic.currentIdx);
+	useEffect(() => { currentIdxRef.current = logic.currentIdx; }, [logic.currentIdx]);
+
+	useEffect(() => {
+		let interval: any;
+		if (isPlaying && logic.processedData && logic.processedData.getFrameCnt() > 0) {
+			const fps = (logic.processedData as any).getFPS?.() || 30;
+			const maxFrame = logic.processedData.getFrameCnt() - 1;
+			interval = setInterval(() => {
+				const nextIdx = currentIdxRef.current + 1;
+				if (nextIdx > maxFrame) setIsPlaying(false);
+				else logic.setCurrentIdx(nextIdx);
+			}, 1000 / fps);
+		}
+		return () => clearInterval(interval);
+	}, [isPlaying, logic.processedData, logic.setCurrentIdx]);
+
+	const handleTogglePlay = () => {
+		const frameCnt = logic.processedData ? logic.processedData.getFrameCnt() : 0;
+		if (frameCnt <= 0) return;
+
+		const maxFrame = frameCnt - 1;
+		if (!isPlaying && logic.currentIdx >= maxFrame) {
+			logic.setCurrentIdx(0);
+		}
+		setIsPlaying(!isPlaying);
+	};
 
 	const toggleTheme = () => {
 		const nextMode = themeMode === 'light' ? 'dark' : 'light';
@@ -63,6 +92,7 @@ const AppPage: React.FC = () => {
 			<Navigation
 				fileButtons={[
 					{ name: t('settings.title'), action: () => setSettingsModalOpen(true) },
+					{ name: t('common.addTool'), action: () => setToolModalOpen(true)},
 					{ name: t('navigation.newAnalysis', '새 분석'), action: () => { if (logic.processedData.getFrameCnt() > 0) setProcessModalOpen(true); else videoInputRef.current?.click(); } },
 					...((hasData('ball') || hasData('bat')) ? [{ name: t('navigation.edit', '편집'), action: handleEditClick }] : []),
 					{ name: t('navigation.load', '불러오기'), action: () => dataInputRef.current?.click() },
@@ -85,10 +115,22 @@ const AppPage: React.FC = () => {
 				currentFrame={logic.currentIdx}
 				onRemoveModule={logic.removeModule} 
 			/>
-			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-				<InputSlider min="0" max={logic.processedData ? logic.processedData.getFrameCnt() - 1 : 0} step="1" value={logic.currentIdx} onChange={logic.setCurrentIdx} style={{ flex: 1 }} />
-				<Button style={{ whiteSpace: "nowrap" }} onClick={() => setToolModalOpen(true)}>{t('common.addTool')}</Button>
-			</Div></Box></FixedFooter>
+			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+				<Button 
+					onClick={handleTogglePlay} 
+					style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, }}
+				>
+					{isPlaying ? '⏸' : '▶'}
+				</Button>
+				<InputSlider 
+					min="0" 
+					max={logic.processedData ? logic.processedData.getFrameCnt() - 1 : 0} 
+					step="1" 
+					value={logic.currentIdx} 
+					onChange={(val) => { setIsPlaying(false); logic.setCurrentIdx(val); }} 
+					style={{ flex: 1 }} 
+				/>
+				</Div></Box></FixedFooter>
 			<AppModals logic={logic} pluginInputRef={pluginInputRef} ui={{ 
 				isProcessModalOpen, setProcessModalOpen, isToolModalOpen, setToolModalOpen, isEditorModalOpen, setEditorModalOpen, 
 				isSettingsModalOpen, setSettingsModalOpen, isEditSelectModalOpen, setEditSelectModalOpen, themeMode, toggleTheme 

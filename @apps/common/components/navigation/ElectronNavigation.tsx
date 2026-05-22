@@ -1,6 +1,6 @@
 import React, { useEffect, ChangeEvent, useMemo, useState, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { NavButton, FEATURES } from './WebNavigation';
+import { NavButton } from './WebNavigation';
 
 
 interface ElectronNavigationProps {
@@ -141,7 +141,7 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
 
                 {/* 왼쪽 로고 영역: 클릭 가능하도록 no-drag 적용 */}
                 <ul style={{ ...interactiveStyle, display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: 0, flexShrink: 0, WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none', userSelect: 'none' }}>
-                    <li>CV-Val</li>
+                    <li style={{ margin: 0 }}>CV-Val</li>
                 </ul>
 
                 {/* 중앙 여백 영역: 아무런 스타일이 없으므로 부모의 'drag' 속성을 유지하여 창 핸들 역할을 합니다. */}
@@ -179,7 +179,7 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
                     {/* 내부 리스트에도 명확하게 interactiveStyle 적용 */}
                     <ul style={{ ...interactiveStyle, display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: '0 0 0 auto', width: 'max-content', flexShrink: 0 }}>
                         {fileButtons.map((btn) => (
-                            <li key={btn.name}>
+                            <li style={{ margin: 0 }}key={btn.name}>
                                 <button
                                     onClick={() => {
                                         // 마우스 이동 거리가 5px 미만일 때만 실제 클릭으로 인정합니다.

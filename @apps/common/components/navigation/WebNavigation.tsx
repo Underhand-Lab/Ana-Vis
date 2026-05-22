@@ -1,11 +1,5 @@
-import React, { ChangeEvent } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
-
-export const FEATURES = [
-    { label: '자세', value: '/pose' },
-    { label: '공 추적', value: '/track-ball' },
-    { label: '배트 궤적', value: '/track-bat' }
-];
+import { vars } from '@shared/bridges/UIBridge';
+import React from 'react';
 
 export interface NavButton {
     name: string;
@@ -25,7 +19,7 @@ const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolBut
         width: '100%',
         maxWidth: '100vw',
         boxSizing: 'border-box',
-        backgroundColor: 'var(--secondary-color)',
+        backgroundColor: vars.secondary,
         color: '#aaaaaa',
         fontSize: '15px',
         margin: 0,
@@ -54,7 +48,7 @@ const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolBut
                 </style>
                 <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: 0, flexShrink: 0 }}>
                     <li style={{ margin: 0 }}>
-                        <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>CV-Val</Link>
+                        CV-Val
                     </li>
                 </ul>
 

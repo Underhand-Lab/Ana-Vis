@@ -123,6 +123,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
                 {/* 바탕 트랙 */}
                 <div style={{
                     position: 'absolute',
+                    left: 0,
                     width: '100%',
                     height: '6px',
                     borderRadius: '3px',
@@ -132,6 +133,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
                 {/* 진행 상태 바 */}
                 <div style={{
                     position: 'absolute',
+                    left: 0,
                     width: `${percentage}%`,
                     height: '6px',
                     borderRadius: '3px',
@@ -149,7 +151,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
                     border: `2px solid ${vars.box}`,
                     boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                     transform: 'translateX(-50%)',
-                    transition: isDragging ? 'none' : 'left 0.1s ease-out',
+                    transition: 'none',
                 }} />
             </div>
         </>
