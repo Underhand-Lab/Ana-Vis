@@ -18,14 +18,6 @@ interface WebNavigationProps {
 }
 
 const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolButtons = [] }) => {
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    const handleFeatureChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        navigate(e.target.value);
-    };
-
-    const currentPath = location.pathname === '/' ? '/pose' : location.pathname;
 
     const navStyle: React.CSSProperties & { WebkitAppRegion?: string } = {
         position: 'sticky',
@@ -61,14 +53,14 @@ const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolBut
                     {`.hide-scrollbar::-webkit-scrollbar { display: none; }`}
                 </style>
                 <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: 0, flexShrink: 0 }}>
-                    <li>
+                    <li style={{ margin: 0 }}>
                         <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>CV-Val</Link>
                     </li>
                 </ul>
 
-                <div 
+                <div
                     className="hide-scrollbar"
-                    style={{ 
+                    style={{
                         flex: 1,
                         minWidth: 0,
                         overflowX: 'auto',
@@ -83,7 +75,7 @@ const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolBut
                 >
                     <ul style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: '0 0 0 auto', width: 'max-content', flexShrink: 0 }}>
                         {fileButtons.map((btn) => (
-                            <li key={btn.name}>
+                            <li key={btn.name} style={{ margin: 0 }}>
                                 <button
                                     onClick={btn.action}
                                     style={{ padding: '2px 10px', whiteSpace: 'nowrap' }}

@@ -133,7 +133,7 @@ export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
                         value={settings.jointShape || 'circle'}
                         onChange={(e) => onSettingsChange({ ...settings, jointShape: e.target.value })}
                         options={jointShapeOptions}
-                        style={{ cursor: 'pointer', maxWidth: '90px' }}
+                        style={{ cursor: 'pointer', flex: 1}}
                     />
                 </Div>
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>

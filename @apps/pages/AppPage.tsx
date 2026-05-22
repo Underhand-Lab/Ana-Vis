@@ -1,21 +1,25 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '@shared/utils/i18n';
+
 import enTranslation from './locales/en/translation.json';
 import koTranslation from './locales/ko/translation.json';
 i18n.addResourceBundle('en', 'translation', enTranslation, true, true);
 i18n.addResourceBundle('ko', 'translation', koTranslation, true, true);
 
-import Navigation from '@apps/common/bridges/NavigationBridge';
 import { setThemeMode, getSystemTheme } from '@shared/components/ui-brick/variables';
 import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper, Select }
 	from '@shared/bridges/UIBridge.ts';
 import { saveBlobWithPicker } from "@shared/utils/save-blob";
+import i18n from '@shared/utils/i18n';
+
 import { useModuleLoader } from '@packages/cv-val/hooks/useModuleLoader';
 import GridModuleContainer from '@packages/cv-val/component/module-contianer/GridModuleContainer';
-import { ALL_AVAILABLE_MODULES } from '../FeatureRegistry';
+
+import Navigation from '@apps/common/bridges/NavigationBridge';
 import { useAppLogic } from '@apps/features/app/hooks/useAppLogic';
 import AppModals from '@apps/features/app/components/AppModals';
+
+import { ALL_AVAILABLE_MODULES } from '../FeatureRegistry';
 
 const ALL_EXTENSIONS = '.cvp,.cvbl,.cvbt,.cvval,.mp4,.mov,.avi,.mkv,.webm';
 

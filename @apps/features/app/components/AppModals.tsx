@@ -59,7 +59,7 @@ const AppModals: React.FC<AppModalsProps> = ({ logic, ui, pluginInputRef }) => {
 
       <Modal isOpen={ui.isToolModalOpen} onClose={() => ui.setToolModalOpen(false)} title={t('navigation.addTool')}>
         <Div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <Div style={{ display: 'flex', flexDirection: 'row', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', padding: '15px' }}>
+          <Div style={{ display: 'flex', flexDirection: 'row', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', }}>
             {Object.keys(ALL_AVAILABLE_MODULES).map(key => (
               <Button key={key} onClick={() => { logic.handleAddModule(key); ui.setToolModalOpen(false); }}>
                 {t(`analysisTools.${key.toLowerCase()}`, key)}

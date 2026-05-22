@@ -12,6 +12,7 @@ import {
     Plugin
 } from 'chart.js';
 import { useTranslation } from 'react-i18next';
+import { Div } from '@shared/bridges/UIBridge';
 import vars from '@shared/components/ui-brick/variables';
 
 // 필요한 구성 요소 등록
@@ -183,7 +184,7 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
     }, [idx, vars.box]);
 
     return (
-        <div className={className} style={{ 
+        <Div className={className} style={{ 
             width: '100%', 
             height: '100%', 
             backgroundColor: 'transparent', // 다크모드 시 surface 색상 적용
@@ -191,7 +192,7 @@ const Graph: React.FC<GraphProps> = ({ data, idx, settings = {}, className }) =>
             transition: 'background-color 0.3s ease'
         }}>
             <canvas ref={canvasRef} />
-        </div>
+        </Div>
     );
 };
 

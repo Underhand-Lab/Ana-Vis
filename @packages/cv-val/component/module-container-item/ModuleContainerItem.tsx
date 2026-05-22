@@ -1,11 +1,10 @@
 import React, { useState, forwardRef, useEffect, useMemo } from 'react';
-import { Div } from "@shared/bridges/UIBridge";
-import vars from '@shared/components/ui-brick/variables';
+import { Div, styles, vars } from "@shared/bridges/UIBridge";
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../../@shared/utils/i18n';
 import ModuleErrorBoundary from './ModuleErrorBoundary';
-import { styles } from './ModuleContainerItem.styles';
+import { moduleItemStyles } from './ModuleContainerItem.styles';
 
 // 모듈 타입별로 로케일 등록 여부를 관리 (중복 등록 방지)
 const registeredModuleTypes = new Set<string>();
@@ -90,7 +89,7 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
     <Div 
       ref={ref} 
       style={{ 
-        ...styles.card, 
+        ...moduleItemStyles.card, 
         backgroundColor: vars.background, 
         borderColor: vars.surface,
         ...style 
@@ -104,8 +103,8 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
     >
       {/* 상단 드래그 핸들 오버레이 */}
       <Div 
-        className="grid-item-overlay frostedglassmorphism" 
-        style={{ ...styles.header, ...((isHovered || isSettingsOpen) ? styles.headerVisible : {}) }}
+        className="grid-item-overlay"
+        style={{ ...styles.frostedglassmorphism, ...moduleItemStyles.header, ...((isHovered || isSettingsOpen) ? moduleItemStyles.headerVisible : {}) }}
       >
         <span 
           className="drag-handle" // Make only the title span the drag handle
@@ -114,7 +113,7 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
         <Div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={(e) => { e.stopPropagation(); toggleSettings(); }} 
-            style={styles.iconButton}
+            style={moduleItemStyles.iconButton}
           >
             ⚙️
           </button>
@@ -146,8 +145,9 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
 
         {/* 설정 레이어 (우측 사이드 패널 형태) */}
         {isSettingsOpen && (
-          <Div className="grid-item-overlay setting frostedglassmorphism side-panel" style={{
-            ...styles.sidePanel
+          <Div className="grid-item-overlay setting side-panel" style={{
+            ...styles.frostedglassmorphism,
+            ...moduleItemStyles.sidePanel
           }}>
             {/* data와 currentFrame을 Settings 컴포넌트에 전달 */}
             <ModuleErrorBoundary title={`${displayTitle} Settings`}>

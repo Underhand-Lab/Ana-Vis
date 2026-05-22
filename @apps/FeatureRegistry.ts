@@ -1,4 +1,4 @@
-import { IAnalysisTool } from '@cv-val/data/cvval-data';
+import { IAnalysisTool } from '@packages/cv-val/data/cvval-types';
 import { AnalysisModule } from '@cv-val/types/analysis-module';
 import { VideoModuleBuilder } from '@cv-val/modules/VideoModule';
 import GraphModule from '@cv-val/modules/GraphModule';

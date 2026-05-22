@@ -1,6 +1,6 @@
 import React, { ReactNode, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Div, Box, Button } from '../bridges/UIBridge';
+import { Div, Box, Button, H1 } from '../bridges/UIBridge';
 import vars from './ui-brick/variables';
 import { useTranslation } from 'react-i18next';
 
@@ -27,9 +27,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         onClick={(e: MouseEvent) => e.stopPropagation()} // 내부 클릭 시 닫힘 방지
       >
         <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <h1>{title}</h1>
+          <H1>{title}</H1>
         </Div>
-        <Div style= {{maxHeight: '60vh'}}>
+        <Div style= {{ paddingBottom: '15px' }}>
           {children}
         </Div>
         <Button onClick={onClose}>{t('common.close')}</Button>

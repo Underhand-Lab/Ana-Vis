@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, FC, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { RgbaColorPicker } from "react-colorful";
 import Div from '../Div';
+import vars from '@shared/components/ui-brick/variables';
 
 interface RgbaColor {
     r: number;
@@ -125,7 +126,7 @@ const InputColor: FC<InputColorProps> = ({ label, value, onChange }) => {
                 <Div 
                     ref={triggerRef}
                     onClick={toggleOpen} 
-                    style={{ width: '36px', height: '36px', borderRadius: '4px', border: '2px solid white', boxShadow: '0 0 0 1px #ddd', background: localColor, cursor: 'pointer' }} 
+                    style={{ width: '36px', height: '36px', borderRadius: '4px', border: '2px solid', borderColor: vars.surface, background: localColor, cursor: 'pointer' }} 
                 />
                 {label && <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{label}</span>}
             </Div>

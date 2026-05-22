@@ -1,7 +1,7 @@
 import React from 'react';
 import vars from '@shared/components/ui-brick/variables';
 
-export const styles: { [key: string]: React.CSSProperties } = {
+export const moduleItemStyles: { [key: string]: React.CSSProperties } = {
   card: {
     borderRadius: '12px',
     boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
