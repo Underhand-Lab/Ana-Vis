@@ -12,8 +12,9 @@ import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper, Select 
 import { saveBlobWithPicker } from "@shared/utils/save-blob";
 import i18n from '@shared/utils/i18n';
 
-import { useModuleLoader } from '@packages/cv-val/hooks/useModuleLoader';
-import GridModuleContainer from '@packages/cv-val/component/module-contianer/GridModuleContainer';
+import { useModuleLoader } from '@cv-val/hooks/useModuleLoader';
+import GridModuleContainer from '@packages/cv-val/component/grid-module-container-item/GridModuleContainer';
+import PanelModuleContainer from '@packages/cv-val/component/panel-module-container/PanelModuleContainer';
 
 import Navigation from '@apps/common/bridges/NavigationBridge';
 import { useAppLogic } from '@apps/features/app/hooks/useAppLogic';
@@ -124,11 +125,11 @@ const AppPage: React.FC = () => {
 				]}
 				toolButtons={Object.keys(ALL_AVAILABLE_MODULES).map(key => ({ name: `${t(`analysisTools.${key.toLowerCase()}`, key)} ${t('common.add', '추가')}`, action: () => logic.handleAddModule(key) }))}
 			/>
-			<GridModuleContainer
+			<PanelModuleContainer
 				modules={logic.activeModules}
-				data={logic.processedData} 
+				data={logic.processedData}
 				currentFrame={logic.currentIdx}
-				onRemoveModule={logic.removeModule} 
+				onRemoveModule={logic.removeModule}
 			/>
 			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
 				<Div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
