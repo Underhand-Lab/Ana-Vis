@@ -13,7 +13,6 @@ import { saveBlobWithPicker } from "@shared/utils/save-blob";
 import i18n from '@shared/utils/i18n';
 
 import { useModuleLoader } from '@cv-val/hooks/useModuleLoader';
-import GridModuleContainer from '@packages/cv-val/component/grid-module-container-item/GridModuleContainer';
 import PanelModuleContainer from '@packages/cv-val/component/panel-module-container/PanelModuleContainer';
 
 import Navigation from '@apps/common/bridges/NavigationBridge';
@@ -108,7 +107,6 @@ const AppPage: React.FC = () => {
 			<Navigation
 				fileButtons={[
 					{ name: t('settings.title'), action: () => setSettingsModalOpen(true) },
-					{ name: t('common.addTool'), action: () => setToolModalOpen(true)},
 					{ name: t('navigation.newAnalysis', '새 분석'), action: () => { if (logic.processedData.getFrameCnt() > 0) setProcessModalOpen(true); else videoInputRef.current?.click(); } },
 					...((hasData('ball') || hasData('bat')) ? [{ name: t('navigation.edit', '편집'), action: handleEditClick }] : []),
 					{ name: t('navigation.load', '불러오기'), action: () => dataInputRef.current?.click() },
@@ -130,6 +128,8 @@ const AppPage: React.FC = () => {
 				data={logic.processedData}
 				currentFrame={logic.currentIdx}
 				onRemoveModule={logic.removeModule}
+				onReorderModules={logic.setActiveModules}
+				onAddModule={() => setToolModalOpen(true)}
 			/>
 			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
 				<Div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

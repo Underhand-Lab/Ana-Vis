@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Div, vars } from "@shared/bridges/UIBridge";
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
-import { GenericPanelLayout } from '@packages/system/GenericPanelLayout';
+import { GenericPanelLayout } from '@packages/panel-layout/components/GenericPanelLayout';
 import ModuleContainerItem from './PanelModuleContainerItem';
 
 interface Props {
@@ -23,10 +24,34 @@ const PanelModuleContainer: React.FC<Props> = ({
   direction = 'horizontal',
   onAddModule
 }) => {
+  const { t } = useTranslation();
   const [settingsOpenMap, setSettingsOpenMap] = useState<Record<string, boolean>>({});
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const handleToggleSettings = (id: string) => {
     setSettingsOpenMap(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // 반응형 분할 제한 설정을 위한 윈도우 리사이즈 감지
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 모바일: 좌우 분할 불가(maxColumns: 1), 상하 분할 최대 1개선(즉, 2행, maxRows: 2)
+  // 데스크톱: 제한 없음 (undefined)
+  const maxColumns = isMobile ? 1 : undefined;
+  const maxRows = isMobile ? 2 : undefined;
+
+  // 모듈 ID에서 타입을 추출하고 번역된 제목을 반환하는 헬퍼 함수
+  const getModuleTitle = (module: AnalysisModule) => {
+    const lastHyphenIndex = module.id.lastIndexOf('-');
+    const moduleType = (lastHyphenIndex !== -1 && !isNaN(Number(module.id.substring(lastHyphenIndex + 1))))
+      ? module.id.substring(0, lastHyphenIndex)
+      : module.id;
+    
+    return t(`analysisTools.${moduleType}`, module.title);
   };
 
   return (
@@ -35,10 +60,12 @@ const PanelModuleContainer: React.FC<Props> = ({
       onRemoveItem={onRemoveModule}
       onReorderItems={onReorderModules}
       onAddItem={onAddModule}
+      maxColumns={maxColumns}
+      maxRows={maxRows}
       renderTabLabel={(module, isActive) => (
         <Div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '12px', color: vars.text, fontWeight: isActive ? 'bold' : 'normal' }}>
-            {module.title}
+            {getModuleTitle(module)}
           </span>
           {isActive && (
             <button
@@ -69,7 +96,7 @@ const PanelModuleContainer: React.FC<Props> = ({
           isSettingsOpen={!!settingsOpenMap[module.id]}
           titleNode={
             <Div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', borderBottom: `1px solid ${vars.surface}` }}>
-              <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{module.title}</span>
+              <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{getModuleTitle(module)}</span>
               <button onClick={() => handleToggleSettings(module.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>⚙️</button>
             </Div>
           }

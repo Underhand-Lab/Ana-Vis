@@ -8,6 +8,7 @@ interface PanelGroupProps<T> {
   itemsMap: Record<string, T>;
   activeTabId: string;
   onSelectTab: (id: string) => void;
+  onAddItem?: (cIdx: number, rIdx: number) => void;
   onRemoveItem: (id: string) => void;
   renderItem: (item: T, handlers: any) => React.ReactNode;
   renderTabLabel?: (item: T, isActive: boolean) => React.ReactNode;
@@ -21,7 +22,7 @@ interface PanelGroupProps<T> {
 }
 
 export function PanelGroup<T extends { id: string }>({
-  cIdx, rIdx, group, itemsMap, activeTabId, onSelectTab, onRemoveItem, renderItem, renderTabLabel,
+  cIdx, rIdx, group, itemsMap, activeTabId, onSelectTab, onAddItem, onRemoveItem, renderItem, renderTabLabel,
   dragOverPos, dropZone, onPanelDragOver, onPanelDrop, onPanelDragLeave, onTabDragStart, onDragEnd
 }: PanelGroupProps<T>) {
 
@@ -38,52 +39,89 @@ export function PanelGroup<T extends { id: string }>({
     >
       {/* Tab Bar: 탭 영역 드래그 시 stopPropagation으로 'center' 드롭 유도 */}
       <Div 
+        style={{ 
+          display: 'flex', 
+          backgroundColor: vars.background,
+          borderBottom: `1px solid ${vars.surface}`,
+          zIndex: 100, 
+          minHeight: '32px',
+          userSelect: 'none',
+          flexDirection: 'row'
+        }}
         onDragOver={(e) => {
           e.preventDefault();
           e.stopPropagation();
           onPanelDragOver(cIdx, rIdx, e, 'center');
         }}
-        style={{ 
-          display: 'flex', overflowX: 'auto', backgroundColor: vars.background,
-          borderBottom: `1px solid ${vars.surface}`, scrollbarWidth: 'none',
-          zIndex: 100, minHeight: '32px'
-        }}
       >
-        {group.map((id, iIdx) => {
-          const item = itemsMap[id];
-          const isActive = activeTabId === id;
-          return (
-            <Div
-              key={id}
-              draggable
-              onDragStart={() => onTabDragStart(iIdx)}
-              onDragEnd={onDragEnd}
-              onClick={() => onSelectTab(id)}
-              style={{
-                padding: '6px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                backgroundColor: isActive ? vars.box : 'transparent',
-                borderRight: `1px solid ${vars.surface}`,
-                borderTop: isActive ? `2px solid ${vars.primary}` : '2px solid transparent',
-                minWidth: 'fit-content', userSelect: 'none', transition: 'all 0.1s',
-                opacity: isActive ? 1 : 0.6
-              }}
-            >
-              {renderTabLabel && item ? (
-                renderTabLabel(item, isActive)
-              ) : (
-                <span style={{ fontSize: '12px', color: vars.text, fontWeight: isActive ? 'bold' : 'normal' }}>
-                  {item ? ((item as any).title ?? ((item as any).name || id)) : id}
-                </span>
-              )}
-              <Div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); onRemoveItem(id); }}
-                  style={{ background: 'none', border: 'none', color: vars.text, cursor: 'pointer', padding: '2px', fontSize: '10px', opacity: 0.6 }}
-                >✕</button>
+        {/* Scrollable Tab List */}
+        <Div 
+          style={{ 
+            display: 'flex', 
+            overflowX: 'auto',
+            minWidth: 0,
+            scrollbarWidth: 'none',
+            flexDirection: 'row'
+          }}
+        >
+          {group.map((id, iIdx) => {
+            const item = itemsMap[id];
+            const isActive = activeTabId === id;
+            return (
+              <Div
+                key={id}
+                draggable
+                onDragStart={() => onTabDragStart(iIdx)}
+                onDragEnd={onDragEnd}
+                onClick={() => onSelectTab(id)}
+                style={{
+                  padding: '6px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                  backgroundColor: isActive ? vars.box : 'transparent',
+                  borderRight: `1px solid ${vars.surface}`,
+                  borderTop: isActive ? `2px solid ${vars.primary}` : '2px solid transparent',
+                  minWidth: 'fit-content', userSelect: 'none', transition: 'all 0.1s',
+                  opacity: isActive ? 1 : 0.6
+                }}
+              >
+                {renderTabLabel && item ? (
+                  renderTabLabel(item, isActive)
+                ) : (
+                  <span style={{ fontSize: '12px', color: vars.text, fontWeight: isActive ? 'bold' : 'normal' }}>
+                    {item ? ((item as any).title ?? ((item as any).name || id)) : id}
+                  </span>
+                )}
+                <Div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onRemoveItem(id); }}
+                    style={{ background: 'none', border: 'none', color: vars.text, cursor: 'pointer', padding: '2px', fontSize: '10px', opacity: 0.6 }}
+                  >✕</button>
+                </Div>
               </Div>
-            </Div>
-          );
-        })}
+            );
+          })}
+        </Div>
+
+        {onAddItem && (
+          <Div
+            onClick={(e) => { e.stopPropagation(); onAddItem(cIdx, rIdx); }}
+            style={{
+              flexShrink: 0,
+              padding: '6px 14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+              borderLeft: `1px solid ${vars.surface}`,
+              color: vars.text,
+              opacity: 0.6,
+              fontSize: '16px',
+              userSelect: 'none',
+              transition: 'opacity 0.1s'
+            }}
+          >
+            +
+          </Div>
+        )}
       </Div>
 
       {/* Content Area */}
