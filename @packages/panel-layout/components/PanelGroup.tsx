@@ -1,14 +1,14 @@
 import React from 'react';
 import { Div, vars } from "@shared/bridges/UIBridge";
 
-interface PanelGroupProps<T> {
+export interface PanelGroupProps<T> {
   cIdx: number;
   rIdx: number;
   group: string[];
   itemsMap: Record<string, T>;
   activeTabId: string;
   onSelectTab: (id: string) => void;
-  onAddItem?: (cIdx: number, rIdx: number) => void;
+  onAddItem?: () => void;
   onRemoveItem: (id: string) => void;
   renderItem: (item: T, handlers: any) => React.ReactNode;
   renderTabLabel?: (item: T, isActive: boolean) => React.ReactNode;
@@ -103,7 +103,7 @@ export function PanelGroup<T extends { id: string }>({
 
         {onAddItem && (
           <Div
-            onClick={(e) => { e.stopPropagation(); onAddItem(cIdx, rIdx); }}
+            onClick={(e) => { e.stopPropagation(); onAddItem(); }}
             style={{
               flexShrink: 0,
               padding: '6px 14px',

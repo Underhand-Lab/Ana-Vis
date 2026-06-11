@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next';
 
 import enTranslation from './locales/en/translation.json';
 import koTranslation from './locales/ko/translation.json';
-i18n.addResourceBundle('en', 'translation', enTranslation, true, true);
-i18n.addResourceBundle('ko', 'translation', koTranslation, true, true);
 
 import { setThemeMode, getSystemTheme } from '@shared/components/ui-brick/variables';
 import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper, Select }
@@ -12,10 +10,14 @@ import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper, Select 
 import { saveBlobWithPicker } from "@shared/utils/save-blob";
 import i18n from '@shared/utils/i18n';
 
+i18n.addResourceBundle('en', 'translation', enTranslation, true, true);
+i18n.addResourceBundle('ko', 'translation', koTranslation, true, true);
+
 import { useModuleLoader } from '@cv-val/hooks/useModuleLoader';
 import PanelModuleContainer from '@packages/cv-val/component/panel-module-container/PanelModuleContainer';
 
 import Navigation from '@apps/common/bridges/NavigationBridge';
+import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { useAppLogic } from '@apps/features/app/hooks/useAppLogic';
 import AppModals from '@apps/features/app/components/AppModals';
 
@@ -32,6 +34,7 @@ const AppPage: React.FC = () => {
 	const [isEditorModalOpen, setEditorModalOpen] = useState(false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 	const [isEditSelectModalOpen, setEditSelectModalOpen] = useState(false);
+	const [toolModalResolve, setToolModalResolve] = useState<((value: string | undefined) => void) | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 
 	const dataInputRef = useRef<HTMLInputElement | null>(null);
@@ -95,6 +98,23 @@ const AppPage: React.FC = () => {
 		else if (hasData('bat')) { logic.setEditingType('bat'); setEditorModalOpen(true); }
 	};
 
+	// 도구 선택 모달을 열고 선택 결과를 Promise로 반환하는 함수
+	const openToolSelectionModal = (): Promise<string | undefined> => {
+		return new Promise((resolve) => {
+			setToolModalResolve(() => resolve);
+			setToolModalOpen(true);
+		});
+	};
+
+	// 모달에서 도구가 선택되었을 때 호출되는 핸들러
+	const handleToolModalSelection = (selectedKey: string | undefined) => {
+		if (toolModalResolve) {
+			toolModalResolve(selectedKey);
+			setToolModalResolve(null);
+		}
+		setToolModalOpen(false);
+	};
+
 	return (
 		<Wrapper>
 			<InputFile ref={dataInputRef} style={{ display: 'none' }} accept={ALL_EXTENSIONS} onChange={async (e) => { 
@@ -128,8 +148,15 @@ const AppPage: React.FC = () => {
 				data={logic.processedData}
 				currentFrame={logic.currentIdx}
 				onRemoveModule={logic.removeModule}
-				onReorderModules={logic.setActiveModules}
-				onAddModule={() => setToolModalOpen(true)}
+        onReorderModules={logic.setActiveModules}
+        onAddModule={async () => {
+          const selectedModuleKey = await openToolSelectionModal();
+          if (selectedModuleKey) {
+            // logic.handleAddModule should return the newly created module
+            return logic.handleAddModule(selectedModuleKey);
+          }
+          return undefined; // If no module selected, return undefined
+        }}
 			/>
 			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
 				<Div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -164,7 +191,7 @@ const AppPage: React.FC = () => {
 			<AppModals logic={logic} pluginInputRef={pluginInputRef} ui={{ 
 				isProcessModalOpen, setProcessModalOpen, isToolModalOpen, setToolModalOpen, isEditorModalOpen, setEditorModalOpen, 
 				isSettingsModalOpen, setSettingsModalOpen, isEditSelectModalOpen, setEditSelectModalOpen, themeMode, toggleTheme 
-			}} />
+			}} onToolSelect={handleToolModalSelection} />
 		</Wrapper>
 	);
 };

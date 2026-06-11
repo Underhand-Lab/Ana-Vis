@@ -5,16 +5,17 @@ export interface PanelRow {
   tabs: string[];
 }
 
-const generateId = () => Math.random().toString(36).substring(2, 11);
+export const generateId = () => Math.random().toString(36).substring(2, 11);
 
 export function usePanelGroups<T extends { id: string }>(
   items: T[],
   onReorderItems?: (newItems: T[]) => void
 ) {
-  const [groups, setGroups] = useState<PanelRow[][]>([]); // [col][row]
+  const [groups, setGroups] = useState<PanelRow[][]>([]); // [col][row] // Exported via hook return
   const [activeTabMap, setActiveTabMap] = useState<Record<string, string>>({}); // key: row.id
   const prevIdsRef = useRef<Set<string>>(new Set());
   const prevGroupsRef = useRef<PanelRow[][]>([]);
+  const pendingInsertTargetRef = useRef<{ targetRowId?: string; targetTabId?: string } | null>(null);
 
   const itemsMap = useMemo(() => {
     return items.reduce((acc, m) => ({ ...acc, [m.id]: m }), {} as Record<string, T>);
@@ -39,8 +40,33 @@ export function usePanelGroups<T extends { id: string }>(
           if (nextGroups.length === 0) {
             nextGroups.push([{ id: generateId(), tabs: [m.id] }]);
           } else {
-            // 항상 첫 번째 컬럼의 첫 번째 로우에 탭으로 추가 (이후 드래그로 이동 가능)
-            nextGroups[0][0].tabs.push(m.id);
+            let inserted = false;
+            if (pendingInsertTargetRef.current) {
+              const { targetRowId, targetTabId } = pendingInsertTargetRef.current;
+              // Clear after use so we don't accidentally reuse it
+              pendingInsertTargetRef.current = null;
+
+              for (const col of nextGroups) {
+                for (const row of col) {
+                  if (row.id === targetRowId) {
+                    const idx = targetTabId ? row.tabs.indexOf(targetTabId) : -1;
+                    if (idx !== -1) {
+                      row.tabs.splice(idx + 1, 0, m.id);
+                    } else {
+                      row.tabs.push(m.id);
+                    }
+                    inserted = true;
+                    break;
+                  }
+                }
+                if (inserted) break;
+              }
+            }
+
+            if (!inserted) {
+              // 항상 첫 번째 컬럼의 첫 번째 로우에 탭으로 추가 (이후 드래그로 이동 가능)
+              nextGroups[0][0].tabs.push(m.id);
+            }
           }
         }
       });
@@ -56,7 +82,7 @@ export function usePanelGroups<T extends { id: string }>(
       
       const addedId = currentIds.find(id => !prevIdsRef.current.has(id));
 
-      groups.forEach((col) => {
+      groups.forEach((col: PanelRow[]) => { // Explicitly type col
         col.forEach((row) => {
           const key = row.id;
           if (addedId && row.tabs.includes(addedId)) {
@@ -64,7 +90,7 @@ export function usePanelGroups<T extends { id: string }>(
           } else if (!row.tabs.includes(nextMap[key]) && row.tabs.length > 0) {
             const prevActiveId = prev[key];
             let nextId = row.tabs[0];
-
+            
             if (prevActiveId) {
               const prevRow = prevGroupsRef.current.flatMap(c => c).find(r => r.id === row.id);
               if (prevRow) {
@@ -84,7 +110,7 @@ export function usePanelGroups<T extends { id: string }>(
     prevGroupsRef.current = groups;
   }, [groups]);
 
-  const handleDropLogic = (
+  const handleDropLogic = ( // Explicitly type parameters for clarity
     draggedPos: { cIdx: number; rIdx: number; iIdx: number },
     target: { cIdx: number; rIdx: number },
     dropZone: 'top' | 'bottom' | 'left' | 'right' | 'center',
@@ -115,6 +141,7 @@ export function usePanelGroups<T extends { id: string }>(
     activeTabMap,
     setActiveTabMap,
     handleDropLogic,
-    setGroups
+    setGroups, // Export setGroups so GenericPanelLayout can directly manipulate groups
+    pendingInsertTargetRef
   };
 }

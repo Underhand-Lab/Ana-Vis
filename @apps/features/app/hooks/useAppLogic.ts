@@ -26,7 +26,7 @@ export interface AppLogic {
   loadData: (file: File) => Promise<string | undefined>;
   handleVideoSelect: (files: FileList | null) => Promise<boolean | undefined>;
   handleProcessVideo: (type: string, modelKey: string) => Promise<void>;
-  handleAddModule: (type: string) => void;
+  handleAddModule: (type: string) => AnalysisModule<any> | undefined;
   handleConfChange: (type: string, e: ChangeEvent<HTMLInputElement>) => void;
   handleEditorCandidateSelect: (type: string, frameIdx: number, candIdx: number) => void;
   removeModule: (id: string) => void;
@@ -120,7 +120,12 @@ export const useAppLogic = (): AppLogic => {
 
   const handleAddModule = (type: string) => {
     const moduleBase = ALL_AVAILABLE_MODULES[type];
-    if (moduleBase) setActiveModules((prev) => [...prev, { ...moduleBase, id: `${moduleBase.id}-${Date.now()}` }]);
+    if (moduleBase) {
+      const newModule = { ...moduleBase, id: `${moduleBase.id}-${Date.now()}` };
+      setActiveModules((prev) => [...prev, newModule]);
+      return newModule;
+    }
+    return undefined;
   };
 
   const handleConfChange = (type: string, e: ChangeEvent<HTMLInputElement>) => {

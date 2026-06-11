@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Div, vars } from "@shared/bridges/UIBridge";
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { GenericPanelLayout } from '@packages/panel-layout/components/GenericPanelLayout';
-import ModuleContainerItem from './PanelModuleContainerItem';
+import ModuleContainerItem from '@packages/cv-val/component/panel-module-container/PanelModuleContainerItem';
 
 interface Props {
   modules: AnalysisModule[];
@@ -11,8 +11,7 @@ interface Props {
   currentFrame: number;
   onRemoveModule: (id: string) => void;
   onReorderModules?: (newModules: AnalysisModule[]) => void; // 순서 변경 콜백 추가
-  direction?: 'horizontal' | 'vertical';
-  onAddModule?: () => void; // 도구 추가 콜백
+  onAddModule?: () => Promise<AnalysisModule | undefined>; // 아이템 생성 후 반환받아 위치 및 포커스 처리
 }
 
 const PanelModuleContainer: React.FC<Props> = ({
@@ -21,7 +20,6 @@ const PanelModuleContainer: React.FC<Props> = ({
   currentFrame,
   onRemoveModule,
   onReorderModules,
-  direction = 'horizontal',
   onAddModule
 }) => {
   const { t } = useTranslation();
@@ -50,7 +48,7 @@ const PanelModuleContainer: React.FC<Props> = ({
     const moduleType = (lastHyphenIndex !== -1 && !isNaN(Number(module.id.substring(lastHyphenIndex + 1))))
       ? module.id.substring(0, lastHyphenIndex)
       : module.id;
-    
+
     return t(`analysisTools.${moduleType}`, module.title);
   };
 
@@ -70,9 +68,9 @@ const PanelModuleContainer: React.FC<Props> = ({
           {isActive && (
             <button
               onClick={(e) => { e.stopPropagation(); handleToggleSettings(module.id); }}
-              style={{ 
-                background: 'none', border: 'none', cursor: 'pointer', padding: '2px', 
-                fontSize: '10px', opacity: settingsOpenMap[module.id] ? 1 : 0.6 
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: '2px',
+                fontSize: '10px', opacity: settingsOpenMap[module.id] ? 1 : 0.6
               }}
             >
               ⚙️
@@ -81,9 +79,9 @@ const PanelModuleContainer: React.FC<Props> = ({
         </Div>
       )}
       emptyPlaceholder={
-        <Div style={{ 
-          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          color: vars.text, opacity: 0.5, fontSize: '14px' 
+        <Div style={{
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: vars.text, opacity: 0.5, fontSize: '14px'
         }}>
           활성화된 분석 도구가 없습니다. 상단 메뉴에서 도구를 추가해주세요.
         </Div>
@@ -100,9 +98,9 @@ const PanelModuleContainer: React.FC<Props> = ({
               <button onClick={() => handleToggleSettings(module.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>⚙️</button>
             </Div>
           }
-          style={{ 
-            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
-            margin: 0, borderRadius: 0 
+          style={{
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            margin: 0, borderRadius: 0
           }}
         />
       )}

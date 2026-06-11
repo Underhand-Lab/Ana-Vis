@@ -18,9 +18,10 @@ interface AppModalsProps {
     themeMode: string; toggleTheme: () => void;
   };
   pluginInputRef: React.RefObject<HTMLInputElement | null>;
+  onToolSelect: (selectedKey: string | undefined) => void;
 }
 
-const AppModals: React.FC<AppModalsProps> = ({ logic, ui, pluginInputRef }) => {
+const AppModals: React.FC<AppModalsProps> = ({ logic, ui, pluginInputRef, onToolSelect }) => {
   const { t, i18n } = useTranslation();
   const maxFrame = logic.processedData ? (logic.processedData.getFrameCnt() - 1) : 0;
 
@@ -57,15 +58,15 @@ const AppModals: React.FC<AppModalsProps> = ({ logic, ui, pluginInputRef }) => {
         </Div>
       </Modal>
 
-      <Modal isOpen={ui.isToolModalOpen} onClose={() => ui.setToolModalOpen(false)} title={t('navigation.addTool')}>
+      <Modal isOpen={ui.isToolModalOpen} onClose={() => onToolSelect(undefined)} title={t('navigation.addTool')}>
         <Div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <Div style={{ display: 'flex', flexDirection: 'row', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', }}>
             {Object.keys(ALL_AVAILABLE_MODULES).map(key => (
-              <Button key={key} onClick={() => { logic.handleAddModule(key); ui.setToolModalOpen(false); }}>
+              <Button key={key} onClick={() => onToolSelect(key)}>
                 {t(`analysisTools.${key.toLowerCase()}`, key)}
               </Button>
             ))}
-            <Button onClick={() => { ui.setToolModalOpen(false); pluginInputRef.current?.click(); }}>{t('navigation.loadModule')}</Button>
+            <Button onClick={() => { onToolSelect(undefined); pluginInputRef.current?.click(); }}>{t('navigation.loadModule')}</Button>
           </Div>
         </Div>
       </Modal>
