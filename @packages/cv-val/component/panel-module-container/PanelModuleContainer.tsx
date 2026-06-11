@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '@shared/utils/i18n';
 import { Div, vars } from "@shared/bridges/UIBridge";
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { GenericPanelLayout } from '@packages/panel-layout/components/GenericPanelLayout';
-import ModuleContainerItem from '@packages/cv-val/component/panel-module-container/PanelModuleContainerItem';
+import ModuleContainerItem, { registeredModuleTypes } from '@packages/cv-val/component/panel-module-container/PanelModuleContainerItem';
 
 interface Props {
   modules: AnalysisModule[];
@@ -26,6 +27,27 @@ const PanelModuleContainer: React.FC<Props> = ({
   const [settingsOpenMap, setSettingsOpenMap] = useState<Record<string, boolean>>({});
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+  const getModuleType = (id: string) => {
+    const lastHyphenIndex = id.lastIndexOf('-');
+    return (lastHyphenIndex !== -1 && !isNaN(Number(id.substring(lastHyphenIndex + 1))))
+      ? id.substring(0, lastHyphenIndex)
+      : id;
+  };
+
+  // 모듈들에 정의된 로케일 정보를 i18n에 동적으로 등록 (첫 렌더링 시점에 동기 등록되도록 함)
+  useMemo(() => {
+    modules.forEach((module) => {
+      const moduleType = getModuleType(module.id);
+      const locales = module.locales;
+      if (locales && !registeredModuleTypes.has(moduleType)) {
+        Object.entries(locales).forEach(([lng, resources]) => {
+          i18n.addResourceBundle(lng, 'translation', resources as any, true, true);
+        });
+        registeredModuleTypes.add(moduleType);
+      }
+    });
+  }, [modules]);
+
   const handleToggleSettings = (id: string) => {
     setSettingsOpenMap(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -44,13 +66,10 @@ const PanelModuleContainer: React.FC<Props> = ({
 
   // 모듈 ID에서 타입을 추출하고 번역된 제목을 반환하는 헬퍼 함수
   const getModuleTitle = (module: AnalysisModule) => {
-    const lastHyphenIndex = module.id.lastIndexOf('-');
-    const moduleType = (lastHyphenIndex !== -1 && !isNaN(Number(module.id.substring(lastHyphenIndex + 1))))
-      ? module.id.substring(0, lastHyphenIndex)
-      : module.id;
-
+    const moduleType = getModuleType(module.id);
     return t(`analysisTools.${moduleType}`, module.title);
   };
+
 
   return (
     <GenericPanelLayout

@@ -31,7 +31,7 @@ export function PanelGroup<T extends { id: string }>({
       style={{ 
         display: 'flex', flexDirection: 'column', width: '100%', height: '100%', 
         backgroundColor: vars.box, border: `1px solid ${vars.surface}`, position: 'relative',
-        minWidth: 0, minHeight: 0
+        minWidth: 0, minHeight: 0, boxSizing: 'border-box'
       }}
       onDragOver={(e) => onPanelDragOver(cIdx, rIdx, e)}
       onDrop={() => onPanelDrop(cIdx, rIdx)}
@@ -66,6 +66,9 @@ export function PanelGroup<T extends { id: string }>({
         >
           {group.map((id, iIdx) => {
             const item = itemsMap[id];
+            // itemsMap이 갱신되었지만 groups가 아직 정리되지 않은 타이밍에
+            // item이 undefined인 경우 해당 탭을 렌더링하지 않아 깜빡임 방지
+            if (!item) return null;
             const isActive = activeTabId === id;
             return (
               <Div
@@ -83,11 +86,11 @@ export function PanelGroup<T extends { id: string }>({
                   opacity: isActive ? 1 : 0.6
                 }}
               >
-                {renderTabLabel && item ? (
+                {renderTabLabel ? (
                   renderTabLabel(item, isActive)
                 ) : (
                   <span style={{ fontSize: '12px', color: vars.text, fontWeight: isActive ? 'bold' : 'normal' }}>
-                    {item ? ((item as any).title ?? ((item as any).name || id)) : id}
+                    {(item as any).title ?? ((item as any).name || id)}
                   </span>
                 )}
                 <Div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -99,6 +102,7 @@ export function PanelGroup<T extends { id: string }>({
               </Div>
             );
           })}
+
         </Div>
 
         {onAddItem && (

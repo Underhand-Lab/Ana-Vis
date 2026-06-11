@@ -33,12 +33,18 @@ export function usePanelGroups<T extends { id: string }>(
         })).filter(row => row.tabs.length > 0))
         .filter(col => col.length > 0);
 
+      // 최소 1개의 패널 그룹 유지 (빈 패널이라도 헤더 부분에 + 버튼이 있도록 함)
+      if (nextGroups.length === 0) {
+        const firstRowId = prev[0]?.[0]?.id || generateId();
+        nextGroups = [[{ id: firstRowId, tabs: [] }]];
+      }
+
       const existingIds = new Set(nextGroups.flatMap(col => col.flatMap(row => row.tabs)));
 
       items.forEach(m => {
         if (!existingIds.has(m.id)) {
-          if (nextGroups.length === 0) {
-            nextGroups.push([{ id: generateId(), tabs: [m.id] }]);
+          if (nextGroups[0][0].tabs.length === 0) {
+            nextGroups[0][0].tabs.push(m.id);
           } else {
             let inserted = false;
             if (pendingInsertTargetRef.current) {
@@ -101,6 +107,8 @@ export function usePanelGroups<T extends { id: string }>(
               }
             }
             nextMap[key] = nextId;
+          } else if (row.tabs.length === 0 && nextMap[key]) {
+            delete nextMap[key];
           }
         });
       });

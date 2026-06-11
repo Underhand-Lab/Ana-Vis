@@ -1,14 +1,13 @@
-import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import enTranslation from './locales/en/translation.json';
 import koTranslation from './locales/ko/translation.json';
 
-import { setThemeMode, getSystemTheme } from '@shared/components/ui-brick/variables';
-import { Div, InputFile, InputSlider, FixedFooter, Box, Button, Wrapper, Select }
-	from '@shared/bridges/UIBridge.ts';
-import { saveBlobWithPicker } from "@shared/utils/save-blob";
+import { Box, Button, Div, FixedFooter, InputFile, InputSlider, Wrapper } from '@shared/bridges/UIBridge.ts';
+import { getSystemTheme, setThemeMode } from '@shared/components/ui-brick/variables';
 import i18n from '@shared/utils/i18n';
+import { saveBlobWithPicker } from "@shared/utils/save-blob";
 
 i18n.addResourceBundle('en', 'translation', enTranslation, true, true);
 i18n.addResourceBundle('ko', 'translation', koTranslation, true, true);
@@ -17,9 +16,8 @@ import { useModuleLoader } from '@cv-val/hooks/useModuleLoader';
 import PanelModuleContainer from '@packages/cv-val/component/panel-module-container/PanelModuleContainer';
 
 import Navigation from '@apps/common/bridges/NavigationBridge';
-import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
-import { useAppLogic } from '@apps/features/app/hooks/useAppLogic';
 import AppModals from '@apps/features/app/components/AppModals';
+import { useAppLogic } from '@apps/features/app/hooks/useAppLogic';
 
 import { ALL_AVAILABLE_MODULES } from '../FeatureRegistry';
 
@@ -117,11 +115,11 @@ const AppPage: React.FC = () => {
 
 	return (
 		<Wrapper>
-			<InputFile ref={dataInputRef} style={{ display: 'none' }} accept={ALL_EXTENSIONS} onChange={async (e) => { 
-				const file = e.target.files?.[0]; if (file) { const res = await logic.loadData(file); if (res === "openProcessModal") setProcessModalOpen(true); } 
+			<InputFile ref={dataInputRef} style={{ display: 'none' }} accept={ALL_EXTENSIONS} onChange={async (e) => {
+				const file = e.target.files?.[0]; if (file) { const res = await logic.loadData(file); if (res === "openProcessModal") setProcessModalOpen(true); }
 			}} />
-			<InputFile ref={videoInputRef} style={{ display: 'none' }} accept="video/*" onChange={async (e) => { 
-				if (await logic.handleVideoSelect(e.target.files)) setProcessModalOpen(true); e.target.value = ""; 
+			<InputFile ref={videoInputRef} style={{ display: 'none' }} accept="video/*" onChange={async (e) => {
+				if (await logic.handleVideoSelect(e.target.files)) setProcessModalOpen(true); e.target.value = "";
 			}} />
 			<InputFile ref={pluginInputRef} style={{ display: 'none' }} accept=".js" onChange={handleLoadModule} />
 			<Navigation
@@ -136,8 +134,9 @@ const AppPage: React.FC = () => {
 							try {
 								const blob = await logic.processedData.toBlob();
 								await saveBlobWithPicker(blob, logic.processedData.getName(),
-									[{ description: '통합 분석 데이터', accept: { 'application/cvval': ['.cvval'] } }], 
-									true, 'cvval'); } catch (e) { alert("저장 중 오류가 발생했습니다."); }
+									[{ description: '통합 분석 데이터', accept: { 'application/cvval': ['.cvval'] } }],
+									true, 'cvval');
+							} catch (e) { alert("저장 중 오류가 발생했습니다."); }
 						}
 					}
 				]}
@@ -148,49 +147,49 @@ const AppPage: React.FC = () => {
 				data={logic.processedData}
 				currentFrame={logic.currentIdx}
 				onRemoveModule={logic.removeModule}
-        onReorderModules={logic.setActiveModules}
-        onAddModule={async () => {
-          const selectedModuleKey = await openToolSelectionModal();
-          if (selectedModuleKey) {
-            // logic.handleAddModule should return the newly created module
-            return logic.handleAddModule(selectedModuleKey);
-          }
-          return undefined; // If no module selected, return undefined
-        }}
+				onReorderModules={logic.setActiveModules}
+				onAddModule={async () => {
+					const selectedModuleKey = await openToolSelectionModal();
+					if (selectedModuleKey) {
+						// logic.handleAddModule should return the newly created module
+						return logic.handleAddModule(selectedModuleKey);
+					}
+					return undefined; // If no module selected, return undefined
+				}}
 			/>
 			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
 				<Div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-					<Button 
-						onClick={handlePrevFrame} 
-						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center'}}
+					<Button
+						onClick={handlePrevFrame}
+						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center' }}
 					>
 						{'❮'}
 					</Button>
-					<Button 
-						onClick={handleTogglePlay} 
-						style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, alignItems: 'center'}}
+					<Button
+						onClick={handleTogglePlay}
+						style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, alignItems: 'center' }}
 					>
 						{isPlaying ? '⏸' : '▶'}
 					</Button>
-					<Button 
-						onClick={handleNextFrame} 
-						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center'}}
+					<Button
+						onClick={handleNextFrame}
+						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center' }}
 					>
 						{'❯'}
 					</Button>
 				</Div>
-				<InputSlider 
-					min="0" 
-					max={logic.processedData ? logic.processedData.getFrameCnt() - 1 : 0} 
-					step="1" 
-					value={logic.currentIdx} 
-					onChange={(val) => { setIsPlaying(false); logic.setCurrentIdx(val); }} 
-					style={{ flex: 1 }} 
+				<InputSlider
+					min="0"
+					max={logic.processedData ? logic.processedData.getFrameCnt() - 1 : 0}
+					step="1"
+					value={logic.currentIdx}
+					onChange={(val) => { setIsPlaying(false); logic.setCurrentIdx(val); }}
+					style={{ flex: 1 }}
 				/>
-				</Div></Box></FixedFooter>
-			<AppModals logic={logic} pluginInputRef={pluginInputRef} ui={{ 
-				isProcessModalOpen, setProcessModalOpen, isToolModalOpen, setToolModalOpen, isEditorModalOpen, setEditorModalOpen, 
-				isSettingsModalOpen, setSettingsModalOpen, isEditSelectModalOpen, setEditSelectModalOpen, themeMode, toggleTheme 
+			</Div></Box></FixedFooter>
+			<AppModals logic={logic} pluginInputRef={pluginInputRef} ui={{
+				isProcessModalOpen, setProcessModalOpen, isToolModalOpen, setToolModalOpen, isEditorModalOpen, setEditorModalOpen,
+				isSettingsModalOpen, setSettingsModalOpen, isEditSelectModalOpen, setEditSelectModalOpen, themeMode, toggleTheme
 			}} onToolSelect={handleToolModalSelection} />
 		</Wrapper>
 	);

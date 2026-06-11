@@ -10,7 +10,7 @@ import ModuleErrorBoundary from '../ModuleErrorBoundary';
 import { moduleItemStyles } from '../ModuleContainerItem.styles';
 
 // 모듈 타입별로 로케일 등록 여부를 관리 (중복 등록 방지)
-const registeredModuleTypes = new Set<string>();
+export const registeredModuleTypes = new Set<string>();
 
 interface Props {
   module: AnalysisModule;
