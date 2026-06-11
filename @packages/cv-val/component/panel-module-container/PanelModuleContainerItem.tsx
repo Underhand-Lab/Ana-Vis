@@ -23,22 +23,17 @@ interface Props {
   onMouseUp?: React.MouseEventHandler;
   onTouchEnd?: React.TouchEventHandler;
   children?: React.ReactNode;
-  onRemove: (id: string) => void;
-  // 드래그 앤 드롭 정렬을 위한 이벤트
-  onDragStart?: (e: React.DragEvent) => void;
-  onDragEnd?: (e: React.DragEvent) => void;
+  isSettingsOpen?: boolean;
+  titleNode?: React.ReactNode;
 }
 
 const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { 
-    module, data, currentFrame, onRemove,
-    style, className, onMouseDown, onMouseUp, onTouchEnd, children,
-    onDragStart, onDragEnd
+    module, data, currentFrame, isSettingsOpen = false, titleNode,
+    style, className, onMouseDown, onMouseUp, onTouchEnd, children
   } = props;
 
   const { t } = useTranslation();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [settings, setSettings] = useState(module.defaultSettings);
 
   // 모듈의 베이스 ID 추출 (예: 'pose-17123...' -> 'pose')
@@ -90,8 +85,6 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
     return t(`analysisTools.${moduleType}`, module.title);
   }, [moduleType, module.title, t, localesLoaded]);
 
-  const toggleSettings = () => setIsSettingsOpen((prev) => !prev);
-
   return (
     <Div 
       ref={ref} 
@@ -106,54 +99,6 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
       onMouseUp={onMouseUp}
       onTouchEnd={onTouchEnd}
     >
-      {/* 상단 드래그 핸들 오버레이 */}
-      <Div 
-        className="grid-item-overlay"
-        draggable // 핸들 영역을 드래그 가능하게 설정
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        style={{ 
-          ...styles.frostedglassmorphism, 
-          ...moduleItemStyles.header, 
-          // 호버되지 않았을 때도 이벤트를 받기 위해 투명한 상태로 영역 유지
-          position: 'absolute', // 상단에 고정
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50, // 차트(content)보다 항상 위에 있도록 설정
-          pointerEvents: 'auto', // 마우스 이벤트를 확실히 잡도록 설정
-          opacity: (isHovered || isSettingsOpen) ? 1 : 0,
-          ...((isHovered || isSettingsOpen) ? moduleItemStyles.headerVisible : {}) 
-        }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <span 
-          className="drag-handle" // Make only the title span the drag handle
-          style={{ fontSize: '14px', fontWeight: 'bold', color: '#222', cursor: 'grab', flexGrow: 1, textAlign: 'left', textWrap: 'nowrap', overflow: 'visible' }}
-        >{displayTitle}</span>
-        <Div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={(e) => { e.stopPropagation(); toggleSettings(); }} 
-            style={moduleItemStyles.iconButton}
-          >
-            ⚙️
-          </button>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onRemove(module.id); }} 
-            style={{ 
-                border: 'none', 
-                background: 'none', 
-                cursor: 'pointer', 
-                color: vars.text, 
-                fontSize: '16px' 
-            }}
-          >
-            ✕
-          </button>
-        </Div>
-      </Div>
-
       <Div className="item-content no-drag" style={{ width: '100%', height: '100%', position: 'relative' }}>
         {/* 실제 시각화 결과물 */}
         <ModuleErrorBoundary title={displayTitle}>
@@ -162,6 +107,7 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
             currentFrame={currentFrame} 
             settings={settings} 
             isSettingsOpen={isSettingsOpen}
+            titleNode={titleNode}
           />
         </ModuleErrorBoundary>
 

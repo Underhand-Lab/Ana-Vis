@@ -3,6 +3,7 @@ import { CVValData } from '@packages/cv-val/data/cvval-data';
 
 export interface AnalysisViewProps<S> {
   isSettingsOpen: boolean,
+  titleNode?: React.ReactNode;
   data: CVValData | null;
   currentFrame: number;
   settings: S;
