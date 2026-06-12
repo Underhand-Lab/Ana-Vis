@@ -14,7 +14,9 @@
   "analysisTools": {
     "video": "동영상",
     "table": "표",
-    "graph": "그래프"
+    "graph": "그래프",
+    "edittrackball": "볼 편집",
+    "edittrackbat": "배트 편집"
   },
   "common": {
     "add": "추가",
@@ -33,12 +35,8 @@
     "edit": "편집",
     "load": "불러오기",
     "save": "저장",
-    "selectEditTarget": "편집 대상 선택",
-    "editBall": "공(Ball) 편집",
-    "editBat": "배트(Bat) 편집",
     "addTool": "분석 도구 추가",
     "loadModule": "모듈 파일 불러오기 (.js)",
-    "editTracking": "추적 결과 편집",
     "frame": "프레임",
     "prev": "이전",
     "next": "다음"

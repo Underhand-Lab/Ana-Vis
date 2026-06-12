@@ -14,7 +14,9 @@
   "analysisTools": {
     "video": "Video",
     "table": "Table",
-    "graph": "Graph"
+    "graph": "Graph",
+    "edittrackball": "Edit Track Ball",
+    "edittrackbat": "Edit Track Bat"
   },
   "common": {
     "add": "Add",
@@ -33,12 +35,8 @@
     "edit": "Edit",
     "load": "Load",
     "save": "Save",
-    "selectEditTarget": "Select Edit Target",
-    "editBall": "Edit Ball",
-    "editBat": "Edit Bat",
     "addTool": "Add Analysis Tool",
     "loadModule": "Load Module (.js)",
-    "editTracking": "Edit Tracking Result",
     "frame": "Frame",
     "prev": "Prev",
     "next": "Next"

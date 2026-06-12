@@ -23,8 +23,8 @@ import { TrackBallVideoPlugin } from '@apps/features/track-ball/plugin/TrackBall
 import { TrackBatData } from "@apps/features/track-bat/data/track-bat-data";
 import * as BatDetector from '@apps/features/track-bat/detector';
 import { TrackBatVideoPlugin } from '@apps/features/track-bat/video-plugin/TrackBatVideoPlugin';
-import { useTrackBallFrame } from '@apps/features/track-ball/hooks/useTrackBallFrame';
-import { useTrackBatFrame } from '@apps/features/track-bat/hooks/useTrackBatFrame';
+import { TrackBallEditorPlugin } from '@apps/features/track-ball/editor-plugin/TrackBallEditorPlugin';
+import { TrackBatEditorPlugin } from '@apps/features/track-bat/editor-plugin/TrackBatEditorPlugin';
 
 export interface FeatureConfig {
     label: string;
@@ -70,8 +70,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureConfig> = {
             "YOLO11s Ball": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11s_web_model/model.json", 32),
         },
         tools: [new BallAnalysis.BallAnalysisTool()],
-        hasEditor: true,
-        defaultConf: 0.01,
+        hasEditor: false,
     },
     bat: {
         label: '배트 추적',
@@ -86,8 +85,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureConfig> = {
             "YOLO11s Bat": new BatDetector.YOLOBatDetector("./external/models/yolo11/yolo11s-seg_web_model/model.json", 34),
         },
         tools: [],
-        hasEditor: true,
-        defaultConf: 0.55,
+        hasEditor: false,
     }
 };
 
@@ -103,27 +101,8 @@ const UNIVERSAL_VIDEO_MODULE = new VideoModuleBuilder()
     .addPlugin(new TrackBatVideoPlugin())
     .build();
 
-const EDIT_TRACK_BALL_MODULE = createEditorModule({
-    id: 'edit-track-ball',
-    title: 'edit-track-ball',
-    trackType: 'ball',
-    useFrameApi: (data) => useTrackBallFrame(data),
-    locales: {
-        en: { analysisTools: { 'edit-track-ball': 'Edit Track Ball' } },
-        ko: { analysisTools: { 'edit-track-ball': '볼 편집' } },
-    },
-});
-
-const EDIT_TRACK_BAT_MODULE = createEditorModule({
-    id: 'edit-track-bat',
-    title: 'edit-track-bat',
-    trackType: 'bat',
-    useFrameApi: (data) => useTrackBatFrame(data),
-    locales: {
-        en: { analysisTools: { 'edit-track-bat': 'Edit Track Bat' } },
-        ko: { analysisTools: { 'edit-track-bat': '배트 편집' } },
-    },
-});
+const EDIT_TRACK_BALL_MODULE = createEditorModule([new TrackBallVideoPlugin()], [TrackBallEditorPlugin], 'edit-track-ball', 'edit-track-ball');
+const EDIT_TRACK_BAT_MODULE = createEditorModule([new TrackBatVideoPlugin()], [TrackBatEditorPlugin], 'edit-track-bat', 'edit-track-bat');
 
 export const ALL_AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
     "Video": UNIVERSAL_VIDEO_MODULE,

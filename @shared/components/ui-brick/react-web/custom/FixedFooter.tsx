@@ -22,7 +22,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         right: 0,
         zIndex: 100,
         width: '100%',
-        padding: '0 0 20px',
+        padding: '20px 0',
     },
 };
 

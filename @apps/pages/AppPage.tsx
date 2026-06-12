@@ -29,9 +29,7 @@ const AppPage: React.FC = () => {
 	const [themeMode, setThemeModeState] = useState<'light' | 'dark'>(getSystemTheme);
 	const [isProcessModalOpen, setProcessModalOpen] = useState(false);
 	const [isToolModalOpen, setToolModalOpen] = useState(false);
-	const [isEditorModalOpen, setEditorModalOpen] = useState(false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
-	const [isEditSelectModalOpen, setEditSelectModalOpen] = useState(false);
 	const [toolModalResolve, setToolModalResolve] = useState<((value: string | undefined) => void) | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 
@@ -88,14 +86,6 @@ const AppPage: React.FC = () => {
 		setThemeMode(nextMode); setThemeModeState(nextMode);
 	};
 
-	const hasData = (type: string) => logic.processedData.exist(type);
-
-	const handleEditClick = () => {
-		if (hasData('ball') && hasData('bat')) setEditSelectModalOpen(true);
-		else if (hasData('ball')) { logic.setEditingType('ball'); setEditorModalOpen(true); }
-		else if (hasData('bat')) { logic.setEditingType('bat'); setEditorModalOpen(true); }
-	};
-
 	// 도구 선택 모달을 열고 선택 결과를 Promise로 반환하는 함수
 	const openToolSelectionModal = (): Promise<string | undefined> => {
 		return new Promise((resolve) => {
@@ -126,7 +116,6 @@ const AppPage: React.FC = () => {
 				fileButtons={[
 					{ name: t('settings.title'), action: () => setSettingsModalOpen(true) },
 					{ name: t('navigation.newAnalysis', '새 분석'), action: () => { if (logic.processedData.getFrameCnt() > 0) setProcessModalOpen(true); else videoInputRef.current?.click(); } },
-					...((hasData('ball') || hasData('bat')) ? [{ name: t('navigation.edit', '편집'), action: handleEditClick }] : []),
 					{ name: t('navigation.load', '불러오기'), action: () => dataInputRef.current?.click() },
 					{
 						name: t('navigation.save', '저장'), action: async () => {
@@ -150,7 +139,6 @@ const AppPage: React.FC = () => {
 				onCandidateSelect={(frameIdx, candidateIdx, type) => {
 					if (!type) return;
 					logic.handleEditorCandidateSelect(type, frameIdx, candidateIdx);
-					if (candidateIdx >= 0) handleNextFrame();
 				}}
 				onRemoveModule={logic.removeModule}
 				onReorderModules={logic.setActiveModules}
@@ -194,8 +182,8 @@ const AppPage: React.FC = () => {
 				/>
 			</Div></Box></FixedFooter>
 			<AppModals logic={logic} pluginInputRef={pluginInputRef} ui={{
-				isProcessModalOpen, setProcessModalOpen, isToolModalOpen, setToolModalOpen, isEditorModalOpen, setEditorModalOpen,
-				isSettingsModalOpen, setSettingsModalOpen, isEditSelectModalOpen, setEditSelectModalOpen, themeMode, toggleTheme
+				isProcessModalOpen, setProcessModalOpen, isToolModalOpen, setToolModalOpen,
+				isSettingsModalOpen, setSettingsModalOpen, themeMode, toggleTheme
 			}} onToolSelect={handleToolModalSelection} />
 		</Wrapper>
 	);
