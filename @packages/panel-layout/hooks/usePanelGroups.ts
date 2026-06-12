@@ -9,13 +9,22 @@ export const generateId = () => Math.random().toString(36).substring(2, 11);
 
 export function usePanelGroups<T extends { id: string }>(
   items: T[],
-  onReorderItems?: (newItems: T[]) => void
+  onReorderItems?: (newItems: T[]) => void,
+  layout?: any
 ) {
-  const [groups, setGroups] = useState<PanelRow[][]>([]); // [col][row] // Exported via hook return
-  const [activeTabMap, setActiveTabMap] = useState<Record<string, string>>({}); // key: row.id
+  const [groups, setGroups] = useState<PanelRow[][]>(layout?.groups || []); // [col][row] // Exported via hook return
+  const [activeTabMap, setActiveTabMap] = useState<Record<string, string>>(layout?.activeTabMap || {}); // key: row.id
   const prevIdsRef = useRef<Set<string>>(new Set());
   const prevGroupsRef = useRef<PanelRow[][]>([]);
   const pendingInsertTargetRef = useRef<{ targetRowId?: string; targetTabId?: string } | null>(null);
+
+  // 외부에서 layout 주입 시 상태 동기화
+  useEffect(() => {
+    if (layout) {
+      if (layout.groups) setGroups(layout.groups);
+      if (layout.activeTabMap) setActiveTabMap(layout.activeTabMap);
+    }
+  }, [layout]);
 
   const itemsMap = useMemo(() => {
     return items.reduce((acc, m) => ({ ...acc, [m.id]: m }), {} as Record<string, T>);

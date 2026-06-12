@@ -5,7 +5,8 @@ export function usePanelLayoutState<T extends { id: string }>(
   items: T[],
   onReorderItems?: (newItems: T[]) => void,
   maxColumns?: number,
-  maxRows?: number
+  maxRows?: number,
+  layout?: any
 ) {
   const {
     groups,
@@ -15,7 +16,7 @@ export function usePanelLayoutState<T extends { id: string }>(
     handleDropLogic,
     setGroups,
     pendingInsertTargetRef
-  } = usePanelGroups(items, onReorderItems);
+  } = usePanelGroups(items, onReorderItems, layout);
 
   const [draggedPos, setDraggedPos] = useState<{ cIdx: number; rIdx: number; iIdx: number } | null>(null);
   const [dragOverPos, setDragOverPos] = useState<{ cIdx: number; rIdx: number } | null>(null);

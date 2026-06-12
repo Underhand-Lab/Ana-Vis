@@ -21,6 +21,15 @@ import { useAppLogic } from '@apps/features/app/hooks/useAppLogic';
 
 import { ALL_AVAILABLE_MODULES } from '../FeatureRegistry';
 
+const LAYOUT_STORAGE_KEY = 'cv-val-panel-layout-v1';
+
+const getModuleType = (id: string) => {
+	const lastHyphenIndex = id.lastIndexOf('-');
+	return lastHyphenIndex !== -1 ? id.substring(0, lastHyphenIndex) : id;
+};
+
+const generateUniqueId = () => Math.random().toString(36).substring(2, 11);
+
 const ALL_EXTENSIONS = '.cvp,.cvbl,.cvbt,.cvval,.mp4,.mov,.avi,.mkv,.webm';
 
 const AppPage: React.FC = () => {
@@ -133,6 +142,7 @@ const AppPage: React.FC = () => {
 			/>
 			<PanelModuleContainer
 				modules={logic.activeModules}
+				moduleRegistry={ALL_AVAILABLE_MODULES}
 				data={logic.processedData}
 				currentFrame={logic.currentIdx}
 				onNextFrame={handleNextFrame}
@@ -143,7 +153,7 @@ const AppPage: React.FC = () => {
 				onRemoveModule={logic.removeModule}
 				onReorderModules={logic.setActiveModules}
 				onAddModule={async () => {
-					const selectedModuleKey = await openToolSelectionModal();
+					const selectedModuleKey = await openToolSelectionModal(); // selectedModuleKey는 모듈 타입 (예: 'pose')
 					if (selectedModuleKey) {
 						// logic.handleAddModule should return the newly created module
 						return logic.handleAddModule(selectedModuleKey);

@@ -5,38 +5,37 @@ import { Div, vars } from "@shared/bridges/UIBridge";
 import { AnalysisModule } from '@packages/cv-val/types/analysis-module';
 import { GenericPanelLayout } from '@packages/panel-layout/components/GenericPanelLayout';
 import ModuleContainerItem, { registeredModuleTypes } from '@packages/cv-val/component/panel-module-container/PanelModuleContainerItem';
+import { usePanelStorage, getModuleType } from './usePanelStorage';
 
 interface Props {
   modules: AnalysisModule[];
+  moduleRegistry: Record<string, any>; // 모듈 복원을 위해 필요
   data: any;
   currentFrame: number;
   onNextFrame?: () => void;
   onCandidateSelect?: (frameIdx: number, candidateIdx: number, type?: string) => void;
   onRemoveModule: (id: string) => void;
-  onReorderModules?: (newModules: AnalysisModule[]) => void; // 순서 변경 콜백 추가
+  onReorderModules?: (newModules: AnalysisModule[]) => void;
   onAddModule?: () => Promise<AnalysisModule | undefined>; // 아이템 생성 후 반환받아 위치 및 포커스 처리
 }
 
 const PanelModuleContainer: React.FC<Props> = ({
   modules,
+  moduleRegistry,
   data,
   currentFrame,
   onNextFrame,
   onCandidateSelect,
   onRemoveModule,
   onReorderModules,
-  onAddModule
+  onAddModule,
 }) => {
   const { t } = useTranslation();
   const [settingsOpenMap, setSettingsOpenMap] = useState<Record<string, boolean>>({});
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  const getModuleType = (id: string) => {
-    const lastHyphenIndex = id.lastIndexOf('-');
-    return (lastHyphenIndex !== -1 && !isNaN(Number(id.substring(lastHyphenIndex + 1))))
-      ? id.substring(0, lastHyphenIndex)
-      : id;
-  };
+  
+  // 패널 레이아웃 복원 및 저장 로직을 커스텀 훅으로 분리
+  const { injectedLayout, handleLayoutChange } = usePanelStorage(modules, moduleRegistry, onReorderModules);
 
   // 모듈들에 정의된 로케일 정보를 i18n에 동적으로 등록 (첫 렌더링 시점에 동기 등록되도록 함)
   useMemo(() => {
@@ -74,13 +73,20 @@ const PanelModuleContainer: React.FC<Props> = ({
     return t(`analysisTools.${moduleType}`, module.title);
   };
 
+  // GenericPanelLayout이 panelTypes를 올바르게 생성하여 저장할 수 있도록 
+  // 각 모듈 객체에 추출된 type 속성을 주입합니다.
+  const modulesWithType = useMemo(() => {
+    return modules.map(m => ({ ...m, type: getModuleType(m.id) }));
+  }, [modules]);
 
   return (
     <GenericPanelLayout
-      items={modules}
+      items={modulesWithType}
       onRemoveItem={onRemoveModule}
       onReorderItems={onReorderModules}
       onAddItem={onAddModule}
+      layout={injectedLayout}
+      onLayoutChange={handleLayoutChange}
       maxColumns={maxColumns}
       maxRows={maxRows}
       renderTabLabel={(module, isActive) => (
@@ -134,3 +140,4 @@ const PanelModuleContainer: React.FC<Props> = ({
 };
 
 export default PanelModuleContainer;
+
