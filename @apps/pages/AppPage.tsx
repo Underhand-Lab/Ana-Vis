@@ -146,6 +146,12 @@ const AppPage: React.FC = () => {
 				modules={logic.activeModules}
 				data={logic.processedData}
 				currentFrame={logic.currentIdx}
+				onNextFrame={handleNextFrame}
+				onCandidateSelect={(frameIdx, candidateIdx, type) => {
+					if (!type) return;
+					logic.handleEditorCandidateSelect(type, frameIdx, candidateIdx);
+					if (candidateIdx >= 0) handleNextFrame();
+				}}
 				onRemoveModule={logic.removeModule}
 				onReorderModules={logic.setActiveModules}
 				onAddModule={async () => {

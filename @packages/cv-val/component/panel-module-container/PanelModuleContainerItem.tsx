@@ -16,6 +16,8 @@ interface Props {
   module: AnalysisModule;
   data: any;
   currentFrame: number;
+  onNextFrame?: () => void;
+  onCandidateSelect?: (frameIdx: number, candidateIdx: number, type?: string) => void;
   // React-Grid-Layout Props
   style?: React.CSSProperties;
   className?: string;
@@ -29,7 +31,7 @@ interface Props {
 
 const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { 
-    module, data, currentFrame, isSettingsOpen = false, titleNode,
+    module, data, currentFrame, onNextFrame, onCandidateSelect, isSettingsOpen = false, titleNode,
     style, className, onMouseDown, onMouseUp, onTouchEnd, children
   } = props;
 
@@ -108,6 +110,8 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
             settings={settings} 
             isSettingsOpen={isSettingsOpen}
             titleNode={titleNode}
+            onNextFrame={onNextFrame}
+            onCandidateSelect={onCandidateSelect}
           />
         </ModuleErrorBoundary>
 

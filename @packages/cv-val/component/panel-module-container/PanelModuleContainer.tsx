@@ -10,6 +10,8 @@ interface Props {
   modules: AnalysisModule[];
   data: any;
   currentFrame: number;
+  onNextFrame?: () => void;
+  onCandidateSelect?: (frameIdx: number, candidateIdx: number, type?: string) => void;
   onRemoveModule: (id: string) => void;
   onReorderModules?: (newModules: AnalysisModule[]) => void; // 순서 변경 콜백 추가
   onAddModule?: () => Promise<AnalysisModule | undefined>; // 아이템 생성 후 반환받아 위치 및 포커스 처리
@@ -19,6 +21,8 @@ const PanelModuleContainer: React.FC<Props> = ({
   modules,
   data,
   currentFrame,
+  onNextFrame,
+  onCandidateSelect,
   onRemoveModule,
   onReorderModules,
   onAddModule
@@ -110,6 +114,8 @@ const PanelModuleContainer: React.FC<Props> = ({
           module={module}
           data={data}
           currentFrame={currentFrame}
+          onNextFrame={onNextFrame}
+          onCandidateSelect={onCandidateSelect}
           isSettingsOpen={!!settingsOpenMap[module.id]}
           titleNode={
             <Div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', borderBottom: `1px solid ${vars.surface}` }}>

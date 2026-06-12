@@ -7,6 +7,8 @@ export interface AnalysisViewProps<S> {
   data: CVValData | null;
   currentFrame: number;
   settings: S;
+  onNextFrame?: () => void;
+  onCandidateSelect?: (frameIdx: number, candidateIdx: number, type?: string) => void;
 }
 
 export interface AnalysisSettingsProps<S> {

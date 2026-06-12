@@ -3,6 +3,7 @@ import { AnalysisModule } from '@cv-val/types/analysis-module';
 import { VideoModuleBuilder } from '@cv-val/modules/VideoModule';
 import GraphModule from '@cv-val/modules/GraphModule';
 import TableModule from '@cv-val/modules/TableModule';
+import createEditorModule from '@packages/cv-val/modules/EditorModule';
 
 // Pose 관련
 import { PoseData } from '@apps/features/pose/core/pose-data';
@@ -22,6 +23,8 @@ import { TrackBallVideoPlugin } from '@apps/features/track-ball/plugin/TrackBall
 import { TrackBatData } from "@apps/features/track-bat/data/track-bat-data";
 import * as BatDetector from '@apps/features/track-bat/detector';
 import { TrackBatVideoPlugin } from '@apps/features/track-bat/video-plugin/TrackBatVideoPlugin';
+import { useTrackBallFrame } from '@apps/features/track-ball/hooks/useTrackBallFrame';
+import { useTrackBatFrame } from '@apps/features/track-bat/hooks/useTrackBatFrame';
 
 export interface FeatureConfig {
     label: string;
@@ -100,9 +103,33 @@ const UNIVERSAL_VIDEO_MODULE = new VideoModuleBuilder()
     .addPlugin(new TrackBatVideoPlugin())
     .build();
 
+const EDIT_TRACK_BALL_MODULE = createEditorModule({
+    id: 'edit-track-ball',
+    title: 'edit-track-ball',
+    trackType: 'ball',
+    useFrameApi: (data) => useTrackBallFrame(data),
+    locales: {
+        en: { analysisTools: { 'edit-track-ball': 'Edit Track Ball' } },
+        ko: { analysisTools: { 'edit-track-ball': '볼 편집' } },
+    },
+});
+
+const EDIT_TRACK_BAT_MODULE = createEditorModule({
+    id: 'edit-track-bat',
+    title: 'edit-track-bat',
+    trackType: 'bat',
+    useFrameApi: (data) => useTrackBatFrame(data),
+    locales: {
+        en: { analysisTools: { 'edit-track-bat': 'Edit Track Bat' } },
+        ko: { analysisTools: { 'edit-track-bat': '배트 편집' } },
+    },
+});
+
 export const ALL_AVAILABLE_MODULES: Record<string, AnalysisModule<any>> = {
     "Video": UNIVERSAL_VIDEO_MODULE,
     "Pose 3D": Pose3DVideoModule, // Pose 3D는 Pose 데이터가 있을 때만 유의미하지만, 모듈 자체는 항상 사용 가능
     "Graph": GraphModule,
     "Table": TableModule,
+    "EditTrackBall": EDIT_TRACK_BALL_MODULE,
+    "EditTrackBat": EDIT_TRACK_BAT_MODULE,
 };

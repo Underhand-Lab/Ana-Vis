@@ -98,23 +98,50 @@ export const useTrackBatFrame = (trackData: CVValData | null) => {
 	 * ✅ 편집 모드용 레이어 반환 (모든 후보군 시각화)
 	 */
 	const getEditLayer = useCallback((idx: number, candidates: any[], selectedIdx: number): HTMLCanvasElement | null => {
+		if (!trackData) return null;
+		const rawImg = trackData.getRawImgList(0)?.[idx];
 		const trailLayer = getTrailLayer(idx, 1);
-
-		if (!trailLayer || !trackData) return null;
+		const baseW = rawImg?.width || trailLayer?.width || 1;
+		const baseH = rawImg?.height || trailLayer?.height || 1;
 
 		const canvas = document.createElement('canvas');
-		canvas.width = trailLayer.width;
-		canvas.height = trailLayer.height;
-		const ctx = canvas.getContext('2d')!;
+		canvas.width = baseW;
+		canvas.height = baseH;
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return null;
 
-		ctx.drawImage(trailLayer, 0, 0);
+		if (trailLayer) {
+			ctx.drawImage(trailLayer, 0, 0, baseW, baseH);
+		}
 
 		// 모든 후보군 박스 시각화
 		candidates.forEach((cand, i) => {
 			const isSelected = selectedIdx === i;
-			if (!cand.bbox) return;
+			const box = cand.bbox || (() => {
+				if (!cand.maskConfidenceMap) return null;
+				const rows = cand.maskConfidenceMap.length;
+				const cols = cand.maskConfidenceMap[0].length;
+				let minX = cols, maxX = 0, minY = rows, maxY = 0;
+				let found = false;
+				for (let y = 0; y < rows; y++) {
+					for (let x = 0; x < cols; x++) {
+						if (cand.maskConfidenceMap[y][x] > 0.1) {
+							minX = Math.min(minX, x);
+							maxX = Math.max(maxX, x);
+							minY = Math.min(minY, y);
+							maxY = Math.max(maxY, y);
+							found = true;
+						}
+					}
+				}
+				if (!found) return null;
+				const sx = baseW / cols;
+				const sy = baseH / rows;
+				return [minX * sx, minY * sy, (maxX - minX + 1) * sx, (maxY - minY + 1) * sy] as [number, number, number, number];
+			})() as [number, number, number, number] | null;
+			if (!box) return;
 
-			const [bx, by, bw, bh] = cand.bbox;
+			const [bx, by, bw, bh] = box;
 			ctx.strokeStyle = isSelected ? '#007bff' : 'rgba(255, 255, 0, 0.7)';
 			ctx.lineWidth = isSelected ? 4 : 2;
 			ctx.strokeRect(bx, by, bw, bh);
