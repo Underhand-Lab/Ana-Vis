@@ -27,16 +27,19 @@ interface Props {
   children?: React.ReactNode;
   isSettingsOpen?: boolean;
   titleNode?: React.ReactNode;
+  settings?: any;
+  onSettingsChange?: (newSettings: any) => void;
 }
 
 const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { 
     module, data, currentFrame, onNextFrame, onCandidateSelect, isSettingsOpen = false, titleNode,
-    style, className, onMouseDown, onMouseUp, onTouchEnd, children
+    style, className, onMouseDown, onMouseUp, onTouchEnd, children,
+    settings = module.defaultSettings,
+    onSettingsChange
   } = props;
 
   const { t } = useTranslation();
-  const [settings, setSettings] = useState(module.defaultSettings);
 
   // 모듈의 베이스 ID 추출 (예: 'pose-17123...' -> 'pose')
   const moduleType = useMemo(() => {
@@ -125,7 +128,7 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
             <ModuleErrorBoundary title={`${displayTitle} Settings`}>
               <Settings 
                 settings={settings} 
-                onSettingsChange={setSettings} 
+                onSettingsChange={onSettingsChange || (() => {})} 
                 data={data}
               />
             </ModuleErrorBoundary>

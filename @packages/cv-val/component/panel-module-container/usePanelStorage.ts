@@ -17,6 +17,11 @@ export function usePanelStorage(
 ) {
   const [currentLayout, setCurrentLayout] = useState<any>(null); 
   const [injectedLayout, setInjectedLayout] = useState<any>(undefined);
+  const [settingsMap, setSettingsMap] = useState<Record<string, any>>({});
+
+  const handleSettingsChange = useCallback((id: string, newSettings: any) => {
+    setSettingsMap(prev => ({ ...prev, [id]: newSettings }));
+  }, []);
 
   const isInitialized = useRef(false);
   const isRestorationPending = useRef(false);
@@ -25,13 +30,13 @@ export function usePanelStorage(
   useEffect(() => {
     const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
     if (!raw || !onReorderModules) {
-      console.log('[Layout Debug] No saved layout found. Starting fresh.');
       return;
     }
 
     try {
       const parsed = JSON.parse(raw);
       const savedLayout = parsed.layout;
+      const savedSettingsMap = parsed.settingsMap || {};
       
       if (savedLayout?.panelTypes && Object.keys(savedLayout.panelTypes).length > 0) {
         const restoredModules: AnalysisModule[] = [];
@@ -50,7 +55,7 @@ export function usePanelStorage(
 
           onReorderModules(restoredModules);
 
-          console.log('[Layout Debug] Final injected layout (using original IDs):', savedLayout);
+          setSettingsMap(savedSettingsMap);
           setInjectedLayout(savedLayout);
         } else {
            isInitialized.current = true;
@@ -91,9 +96,7 @@ export function usePanelStorage(
       if (modules.length === expectedModuleCount.current) {
         isRestorationPending.current = false;
         isInitialized.current = true;
-        console.log('[Layout Debug] Restoration confirmed in props. Saving enabled.');
       } else {
-        console.log('[Layout Debug] Save skipped: Waiting for restoration to reflect in props.');
         return;
       }
     }
@@ -110,22 +113,22 @@ export function usePanelStorage(
     if (isSynced) {
       const dataToSaveObj = {
         layout: currentLayout,
-        moduleTypes: modules.map(m => getModuleType(m.id))
+        moduleTypes: modules.map(m => getModuleType(m.id)),
+        settingsMap
       };
       const dataToSaveStr = JSON.stringify(dataToSaveObj);
 
       const lastSaved = localStorage.getItem(LAYOUT_STORAGE_KEY);
       if (lastSaved === dataToSaveStr) return;
 
-      console.log('[Layout Debug] Persisting to storage now (Synced):', dataToSaveObj);
       localStorage.setItem(LAYOUT_STORAGE_KEY, dataToSaveStr);
-    } else {
-      console.log('[Layout Debug] Save skipped: Layout and Modules out of sync.');
     }
-  }, [currentLayout, modules]);
+  }, [currentLayout, modules, settingsMap]);
 
   return {
     injectedLayout,
-    handleLayoutChange
+    handleLayoutChange,
+    settingsMap,
+    handleSettingsChange
   };
 }

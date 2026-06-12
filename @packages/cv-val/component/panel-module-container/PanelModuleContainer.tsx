@@ -35,7 +35,7 @@ const PanelModuleContainer: React.FC<Props> = ({
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   // 패널 레이아웃 복원 및 저장 로직을 커스텀 훅으로 분리
-  const { injectedLayout, handleLayoutChange } = usePanelStorage(modules, moduleRegistry, onReorderModules);
+  const { injectedLayout, handleLayoutChange, settingsMap, handleSettingsChange } = usePanelStorage(modules, moduleRegistry, onReorderModules);
 
   // 모듈들에 정의된 로케일 정보를 i18n에 동적으로 등록 (첫 렌더링 시점에 동기 등록되도록 함)
   useMemo(() => {
@@ -123,6 +123,8 @@ const PanelModuleContainer: React.FC<Props> = ({
           onNextFrame={onNextFrame}
           onCandidateSelect={onCandidateSelect}
           isSettingsOpen={!!settingsOpenMap[module.id]}
+          settings={settingsMap[module.id] ?? module.defaultSettings}
+          onSettingsChange={(newSettings) => handleSettingsChange(module.id, newSettings)}
           titleNode={
             <Div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', borderBottom: `1px solid ${vars.surface}` }}>
               <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{getModuleTitle(module)}</span>
