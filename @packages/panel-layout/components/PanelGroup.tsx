@@ -30,7 +30,7 @@ export function PanelGroup<T extends { id: string }>({
     <Div 
       style={{ 
         display: 'flex', flexDirection: 'column', width: '100%', height: '100%', 
-        backgroundColor: vars.box, border: `1px solid ${vars.surface}`, position: 'relative',
+        backgroundColor: vars.box, border: `none`, position: 'relative',
         minWidth: 0, minHeight: 0, boxSizing: 'border-box'
       }}
       onDragOver={(e) => onPanelDragOver(cIdx, rIdx, e)}
