@@ -18,8 +18,8 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({ direction }) => {
       onPointerDown={() => setIsActive(true)}
       onPointerUp={() => setIsActive(false)}
       style={{
-        height: isHorizontal ? '8px' : '',
-        width: isHorizontal ? '100%' : '8px',
+        height: isHorizontal ? '2px' : '',
+        width: isHorizontal ? '100%' : '2px',
         backgroundColor: 'transparent',
         cursor: isHorizontal ? 'row-resize' : 'col-resize',
         display: 'flex',
@@ -30,9 +30,9 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({ direction }) => {
       }}
     >
       <Div style={{
-        height: isHorizontal ? (isHovered || isActive ? '4px' : '2px') : '100%',
-        width: isHorizontal ? '100%' : (isHovered || isActive ? '4px' : '2px'),
-        backgroundColor: isHovered || isActive ? vars.primary : vars.surface,
+        height: '100%',
+        width: '100%',
+        backgroundColor: isHovered || isActive ? vars.primary : '',
         transition: isActive ? 'none' : 'all 0.15s'
       }} />
     </Separator>
