@@ -58,23 +58,19 @@ export function GenericPanelLayout<T extends { id: string }>({
     setDraggedPos
   } = usePanelLayoutState(items, onReorderItems, maxColumns, maxRows, layout);
 
-  // 레이아웃 정보(구조, 활성 탭, 패널 타입 등)를 JSON으로 추출하여 콜백 실행
+  // 레이아웃 정보(구조, 활성 탭 등)를 객체 형태로 추출하여 콜백 실행
   useEffect(() => {
     if (onLayoutChange) {
-      const panelTypes: Record<string, string> = {};
-      // itemsMap에 저장된 개별 아이템(T)에서 type 정보를 추출 (존재하는 경우)
-      Object.keys(itemsMap).forEach(id => {
-        const item = itemsMap[id] as any;
-        if (item?.type) {
-          panelTypes[id] = item.type;
-        }
-      });
-
-      onLayoutChange({
-        groups,          // 패널의 배치 구조 (컬럼/로우/탭 ID)
-        activeTabMap,    // 각 패널에서 현재 선택된 탭 ID
-        panelTypes       // 패널 ID별 타입 정보
-      });
+      // id 대신 실제 아이템(T) 객체를 tabs 배열에 담아 반환
+      const layoutWithItems = {
+        groups: groups.map(col => col.map(row => ({
+          ...row,
+          tabs: row.tabs.map(id => itemsMap[id]).filter(Boolean)
+        }))),
+        activeTabMap
+      };
+      
+      onLayoutChange(layoutWithItems);
     }
   }, [groups, activeTabMap, itemsMap, onLayoutChange]);
 

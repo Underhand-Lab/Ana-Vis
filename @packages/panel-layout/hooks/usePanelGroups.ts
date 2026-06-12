@@ -95,7 +95,8 @@ export function usePanelGroups<T extends { id: string }>(
       const nextMap = { ...prev };
       const currentIds = groups.flatMap(col => col.flatMap(row => row.tabs));
       
-      const addedId = currentIds.find(id => !prevIdsRef.current.has(id));
+      const newIds = currentIds.filter(id => !prevIdsRef.current.has(id));
+      const addedId = newIds.length === 1 ? newIds[0] : undefined;
 
       groups.forEach((col: PanelRow[]) => { // Explicitly type col
         col.forEach((row) => {

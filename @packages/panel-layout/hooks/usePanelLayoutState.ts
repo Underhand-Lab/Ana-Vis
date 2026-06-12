@@ -28,15 +28,16 @@ export function usePanelLayoutState<T extends { id: string }>(
   const prevGroupsRef = useRef<PanelRow[][]>(groups);
 
   useEffect(() => {
-    const nextActiveTabMap = { ...activeTabMap };
-    let isMapChanged = false;
+    let isMapChangedByInteractions = false;
+    let mapUpdates: Record<string, string> = {};
 
     // Detect new item additions for focusing and reordering
     if (items.length > prevItemsLengthRef.current) {
       const prevTabs = prevGroupsRef.current.flatMap(c => c).flatMap(r => r.tabs);
-      const newItem = items.find(it => !prevTabs.includes(it.id));
+      const newItems = items.filter(it => !prevTabs.includes(it.id));
 
-      if (newItem) {
+      if (newItems.length === 1) {
+        const newItem = newItems[0];
         lastInteractedItemId.current = newItem.id;
 
         if (pendingAddTargetRef.current && onReorderItems) {
@@ -63,53 +64,56 @@ export function usePanelLayoutState<T extends { id: string }>(
           }
         } else {
           groups.forEach(col => col.forEach(row => {
-            if (row.tabs.includes(newItem.id) && nextActiveTabMap[row.id] !== newItem.id) {
-              nextActiveTabMap[row.id] = newItem.id;
-              isMapChanged = true;
+            if (row.tabs.includes(newItem.id)) {
+              mapUpdates[row.id] = newItem.id;
+              isMapChangedByInteractions = true;
             }
           }));
         }
       }
     }
 
-    groups.forEach((column) => {
-      column.forEach((row) => {
-        const key = row.id;
-        const currentActiveId = activeTabMap[key];
-        const hasInteracted = lastInteractedItemId.current && row.tabs.includes(lastInteractedItemId.current);
+    setActiveTabMap(prevMap => {
+      const nextActiveTabMap = { ...prevMap, ...mapUpdates };
+      let isMapChanged = isMapChangedByInteractions;
 
-        if (hasInteracted) {
-          const interactedId = lastInteractedItemId.current!;
-          if (currentActiveId !== interactedId) {
-            nextActiveTabMap[key] = interactedId;
-            isMapChanged = true;
-          }
-        } else if (!currentActiveId || !row.tabs.includes(currentActiveId)) {
-          if (row.tabs.length > 0) {
-            let nextId = row.tabs[0];
-            if (currentActiveId) {
-              const prevRow = prevGroupsRef.current.flatMap(c => c).find(r => r.id === row.id);
-              if (prevRow) {
-                const prevIndex = prevRow.tabs.indexOf(currentActiveId);
-                const targetIndex = Math.min(prevIndex, row.tabs.length - 1);
-                nextId = row.tabs[Math.max(0, targetIndex)];
-              }
+      groups.forEach((column) => {
+        column.forEach((row) => {
+          const key = row.id;
+          const currentActiveId = nextActiveTabMap[key];
+          const hasInteracted = lastInteractedItemId.current && row.tabs.includes(lastInteractedItemId.current);
+
+          if (hasInteracted) {
+            const interactedId = lastInteractedItemId.current!;
+            if (currentActiveId !== interactedId) {
+              nextActiveTabMap[key] = interactedId;
+              isMapChanged = true;
             }
-            nextActiveTabMap[key] = nextId;
-            isMapChanged = true;
+          } else if (!currentActiveId || !row.tabs.includes(currentActiveId)) {
+            if (row.tabs.length > 0) {
+              let nextId = row.tabs[0];
+              if (currentActiveId) {
+                const prevRow = prevGroupsRef.current.flatMap(c => c).find(r => r.id === row.id);
+                if (prevRow) {
+                  const prevIndex = prevRow.tabs.indexOf(currentActiveId);
+                  const targetIndex = Math.min(prevIndex, row.tabs.length - 1);
+                  nextId = row.tabs[Math.max(0, targetIndex)];
+                }
+              }
+              nextActiveTabMap[key] = nextId;
+              isMapChanged = true;
+            }
           }
-        }
+        });
       });
-    });
 
-    if (isMapChanged) {
-      setActiveTabMap(nextActiveTabMap);
-    }
+      return isMapChanged ? nextActiveTabMap : prevMap;
+    });
 
     lastInteractedItemId.current = null;
     prevItemsLengthRef.current = items.length;
     prevGroupsRef.current = groups;
-  }, [groups, items, activeTabMap, setActiveTabMap, onReorderItems]);
+  }, [groups, items, setActiveTabMap, onReorderItems]);
 
   const onPanelDragOver = (cIdx: number, rIdx: number, e: React.DragEvent, zone?: 'center') => {
     e.preventDefault();

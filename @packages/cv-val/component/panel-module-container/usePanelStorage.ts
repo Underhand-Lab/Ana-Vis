@@ -10,8 +10,6 @@ export const getModuleType = (id: string) => {
     : id;
 };
 
-const generateUniqueId = () => Date.now().toString() + Math.floor(Math.random() * 1000).toString();
-
 export function usePanelStorage(
   modules: AnalysisModule[],
   moduleRegistry: Record<string, any>,
@@ -36,17 +34,13 @@ export function usePanelStorage(
       const savedLayout = parsed.layout;
       
       if (savedLayout?.panelTypes && Object.keys(savedLayout.panelTypes).length > 0) {
-        const oldIdToNewIdMap: Record<string, string> = {};
         const restoredModules: AnalysisModule[] = [];
-        const newLayout = JSON.parse(JSON.stringify(savedLayout));
 
-        Object.entries(savedLayout.panelTypes).forEach(([oldId, type]) => {
-          const newId = `${type}-${generateUniqueId()}`;
-          oldIdToNewIdMap[oldId] = newId;
-
+        Object.entries(savedLayout.panelTypes).forEach(([id, type]) => {
           const template = Object.values(moduleRegistry).find((mod: any) => mod.id === type) || moduleRegistry[type as string];
           if (template) {
-            restoredModules.push({ ...template, id: newId });
+            // 이전에 저장된 ID를 그대로 사용하여 복원 (새로운 ID 발급 제거)
+            restoredModules.push({ ...template, id });
           }
         });
 
@@ -56,29 +50,8 @@ export function usePanelStorage(
 
           onReorderModules(restoredModules);
 
-          newLayout.groups = newLayout.groups.map((col: any) =>
-            col.map((row: any) => ({
-              ...row,
-              tabs: row.tabs.map((tabId: string) => oldIdToNewIdMap[tabId] || tabId)
-            }))
-          );
-
-          newLayout.activeTabMap = Object.fromEntries(
-            Object.entries(newLayout.activeTabMap).map(([rowId, activeTabId]) => [
-              rowId,
-              oldIdToNewIdMap[activeTabId as string] || activeTabId
-            ])
-          );
-
-          newLayout.panelTypes = Object.fromEntries(
-            Object.entries(savedLayout.panelTypes).map(([oldId, type]) => [
-              oldIdToNewIdMap[oldId] || oldId,
-              type
-            ])
-          );
-
-          console.log('[Layout Debug] Final injected layout (after ID mapping):', newLayout);
-          setInjectedLayout(newLayout);
+          console.log('[Layout Debug] Final injected layout (using original IDs):', savedLayout);
+          setInjectedLayout(savedLayout);
         } else {
            isInitialized.current = true;
         }
@@ -93,8 +66,24 @@ export function usePanelStorage(
     }
   }, []);
 
-  const handleLayoutChange = useCallback((layoutJson: any) => {
-    setCurrentLayout(layoutJson);
+  const handleLayoutChange = useCallback((layoutWithItems: any) => {
+    // GenericPanelLayout에서 T 객체를 받아왔으므로, 저장할 수 있는 JSON 형태로 직렬화합니다.
+    const panelTypes: Record<string, string> = {};
+    const serializedGroups = layoutWithItems.groups.map((col: any) =>
+      col.map((row: any) => ({
+        ...row,
+        tabs: row.tabs.map((item: any) => {
+          panelTypes[item.id] = getModuleType(item.id);
+          return item.id;
+        })
+      }))
+    );
+
+    setCurrentLayout({
+      groups: serializedGroups,
+      activeTabMap: layoutWithItems.activeTabMap,
+      panelTypes
+    });
   }, []);
 
   useEffect(() => {
