@@ -148,13 +148,16 @@ export function usePanelLayoutState<T extends { id: string }>(
   };
 
   const onPanelDrop = (cIdx: number, rIdx: number) => {
-    if (draggedPos && dropZone) {
-      const draggedId = groups[draggedPos.cIdx][draggedPos.rIdx].tabs[draggedPos.iIdx];
-      lastInteractedItemId.current = draggedId;
-      handleDropLogic(draggedPos, { cIdx, rIdx }, dropZone);
-    }
-    handleDragEnd();
-  };
+  if (draggedPos && dropZone) {
+    const draggedId = groups[draggedPos.cIdx][draggedPos.rIdx].tabs[draggedPos.iIdx];
+    const targetRowId = groups[cIdx][rIdx].id;
+    lastInteractedItemId.current = draggedId;
+    handleDropLogic(draggedPos, { cIdx, rIdx }, dropZone);
+    // Ensure the target row receives focus on the dragged item after merge
+    setActiveTabMap(prev => ({ ...prev, [targetRowId]: draggedId }));
+  }
+  handleDragEnd();
+};
 
   const onPanelDragLeave = () => {
     setDragOverPos(null);
