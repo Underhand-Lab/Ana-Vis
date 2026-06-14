@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import Modal from '@shared/components/Modal';
 import { Div, Select, Button } from '@shared/bridges/UIBridge';
+import SearchableSelect from '@shared/components/SearchableSelect';
 import vars from '@shared/components/ui-brick/variables';
 
 import { useTranslation } from 'react-i18next';
@@ -78,14 +79,20 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
 
 					<Div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
 						<label htmlFor="model-select" style={{ minWidth: '80px' }}>{t('settings.analysisModel', '분석 모델')}</label>
-						<Select
-							id="model-select"
-							value={selectedModel}
-							onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedModel(e.target.value)}
-							disabled={isProcessing || currentModels.length === 0}
-							options={currentModels}
-							style={{ flex: 1 }}
-						/>
+						<Div style={{ 
+							flex: 1, 
+							opacity: (isProcessing || currentModels.length === 0) ? 0.5 : 1,
+							pointerEvents: (isProcessing || currentModels.length === 0) ? 'none' : 'auto'
+						}}>
+							<SearchableSelect
+								value={selectedModel}
+								sections={[{ 
+									options: currentModels.map(m => ({ label: m, value: m })) 
+								}]}
+								onChange={setSelectedModel}
+								placeholder={t('settings.searchModel', '모델 검색...')}
+							/>
+						</Div>
 					</Div>
 				</Div>
 
