@@ -31,7 +31,7 @@ const InputFile = forwardRef<HTMLInputElement, InputFileProps>(({ style, onChang
     }
 
     return (
-        <div style={{ ...styles.container, ...style }}>
+        <div style={{ ...styles.container, fontFamily: vars.font, ...style }}>
             <input 
                 type="file" 
                 ref={inputRef} 
@@ -57,7 +57,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     container: {
         display: 'inline-flex',
         alignItems: 'center',
-        fontFamily: vars.font,
         fontSize: '14px',
         color: '#444',
         gap: '10px',

@@ -6,7 +6,6 @@ export const moduleItemStyles: { [key: string]: React.CSSProperties } = {
     borderRadius: '12px',
     boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
     overflow: 'hidden',
-    fontFamily: vars.font,
     border: '1px solid',
   },
   header: {

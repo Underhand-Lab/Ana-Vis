@@ -128,7 +128,7 @@ const InputColor: FC<InputColorProps> = ({ label, value, onChange }) => {
                     onClick={toggleOpen} 
                     style={{ width: '36px', height: '36px', borderRadius: '4px', border: '2px solid', borderColor: vars.surface, background: localColor, cursor: 'pointer' }} 
                 />
-                {label && <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{label}</span>}
+                {label && <span style={{ fontFamily: vars.font, fontSize: '12px', fontWeight: 'bold' }}>{label}</span>}
             </Div>
             {isOpen && createPortal(
                 <Div style={{ position: 'absolute', zIndex: 10000, top: pickerPos.top, left: pickerPos.left }}>

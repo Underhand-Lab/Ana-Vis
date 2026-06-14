@@ -20,7 +20,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
 
   // 이식성을 위해 body 바로 아래에 렌더링 (Portal 사용)
   return createPortal(
-    <Div className="panel frostedglassmorphism" style={overlayStyle} onClick={onClose}>
+    <Div
+      className="panel frostedglassmorphism"
+      style={{...overlayStyle, fontFamily: vars.font}}
+      onClick={onClose}>
       <Box
         className="pop-up container" 
         style={{...modalStyle, color: vars.text}} 

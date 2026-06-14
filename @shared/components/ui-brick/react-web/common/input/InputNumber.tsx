@@ -7,7 +7,7 @@ const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(({ style, ...
     <input 
         ref={ref} 
         type="number" 
-        style={{ ...styles.input, backgroundColor: vars.surface, color: vars.text, ...style }}
+        style={{ ...styles.input, fontFamily: vars.font, backgroundColor: vars.surface, color: vars.text, ...style }}
         {...props} 
     />
 ));
@@ -15,7 +15,6 @@ const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(({ style, ...
 const styles: { [key: string]: React.CSSProperties } = {
     input: {
         display: 'block',
-        fontFamily: vars.font,
         fontSize: '16px',
         width: '100%',
         minWidth: 0,
