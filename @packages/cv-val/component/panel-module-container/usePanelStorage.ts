@@ -74,19 +74,39 @@ export function usePanelStorage(
   const handleLayoutChange = useCallback((layoutWithItems: any) => {
     // GenericPanelLayout에서 T 객체를 받아왔으므로, 저장할 수 있는 JSON 형태로 직렬화합니다.
     const panelTypes: Record<string, string> = {};
+    const allExistTabIds = new Set<string>();
+    const allExistRowIds = new Set<string>();
+
     const serializedGroups = layoutWithItems.groups.map((col: any) =>
-      col.map((row: any) => ({
-        ...row,
-        tabs: row.tabs.map((item: any) => {
+      col.map((row: any) => {
+        allExistRowIds.add(row.id);
+        const tabIds = row.tabs.map((item: any) => {
           panelTypes[item.id] = getModuleType(item.id);
+          allExistTabIds.add(item.id);
           return item.id;
-        })
-      }))
+        });
+        return {
+          id: row.id,
+          width: row.width,
+          height: row.height,
+          tabs: tabIds
+        };
+      })
     );
+
+    // 존재하지 않는 탭이나 로우에 대한 activeTabMap 정보 필터링
+    const cleanedActiveTabMap: Record<string, string> = {};
+    if (layoutWithItems.activeTabMap) {
+      Object.entries(layoutWithItems.activeTabMap).forEach(([rowId, tabId]) => {
+        if (allExistRowIds.has(rowId) && allExistTabIds.has(tabId as string)) {
+          cleanedActiveTabMap[rowId] = tabId as string;
+        }
+      });
+    }
 
     setCurrentLayout({
       groups: serializedGroups,
-      activeTabMap: layoutWithItems.activeTabMap,
+      activeTabMap: cleanedActiveTabMap,
       panelTypes
     });
   }, []);
@@ -120,7 +140,7 @@ export function usePanelStorage(
 
       const lastSaved = localStorage.getItem(LAYOUT_STORAGE_KEY);
       if (lastSaved === dataToSaveStr) return;
-
+      console.log('Layout Saved:', dataToSaveObj);
       localStorage.setItem(LAYOUT_STORAGE_KEY, dataToSaveStr);
     }
   }, [currentLayout, modules, settingsMap]);
