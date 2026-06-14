@@ -9,9 +9,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  style?: React.CSSProperties;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, style }) => {
   const { t } = useTranslation();
   // 팝업이 닫혀있으면 아무것도 렌더링하지 않음
   if (!isOpen) return null;
@@ -26,7 +27,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
       onClick={onClose}>
       <Box
         className="pop-up container" 
-        style={{...modalStyle, color: vars.text}} 
+        style={{...modalStyle, color: vars.text, ...style}} 
         onClick={(e: MouseEvent) => e.stopPropagation()} // 내부 클릭 시 닫힘 방지
       >
         <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

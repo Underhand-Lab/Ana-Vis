@@ -15,10 +15,12 @@ import { useModuleLoader } from '@cv-val/hooks/useModuleLoader';
 import PanelModuleContainer from '@packages/cv-val/component/panel-module-container/PanelModuleContainer';
 
 import Navigation from '@apps/common/bridges/NavigationBridge';
-import AppModals from '@apps/features/app/components/AppModals';
+import VideoProcessorModal from '@packages/cv-val/component/VideoProcessorModal';
+import { ToolAddModal, AppSettingsModal } from '@apps/features/app/components';
+
 import { useAppLogic } from '@apps/features/app/hooks/useAppLogic';
 
-import { ALL_AVAILABLE_MODULES } from '../FeatureRegistry';
+import { ALL_AVAILABLE_MODULES, ALL_DETECTORS } from '../FeatureRegistry';
 import { vars, getSystemTheme, setThemeMode, setGlobalFont } from '@shared/bridges/UIBridge.ts';
 
 const ALL_EXTENSIONS = '.cvp,.cvbl,.cvbt,.cvval,.mp4,.mov,.avi,.mkv,.webm';
@@ -39,7 +41,17 @@ const AppPage: React.FC = () => {
 	const dataInputRef = useRef<HTMLInputElement | null>(null);
 	const videoInputRef = useRef<HTMLInputElement | null>(null);
 	const pluginInputRef = useRef<HTMLInputElement | null>(null);
-	const handleLoadModule = useModuleLoader([], (plugin) => logic.setActiveModules(prev => [...prev, plugin]));
+	const handleLoadModule = useModuleLoader([], (plugin) => {
+		logic.setActiveModules(prev => [...prev, plugin]);
+		// 로컬 스토리지에 플러그인 정보 저장
+		const saved = localStorage.getItem('cvval_local_plugins');
+		const plugins = saved ? JSON.parse(saved) : [];
+		if (!plugins.find((p: any) => p.id === plugin.type)) {
+			const updated = [...plugins, { id: plugin.type, title: plugin.title }];
+			localStorage.setItem('cvval_local_plugins', JSON.stringify(updated));
+			window.dispatchEvent(new Event('cvval_plugins_updated'));
+		}
+	});
 
 	const currentIdxRef = useRef(logic.currentIdx);
 	useEffect(() => { currentIdxRef.current = logic.currentIdx; }, [logic.currentIdx]);
@@ -178,19 +190,41 @@ const AppPage: React.FC = () => {
 					onChange={(val) => { setIsPlaying(false); logic.setCurrentIdx(val); }}
 					style={{ flex: 1 }}
 				/>
-			</Div></Box></FixedFooter>
-			<AppModals logic={logic} pluginInputRef={pluginInputRef} ui={{
-				isProcessModalOpen, setProcessModalOpen, isToolModalOpen, setToolModalOpen,
-				isSettingsModalOpen, setSettingsModalOpen,
-				themeMode, 
-				toggleTheme: () => {
+			</Div></Box></FixedFooter><VideoProcessorModal
+				isOpen={isProcessModalOpen}
+				onClose={() => setProcessModalOpen(false)}
+				analysisMap={ALL_DETECTORS}
+				onProcess={async (type, model) => {
+					await logic.handleProcessVideo(type, model);
+					setProcessModalOpen(false);
+				}}
+				isProcessing={logic.isProcessing}
+				progress={logic.progress}
+				statusKey={`label-${logic.status}`}
+			/>
+
+			<ToolAddModal
+				isOpen={isToolModalOpen}
+				onClose={() => handleToolModalSelection(undefined)}
+				onToolSelect={handleToolModalSelection}
+				pluginInputRef={pluginInputRef}
+			/>
+
+			<AppSettingsModal
+				isOpen={isSettingsModalOpen}
+				onClose={() => setSettingsModalOpen(false)}
+				themeMode={themeMode}
+				toggleTheme={() => {
 					const next = themeMode === 'light' ? 'dark' : 'light';
 					setThemeMode(next);
 					setThemeModeState(next);
-				},
-				font: currentFont,
-				setFont: (f: string) => { setGlobalFont(f); setCurrentFont(f); }
-			}} onToolSelect={handleToolModalSelection} />
+				}}
+				font={currentFont}
+				setFont={(f: string) => {
+					setGlobalFont(f);
+					setCurrentFont(f);
+				}}
+			/>
 		</Wrapper>
 	);
 };
