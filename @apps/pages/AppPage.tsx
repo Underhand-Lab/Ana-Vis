@@ -102,7 +102,7 @@ const AppPage: React.FC = () => {
 	};
 
 	return (
-		<Wrapper>
+		<Wrapper style={{ fontFamily: currentFont }}>
 			<InputFile ref={dataInputRef} style={{ display: 'none' }} accept={ALL_EXTENSIONS} onChange={async (e) => {
 				const file = e.target.files?.[0]; if (file) { const res = await logic.loadData(file); if (res === "openProcessModal") setProcessModalOpen(true); }
 			}} />
