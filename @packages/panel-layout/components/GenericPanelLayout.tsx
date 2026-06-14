@@ -88,11 +88,13 @@ function GenericPanelLayoutComponent<T>(
                 onLayoutChange={(sizes: Layout) => setRowSizesMap(prev => ({ ...prev, [cIdx]: sizes }))}
               >
                 {column.flatMap((row, rIdx) => {
+                  const savedRowSize = rowSizesMap[cIdx]?.[row.id];
+                  const pendingSize = rowSizesMap[cIdx]?.['pending-split-size'];
                   const rowElements: React.ReactNode[] = [
                     <Panel 
                       key={row.id} 
                       id={row.id} 
-                      defaultSize={isRowChanged ? (100 / column.length) : (rowSizesMap[cIdx]?.[row.id] ?? (100 / column.length))} 
+                      defaultSize={isRowChanged && !savedRowSize ? (pendingSize ?? (100 / column.length)) : (savedRowSize ?? (100 / column.length))} 
                       minSize={15}
                     >
                       <GenericPanelRowContent
