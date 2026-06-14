@@ -37,7 +37,7 @@ const defaultSettings: SkeletonSettings = {
 };
 
 export class PoseVideoPlugin extends VideoModulePlugin<SkeletonSettings> {
-    id = 'pose-video'; // Keep the ID
+    type = 'pose-video'; // Keep the ID
     title = 'pose-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings; // Update defaultSettings to match SkeletonSettings
 

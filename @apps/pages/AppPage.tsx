@@ -150,7 +150,6 @@ const AppPage: React.FC = () => {
 					if (!type) return;
 					logic.handleEditorCandidateSelect(type, frameIdx, candidateIdx);
 				}}
-				onRemoveModule={logic.removeModule}
 				onReorderModules={logic.setActiveModules}
 				onAddModule={async () => {
 					const selectedModuleKey = await openToolSelectionModal(); // selectedModuleKey는 모듈 타입 (예: 'pose')

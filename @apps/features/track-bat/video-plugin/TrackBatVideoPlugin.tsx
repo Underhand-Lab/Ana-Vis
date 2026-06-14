@@ -26,7 +26,7 @@ const defaultSettings: TrackBatSettings = {
 };
 
 export class TrackBatVideoPlugin extends VideoModulePlugin<TrackBatSettings> {
-    id = 'track-bat-video';
+    type = 'track-bat-video';
     title = 'track-bat-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 

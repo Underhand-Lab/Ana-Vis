@@ -255,7 +255,7 @@ export const GraphSettings: React.FC<AnalysisSettingsProps<GraphSettingsData>> =
 };
 
 export const GraphModule: AnalysisModule<GraphSettingsData> = {
-    id: 'common-graph',
+    type: 'common-graph',
     title: 'common-graph', // Use ID as title for translation key lookup
     View: GraphView,
     Settings: GraphSettings,

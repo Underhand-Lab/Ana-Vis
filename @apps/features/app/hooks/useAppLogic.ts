@@ -29,7 +29,7 @@ export interface AppLogic {
   handleAddModule: (type: string) => AnalysisModule<any> | undefined;
   handleConfChange: (type: string, e: ChangeEvent<HTMLInputElement>) => void;
   handleEditorCandidateSelect: (type: string, frameIdx: number, candIdx: number) => void;
-  removeModule: (id: string) => void;
+  removeModule: (item: AnalysisModule<any>) => void;
 }
 
 export const useAppLogic = (): AppLogic => {
@@ -40,7 +40,8 @@ export const useAppLogic = (): AppLogic => {
   const [processedData, setProcessedData] = useState<CVValData>(() => new CVValData());
   const [currentIdx, setCurrentIdx] = useState(0);
   const [activeModules, setActiveModules] = useState<AnalysisModule<any>[]>([
-    { ...ALL_AVAILABLE_MODULES["Video"], id: `common-video-${Date.now()}` }
+    // 초기 모듈에도 ID를 부여하지 않습니다. (레이아웃 시스템이 부여)
+    { ...ALL_AVAILABLE_MODULES["Video"] }
   ]);
   const [confValue, setConfValue] = useState(0.5);
   const [editingType, setEditingType] = useState<'ball' | 'bat' | null>(null);
@@ -121,7 +122,8 @@ export const useAppLogic = (): AppLogic => {
   const handleAddModule = (type: string) => {
     const moduleBase = ALL_AVAILABLE_MODULES[type];
     if (moduleBase) {
-      const newModule = { ...moduleBase, id: `${moduleBase.id}-${Date.now()}` };
+      // ID 부여 없이 객체만 생성하여 전달
+      const newModule = { ...moduleBase };
       setActiveModules((prev) => [...prev, newModule]);
       return newModule;
     }
@@ -148,7 +150,8 @@ export const useAppLogic = (): AppLogic => {
     }
   };
 
-  const removeModule = (id: string) => setActiveModules(prev => prev.filter(m => m.id !== id));
+  // 객체 참조를 비교하여 삭제 수행
+  const removeModule = (item: AnalysisModule<any>) => setActiveModules(prev => prev.filter(m => m !== item));
 
   return {
     processedData,

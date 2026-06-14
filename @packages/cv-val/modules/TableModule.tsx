@@ -173,7 +173,7 @@ export const TableSettings: React.FC<AnalysisSettingsProps<TableSettingsData>> =
 };
 
 export const TableModule: AnalysisModule<TableSettingsData> = {
-    id: 'common-table',
+    type: 'common-table',
     title: 'common-table', // Use ID as title for translation key lookup
     View: TableView,
     Settings: TableSettings,
