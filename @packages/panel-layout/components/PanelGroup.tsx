@@ -21,7 +21,7 @@ export interface PanelGroupProps<T> {
   onDragEnd: () => void;
 }
 
-export function PanelGroup<T extends { id: string }>({
+export function PanelGroup<T>({
   cIdx, rIdx, group, itemsMap, activeTabId, onSelectTab, onAddItem, onRemoveItem, renderItem, renderTabLabel,
   dragOverPos, dropZone, onPanelDragOver, onPanelDrop, onPanelDragLeave, onTabDragStart, onDragEnd
 }: PanelGroupProps<T>) {

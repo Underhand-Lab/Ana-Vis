@@ -42,7 +42,7 @@ const getBoxes = (data: CVValData | null, frameIdx: number) => {
 };
 
 export const TrackBatEditorPlugin: EditorModulePlugin<any> = {
-  id: 'edit-track-bat',
+  type: 'edit-track-bat',
   title: 'Edit Track Bat',
   trackType: 'bat',
   videoPlugin: new TrackBatVideoPlugin(),

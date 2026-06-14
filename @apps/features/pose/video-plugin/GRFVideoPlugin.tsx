@@ -14,7 +14,7 @@ const defaultSettings: GRFSettings = {
 };
 
 export class GRFVideoPlugin extends VideoModulePlugin<GRFSettings> {
-    id = 'grf-video';
+    type = 'grf-video';
     title = 'grf-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 

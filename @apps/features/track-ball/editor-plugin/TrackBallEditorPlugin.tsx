@@ -17,7 +17,7 @@ const getBoxes = (data: CVValData | null, frameIdx: number) => {
 };
 
 export const TrackBallEditorPlugin: EditorModulePlugin<any> = {
-  id: 'edit-track-ball',
+  type: 'edit-track-ball',
   title: 'Edit Track Ball',
   trackType: 'ball',
   videoPlugin: new TrackBallVideoPlugin(),

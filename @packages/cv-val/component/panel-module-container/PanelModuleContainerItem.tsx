@@ -13,7 +13,8 @@ import { moduleItemStyles } from '../ModuleContainerItem.styles';
 export const registeredModuleTypes = new Set<string>();
 
 interface Props {
-  module: AnalysisModule;
+  module: AnalysisModule<any>;
+  id: string; // 레이아웃 시스템에서 발급한 고유 ID
   data: any;
   currentFrame: number;
   onNextFrame?: () => void;
@@ -33,7 +34,7 @@ interface Props {
 
 const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { 
-    module, data, currentFrame, onNextFrame, onCandidateSelect, isSettingsOpen = false, titleNode,
+    module, id, data, currentFrame, onNextFrame, onCandidateSelect, isSettingsOpen = false, titleNode,
     style, className, onMouseDown, onMouseUp, onTouchEnd, children,
     settings = module.defaultSettings,
     onSettingsChange
@@ -41,13 +42,8 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
 
   const { t } = useTranslation();
 
-  // 모듈의 베이스 ID 추출 (예: 'pose-17123...' -> 'pose')
-  const moduleType = useMemo(() => {
-    const lastHyphenIndex = module.id.lastIndexOf('-');
-    return (lastHyphenIndex !== -1 && !isNaN(Number(module.id.substring(lastHyphenIndex + 1))))
-      ? module.id.substring(0, lastHyphenIndex)
-      : module.id;
-  }, [module.id]);
+  // 모듈의 타입 (로케일 및 리소스 식별용)
+  const moduleType = module.type;
 
   // 이미 등록된 리소스인지 확인하여 초기 상태 설정
   const [localesLoaded, setLocalesLoaded] = useState(() => 
@@ -67,22 +63,6 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
       setLocalesLoaded(true);
     }
   }, [module]);
-
-  // 모듈의 생명주기 관리 (Init & Cleanup)
-  useEffect(() => {
-    // 1. 초기화 메서드 호출
-    // 시각화 모듈의 초기 설정에 필요한 data나 settings가 있다면 전달할 수 있습니다.
-    if (module.init) {
-      module.init({ data, settings }); 
-    }
-
-    return () => {
-      // 2. 자원 해제 메서드 호출
-      if (module.cleanup) {
-        module.cleanup();
-      }
-    };
-  }, [module.id]); // 모듈이 변경되거나 삭제될 때만 실행
 
   const { View, Settings } = module;
 

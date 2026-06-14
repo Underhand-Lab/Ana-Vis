@@ -14,7 +14,7 @@ export interface EditorModuleSettings {
 }
 
 export interface EditorModulePlugin<TSettings = any> {
-  id: string;
+  type: string;
   title: string;
   trackType: TrackType;
   defaultSettings: TSettings;
@@ -29,13 +29,13 @@ export interface EditorModulePlugin<TSettings = any> {
 export const createEditorModule = (
   visualPlugins: VideoModulePlugin<any, any>[],
   editorPlugins: EditorModulePlugin<any>[],
-  moduleId: string,
+  moduleType: string,
   moduleTitle: string
 ): AnalysisModule<Record<string, any>> => {
   const defaultSettings = {
     moduleSettings: { confValue: 0.5, advanceOnSelect: true },
-    ...visualPlugins.reduce((acc, plugin) => ({ ...acc, [plugin.id]: plugin.defaultSettings }), {}),
-    ...editorPlugins.reduce((acc, plugin) => ({ ...acc, [plugin.id]: plugin.defaultSettings }), {}),
+    ...visualPlugins.reduce((acc, plugin) => ({ ...acc, [plugin.type]: plugin.defaultSettings }), {}),
+    ...editorPlugins.reduce((acc, plugin) => ({ ...acc, [plugin.type]: plugin.defaultSettings }), {}),
   };
 
   const EditorView: React.FC<AnalysisViewProps<Record<string, any>>> = ({ data, currentFrame, settings, onCandidateSelect, onNextFrame }) => {
@@ -45,7 +45,7 @@ export const createEditorModule = (
     const trackData = data as CVValData | null;
     const visualPlugin = visualPlugins[0];
     const editorPlugin = editorPlugins[0];
-    const visualContext = visualPlugin.usePluginContext(trackData, settings[visualPlugin.id] ?? visualPlugin.defaultSettings);
+    const visualContext = visualPlugin.usePluginContext(trackData, settings[visualPlugin.type] ?? visualPlugin.defaultSettings);
     const candidates = editorPlugin.getCandidateBoxes(trackData, currentFrame);
     const selectedIdx = editorPlugin.getSelectedIdx(trackData, currentFrame);
     const emptyState = editorPlugin.getEmptyStateMessage?.(trackData, currentFrame) ?? t('common.noDataToDisplay', '선택할 항목이 없습니다.');
@@ -79,7 +79,7 @@ export const createEditorModule = (
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      visualPlugin.drawOverlay(ctx, currentFrame, trackData, settings[visualPlugin.id] ?? visualPlugin.defaultSettings, visualContext);
+      visualPlugin.drawOverlay(ctx, currentFrame, trackData, settings[visualPlugin.type] ?? visualPlugin.defaultSettings, visualContext);
       if (editLayer) {
         ctx.drawImage(editLayer, 0, 0, canvas.width, canvas.height);
       }
@@ -142,10 +142,10 @@ export const createEditorModule = (
       <Div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <Div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {editorPlugins.map(plugin => (
-            <Toggle key={plugin.id} title={t(`analysisTools.${plugin.id}`, plugin.title) as string}>
+            <Toggle key={plugin.type} title={t(`analysisTools.${plugin.type}`, plugin.title) as string}>
               {plugin.videoPlugin.getSettingComponent({
-                settings: settings[plugin.videoPlugin.id] ?? plugin.videoPlugin.defaultSettings,
-                onSettingsChange: (newVal: any) => onSettingsChange({ ...settings, [plugin.videoPlugin.id]: newVal }),
+                settings: settings[plugin.videoPlugin.type] ?? plugin.videoPlugin.defaultSettings,
+                onSettingsChange: (newVal: any) => onSettingsChange({ ...settings, [plugin.videoPlugin.type]: newVal }),
                 data,
               } as any)}
             </Toggle>
@@ -186,7 +186,7 @@ export const createEditorModule = (
   };
 
   return {
-    id: moduleId,
+    type: moduleType,
     title: moduleTitle,
     View: EditorView,
     Settings: EditorSettings,

@@ -18,7 +18,7 @@ export interface AnalysisSettingsProps<S> {
 }
 
 export interface AnalysisModule<S = any> {
-  id: string;
+  type: string;
   title: string;
   View: React.FC<AnalysisViewProps<S>>;
   Settings: React.FC<AnalysisSettingsProps<S>>;

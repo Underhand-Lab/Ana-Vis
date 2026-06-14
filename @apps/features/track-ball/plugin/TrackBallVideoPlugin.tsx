@@ -20,7 +20,7 @@ const defaultSettings: TrackBallSettings = {
 };
 
 export class TrackBallVideoPlugin extends VideoModulePlugin<TrackBallSettings> {
-    id = 'track-ball-video';
+    type = 'track-ball-video';
     title = 'track-ball-video'; // Use ID as title for translation key lookup
     defaultSettings = defaultSettings;
 

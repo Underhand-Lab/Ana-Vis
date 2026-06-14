@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
  * VideoModule을 위한 플러그인 추상 클래스
  */
 export abstract class VideoModulePlugin<TSettings, TContext = any> {
-    abstract id: string;
+    abstract type: string;
     abstract title: string;
     abstract defaultSettings: TSettings;
     locales?: Record<string, any>;
@@ -62,7 +62,7 @@ export function createVideoModule(
         
         // 각 플러그인의 훅을 순서대로 호출하여 컨텍스트 획득
         const contexts = plugins.map(p => 
-            p.usePluginContext(data, settings[p.id] ?? p.defaultSettings)
+            p.usePluginContext(data, settings[p.type] ?? p.defaultSettings)
         );
 
         const drawImageAt = useCallback((frameIdx: number) => {
@@ -88,7 +88,7 @@ export function createVideoModule(
             
             // 모든 플러그인의 오버레이를 순차적으로 그림
             plugins.forEach((p, i) => {
-                p.drawOverlay(ctx, frameIdx, data, settings[p.id] ?? p.defaultSettings, contexts[i]);
+                p.drawOverlay(ctx, frameIdx, data, settings[p.type] ?? p.defaultSettings, contexts[i]);
             });
 
             return compositeCanvas;
@@ -117,7 +117,7 @@ export function createVideoModule(
         const moduleSettings = settings.moduleSettings || defaultModuleSettings;
 
         const contexts = plugins.map(p => 
-            p.usePluginContext(data, settings[p.id] ?? p.defaultSettings)
+            p.usePluginContext(data, settings[p.type] ?? p.defaultSettings)
         );
 
         const drawImageAt = (frameIdx: number) => {
@@ -140,7 +140,7 @@ export function createVideoModule(
             }
             
             plugins.forEach((p, i) => {
-                p.drawOverlay(ctx, frameIdx, data, settings[p.id] ?? p.defaultSettings, contexts[i]);
+                p.drawOverlay(ctx, frameIdx, data, settings[p.type] ?? p.defaultSettings, contexts[i]);
             });
             return compositeCanvas;
         };
@@ -177,14 +177,14 @@ export function createVideoModule(
                     style={{ fontWeight: 'bold', }}
                 />
                 {plugins.map(p => (
-                    <React.Fragment key={p.id}> 
-                        <Toggle title={t(`analysisTools.${p.id}`, p.title) as string}>
+                    <React.Fragment key={p.type}> 
+                        <Toggle title={t(`analysisTools.${p.type}`, p.title) as string}>
                             {p.getSettingComponent({
                                 ...props,
-                                settings: settings[p.id] ?? p.defaultSettings,
+                                settings: settings[p.type] ?? p.defaultSettings,
                                 onSettingsChange: (newVal: any) => onSettingsChange({
                                     ...settings,
-                                    [p.id]: newVal
+                                    [p.type]: newVal
                                 })
                             } as any)}
                         </Toggle>
@@ -196,7 +196,7 @@ export function createVideoModule(
 
     const defaultSettings = plugins.reduce((acc, p) => ({
         ...acc,
-        [p.id]: p.defaultSettings,
+        [p.type]: p.defaultSettings,
     }), { moduleSettings: defaultModuleSettings });
 
     // 플러그인들의 로케일 정보를 하나로 통합
@@ -227,7 +227,7 @@ export function createVideoModule(
     });
 
     return {
-        id: moduleId,
+        type: moduleId,
         title: moduleTitle,
         View: VideoView,
         Settings: VideoSettings,
@@ -237,7 +237,7 @@ export function createVideoModule(
             plugins.forEach(p => {
                 p.init?.({
                     data: context.data,
-                    settings: context.settings[p.id] ?? p.defaultSettings
+                    settings: context.settings[p.type] ?? p.defaultSettings
                 });
             });
         },

@@ -113,7 +113,7 @@ export const Pose3DVideoSettings: React.FC<AnalysisSettingsProps<Pose3DVideoSett
  * 최종 모듈 객체
  */
 export const Pose3DVideoModule: AnalysisModule<Pose3DVideoSettingsData> = {
-    id: 'pose-3d-video',
+    type: 'pose-3d-video',
     title: '3D 자세 동영상',
     View: Pose3DVideoView,
     Settings: Pose3DVideoSettings,
