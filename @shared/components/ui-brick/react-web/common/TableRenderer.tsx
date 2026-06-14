@@ -1,4 +1,5 @@
 import React from 'react';
+import vars from '../../variables';
 
 interface DataTableProps {
   data: Record<string, any> | null;
@@ -17,7 +18,10 @@ const TableRenderer: React.FC<DataTableProps> = ({ data }) => {
   }
 
   return (
-    <table className="analysis-table">
+    <table 
+      className="analysis-table"
+      style={{fontFamily: vars.font, }}
+      >
       <tbody>
         {Object.keys(data).map((key) => (
           <tr key={key}>

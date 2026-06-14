@@ -12,6 +12,7 @@ const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(({ children, style, ...
             ...styles.wrapper, 
             backgroundColor: vars.background,
             color: vars.text,
+            fontFamily: vars.font,
             ...style 
         }}
         {...props}

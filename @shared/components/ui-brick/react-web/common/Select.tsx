@@ -12,6 +12,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(({ options, children, 
         ...styles.select,
         backgroundColor: vars.surface,
         color: vars.text,
+        fontFamily: vars.font, 
         ...style }}
         {...props}>
         {options ? (

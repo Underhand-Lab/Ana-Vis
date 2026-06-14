@@ -5,7 +5,6 @@ import enTranslation from './locales/en/translation.json';
 import koTranslation from './locales/ko/translation.json';
 
 import { Box, Button, Div, FixedFooter, InputFile, InputSlider, Wrapper } from '@shared/bridges/UIBridge.ts';
-import { getSystemTheme, setThemeMode } from '@shared/components/ui-brick/variables';
 import i18n from '@shared/utils/i18n';
 import { saveBlobWithPicker } from "@shared/utils/save-blob";
 
@@ -20,27 +19,22 @@ import AppModals from '@apps/features/app/components/AppModals';
 import { useAppLogic } from '@apps/features/app/hooks/useAppLogic';
 
 import { ALL_AVAILABLE_MODULES } from '../FeatureRegistry';
-
-const LAYOUT_STORAGE_KEY = 'cv-val-panel-layout-v1';
-
-const getModuleType = (id: string) => {
-	const lastHyphenIndex = id.lastIndexOf('-');
-	return lastHyphenIndex !== -1 ? id.substring(0, lastHyphenIndex) : id;
-};
-
-const generateUniqueId = () => Math.random().toString(36).substring(2, 11);
+import { vars, getSystemTheme, setThemeMode, setGlobalFont } from '@shared/bridges/UIBridge.ts';
 
 const ALL_EXTENSIONS = '.cvp,.cvbl,.cvbt,.cvval,.mp4,.mov,.avi,.mkv,.webm';
 
 const AppPage: React.FC = () => {
 	const { t } = useTranslation();
 	const logic = useAppLogic();
-	const [themeMode, setThemeModeState] = useState<'light' | 'dark'>(getSystemTheme);
 	const [isProcessModalOpen, setProcessModalOpen] = useState(false);
 	const [isToolModalOpen, setToolModalOpen] = useState(false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 	const [toolModalResolve, setToolModalResolve] = useState<((value: string | undefined) => void) | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
+
+	// 전역 UI 상태를 AppPage에서 관리
+	const [themeMode, setThemeModeState] = useState<'light' | 'dark'>(getSystemTheme);
+	const [currentFont, setCurrentFont] = useState(vars.font);
 
 	const dataInputRef = useRef<HTMLInputElement | null>(null);
 	const videoInputRef = useRef<HTMLInputElement | null>(null);
@@ -90,11 +84,6 @@ const AppPage: React.FC = () => {
 		logic.setCurrentIdx(Math.min(maxFrame, logic.currentIdx + 1));
 	};
 
-	const toggleTheme = () => {
-		const nextMode = themeMode === 'light' ? 'dark' : 'light';
-		setThemeMode(nextMode); setThemeModeState(nextMode);
-	};
-
 	// 도구 선택 모달을 열고 선택 결과를 Promise로 반환하는 함수
 	const openToolSelectionModal = (): Promise<string | undefined> => {
 		return new Promise((resolve) => {
@@ -113,7 +102,7 @@ const AppPage: React.FC = () => {
 	};
 
 	return (
-		<Wrapper>
+		<Wrapper style={{ fontFamily: currentFont }}>
 			<InputFile ref={dataInputRef} style={{ display: 'none' }} accept={ALL_EXTENSIONS} onChange={async (e) => {
 				const file = e.target.files?.[0]; if (file) { const res = await logic.loadData(file); if (res === "openProcessModal") setProcessModalOpen(true); }
 			}} />
@@ -192,7 +181,15 @@ const AppPage: React.FC = () => {
 			</Div></Box></FixedFooter>
 			<AppModals logic={logic} pluginInputRef={pluginInputRef} ui={{
 				isProcessModalOpen, setProcessModalOpen, isToolModalOpen, setToolModalOpen,
-				isSettingsModalOpen, setSettingsModalOpen, themeMode, toggleTheme
+				isSettingsModalOpen, setSettingsModalOpen,
+				themeMode, 
+				toggleTheme: () => {
+					const next = themeMode === 'light' ? 'dark' : 'light';
+					setThemeMode(next);
+					setThemeModeState(next);
+				},
+				font: currentFont,
+				setFont: (f: string) => { setGlobalFont(f); setCurrentFont(f); }
 			}} onToolSelect={handleToolModalSelection} />
 		</Wrapper>
 	);

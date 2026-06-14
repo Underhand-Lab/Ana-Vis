@@ -1,6 +1,7 @@
 import React, { useEffect, ChangeEvent, useMemo, useState, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { NavButton } from './WebNavigation';
+import { vars } from '@shared/bridges/UIBridge';
 
 
 interface ElectronNavigationProps {
@@ -179,7 +180,7 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
                     {/* 내부 리스트에도 명확하게 interactiveStyle 적용 */}
                     <ul style={{ ...interactiveStyle, display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: '0 0 0 auto', width: 'max-content', flexShrink: 0 }}>
                         {fileButtons.map((btn) => (
-                            <li style={{ margin: 0 }}key={btn.name}>
+                            <li key={btn.name} style={{ margin: 0 }}>
                                 <button
                                     onClick={() => {
                                         // 마우스 이동 거리가 5px 미만일 때만 실제 클릭으로 인정합니다.
@@ -187,7 +188,7 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
                                             btn.action();
                                         }
                                     }}
-                                    style={{ ...interactiveStyle, padding: '2px 10px', whiteSpace: 'nowrap', cursor: 'pointer' }}
+                                    style={{ ...interactiveStyle, padding: '2px 10px', whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: vars.font  }}
                                 >
                                     {btn.name}
                                 </button>

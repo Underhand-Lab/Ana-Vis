@@ -1,12 +1,12 @@
 import React, { forwardRef, InputHTMLAttributes } from 'react';
 import { vars } from '../../../variables';
 
-interface InputNumberProps extends InputHTMLAttributes<HTMLInputElement> {}
+interface InputTextProps extends InputHTMLAttributes<HTMLInputElement> {}
 
-const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(({ style, ...props }, ref) => (
+const InputText = forwardRef<HTMLInputElement, InputTextProps>(({ style, ...props }, ref) => (
     <input 
         ref={ref} 
-        type="number" 
+        type="text" 
         style={{ ...styles.input, fontFamily: vars.font, backgroundColor: vars.surface, color: vars.text, ...style }}
         {...props} 
     />
@@ -16,7 +16,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     input: {
         display: 'block',
         fontSize: '16px',
-        width: '100%',
+        width: 'calc(100% - 24px)',
         minWidth: 0,
         cursor: 'pointer',
         flex: 1,
@@ -26,5 +26,5 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
 };
 
-InputNumber.displayName = 'Input';
-export default InputNumber;
+InputText.displayName = 'Input';
+export default InputText;

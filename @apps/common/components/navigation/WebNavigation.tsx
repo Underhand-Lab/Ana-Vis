@@ -72,7 +72,7 @@ const WebNavigation: React.FC<WebNavigationProps> = ({ fileButtons = [], toolBut
                             <li key={btn.name} style={{ margin: 0 }}>
                                 <button
                                     onClick={btn.action}
-                                    style={{ padding: '2px 10px', whiteSpace: 'nowrap' }}
+                                    style={{ padding: '2px 10px', whiteSpace: 'nowrap', fontFamily: vars.font  }}
                                 >
                                     {btn.name}
                                 </button>

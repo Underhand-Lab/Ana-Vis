@@ -1,4 +1,5 @@
 import React, { forwardRef, ReactNode, HTMLAttributes } from 'react';
+import vars from '../../variables';
 
 interface DivProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
