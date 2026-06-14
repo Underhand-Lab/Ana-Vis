@@ -86,7 +86,7 @@ const PanelModuleContainer: React.FC<Props> = ({
       onReorderItems={onReorderModules}
       onAddItem={onAddModule}
       layout={injectedLayout}
-      onLayoutChange={handleLayoutChange}
+      onLayoutChangeEnd={handleLayoutChange}
       maxColumns={maxColumns}
       maxRows={maxRows}
       renderTabLabel={(module, isActive) => (
@@ -142,4 +142,3 @@ const PanelModuleContainer: React.FC<Props> = ({
 };
 
 export default PanelModuleContainer;
-

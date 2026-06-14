@@ -4,9 +4,10 @@ import { Div, vars } from "@shared/bridges/UIBridge";
 
 interface ResizeHandleProps {
   direction: 'horizontal' | 'vertical';
+  onDraggingChange?: (isDragging: boolean) => void;
 }
 
-export const ResizeHandle: React.FC<ResizeHandleProps> = ({ direction }) => {
+export const ResizeHandle: React.FC<ResizeHandleProps> = ({ direction, onDraggingChange }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const isHorizontal = direction === 'horizontal';
@@ -15,8 +16,14 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({ direction }) => {
     <Separator
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onPointerDown={() => setIsActive(true)}
-      onPointerUp={() => setIsActive(false)}
+      onPointerDown={() => {
+        setIsActive(true);
+        onDraggingChange?.(true);
+      }}
+      onPointerUp={() => {
+        setIsActive(false);
+        onDraggingChange?.(false);
+      }}
       style={{
         height: isHorizontal ? '2px' : '',
         width: isHorizontal ? '100%' : '2px',
