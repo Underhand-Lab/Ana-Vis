@@ -1,6 +1,7 @@
 import React from 'react';
 import ElectronNavigation from '../components/navigation/ElectronNavigation';
 import WebNavigation from '../components/navigation/WebNavigation';
+import MobileNavigation from '../components/navigation/MobileNavigation';
 
 interface NavigationProps {
   fileButtons?: any[];
@@ -16,7 +17,7 @@ const Navigation: React.FC<NavigationProps> = ({ fileButtons = [], toolButtons =
     return <ElectronNavigation fileButtons={fileButtons} toolButtons={toolButtons} />;
   }
   if (isMobile) {
-    //return <MobileNavigation fileButtons={fileButtons} toolButtons={toolButtons} />;
+    return <MobileNavigation fileButtons={fileButtons} toolButtons={toolButtons} />;
   }
   return <WebNavigation fileButtons={fileButtons} toolButtons={toolButtons} />;
 };

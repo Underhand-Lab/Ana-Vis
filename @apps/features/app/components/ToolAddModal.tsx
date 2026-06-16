@@ -68,7 +68,6 @@ const ToolAddModal: React.FC<ToolAddModalProps> = ({ isOpen, onClose, onToolSele
       <Div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <Div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <InputText
-            autoFocus
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

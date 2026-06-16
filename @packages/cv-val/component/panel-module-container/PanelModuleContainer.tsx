@@ -31,7 +31,8 @@ const PanelModuleContainer: React.FC<Props> = ({
   const { t } = useTranslation();
   const layoutRef = useRef<GenericPanelLayoutHandle<AnalysisModule<any>>>(null);
   const [settingsOpenMap, setSettingsOpenMap] = useState<Record<string, boolean>>({});
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const isMobileDist = (import.meta as any).env?.VITE_DIST === 'mobile';
+  const [isMobile, setIsMobile] = useState(isMobileDist || window.innerWidth <= 1024); // 태블릿(1024px)까지 모바일 레이아웃 정책 적용
   
   // 패널 레이아웃 복원 및 저장 로직을 커스텀 훅으로 분리
   const { injectedLayout, handleLayoutChange, settingsMap, handleSettingsChange } = usePanelStorage(modules, moduleRegistry, onReorderModules, layoutRef);
@@ -56,15 +57,15 @@ const PanelModuleContainer: React.FC<Props> = ({
 
   // 반응형 분할 제한 설정을 위한 윈도우 리사이즈 감지
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => setIsMobile(isMobileDist || window.innerWidth <= 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 모바일: 좌우 분할 불가(maxColumns: 1), 상하 분할 최대 1개선(즉, 2행, maxRows: 2)
+  // 모바일에서도 유연한 레이아웃을 위해 제한을 완화합니다.
   // 데스크톱: 제한 없음 (undefined)
-  const maxColumns = isMobile ? 1 : undefined;
-  const maxRows = isMobile ? 2 : undefined;
+  const maxColumns = isMobile ? 2 : undefined; 
+  const maxRows = isMobile ? 4 : undefined;
 
   // 모듈 ID에서 타입을 추출하고 번역된 제목을 반환하는 헬퍼 함수
   const getModuleTitle = (module: AnalysisModule<any>) => {

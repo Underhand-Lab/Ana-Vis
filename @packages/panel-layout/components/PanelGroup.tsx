@@ -17,7 +17,7 @@ export interface PanelGroupProps<T> {
   onPanelDragOver: (cIdx: number, rIdx: number, e: React.DragEvent, zone?: 'center') => void;
   onPanelDrop: (cIdx: number, rIdx: number) => void;
   onPanelDragLeave: () => void;
-  onTabDragStart: (iIdx: number) => void;
+  onTabDragStart: (iIdx: number, e: React.DragEvent) => void;
   onDragEnd: () => void;
 }
 
@@ -31,10 +31,19 @@ export function PanelGroup<T>({
       style={{ 
         display: 'flex', flexDirection: 'column', width: '100%', height: '100%', 
         backgroundColor: vars.box, border: `none`, position: 'relative',
-        minWidth: 0, minHeight: 0, boxSizing: 'border-box'
+        minWidth: 0, minHeight: 0, boxSizing: 'border-box',
+        touchAction: 'none' // 모바일 드래그 중 브라우저 기본 스크롤/제스처 차단
       }}
-      onDragOver={(e) => onPanelDragOver(cIdx, rIdx, e)}
-      onDrop={() => onPanelDrop(cIdx, rIdx)}
+      onDragEnter={(e) => e.preventDefault()} // 드롭 타겟 활성화를 위해 필요
+      onDragOver={(e) => {
+        e.preventDefault(); // 드롭 대상임을 브라우저 및 폴리필에 명시적으로 알림
+        onPanelDragOver(cIdx, rIdx, e);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation(); // 드롭 이벤트가 상위로 퍼져나가지 않도록 차단
+        onPanelDrop(cIdx, rIdx);
+      }}
       onDragLeave={onPanelDragLeave}
     >
       {/* Tab Bar: 탭 영역 드래그 시 stopPropagation으로 'center' 드롭 유도 */}
@@ -45,8 +54,10 @@ export function PanelGroup<T>({
           borderBottom: `1px solid ${vars.surface}`,
           zIndex: 100, 
           minHeight: '32px',
-          userSelect: 'none',
-          flexDirection: 'row'
+          flexDirection: 'row',
+          WebkitTapHighlightColor: 'transparent', // 모바일 터치 하이라이트 제거
+          touchAction: 'none',
+          WebkitUserSelect: 'none'
         }}
         onDragOver={(e) => {
           e.preventDefault();
@@ -61,7 +72,10 @@ export function PanelGroup<T>({
             overflowX: 'auto',
             minWidth: 0,
             scrollbarWidth: 'none',
-            flexDirection: 'row'
+            flexDirection: 'row',
+            WebkitOverflowScrolling: 'touch', // iOS 부드러운 스크롤
+            touchAction: 'pan-x',
+            WebkitUserSelect: 'none'
           }}
         >
           {group.map((id, iIdx) => {
@@ -73,8 +87,8 @@ export function PanelGroup<T>({
             return (
               <Div
                 key={id}
-                draggable
-                onDragStart={() => onTabDragStart(iIdx)}
+                draggable={true}
+                onDragStart={(e) => onTabDragStart(iIdx, e)}
                 onDragEnd={onDragEnd}
                 onClick={() => onSelectTab(id)}
                 style={{
@@ -83,13 +97,24 @@ export function PanelGroup<T>({
                   borderRight: `1px solid ${vars.surface}`,
                   borderTop: isActive ? `2px solid ${vars.primary}` : '2px solid transparent',
                   minWidth: 'fit-content', userSelect: 'none', transition: 'all 0.1s',
-                  opacity: isActive ? 1 : 0.6
+                  opacity: isActive ? 1 : 0.6,
+                  WebkitUserSelect: 'none',
+                  touchAction: 'none' // 폴리필이 터치 제스처를 캡처하여 드래그로 변환할 수 있도록 브라우저 기본 동작 차단
                 }}
               >
                 {renderTabLabel ? (
                   renderTabLabel(item, isActive)
                 ) : (
-                  <span style={{ fontSize: '12px', color: vars.text, fontWeight: isActive ? 'bold' : 'normal' }}>
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: vars.text, 
+                    fontWeight: isActive ? 'bold' : 'normal',
+                    pointerEvents: 'none', // 글자 선택 방지
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    msUserSelect: 'none',
+                    MozUserSelect: 'none'
+                  }}>
                     {(item as any).title ?? ((item as any).name || id)}
                   </span>
                 )}
