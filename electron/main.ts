@@ -2,7 +2,9 @@ import { app, shell, BrowserWindow, ipcMain, Menu, dialog } from "electron";
 const path = require("node:path");
 const fs = require("node:fs");
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
-import { autoUpdater } from "electron-updater";
+
+import updater from "electron-updater";
+const { autoUpdater } = updater;
 
 // --- 자동 업데이트 설정 ---
 autoUpdater.autoDownload = false; // 알림만 띄우고 다운로드는 수동으로 시작
