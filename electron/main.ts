@@ -25,6 +25,29 @@ autoUpdater.on('error', (err) => {
 });
 // -----------------------
 
+import updater from "electron-updater";
+const { autoUpdater } = updater;
+
+// --- 자동 업데이트 설정 ---
+autoUpdater.autoDownload = false; // 알림만 띄우고 다운로드는 수동으로 시작
+
+autoUpdater.on('update-available', () => {
+	// 업데이트가 발견되면 모든 열린 창에 알림 전송
+	BrowserWindow.getAllWindows().forEach(win => {
+		win.webContents.send('update-available');
+	});
+});
+
+autoUpdater.on('update-downloaded', () => {
+	// 다운로드가 완료되면 앱을 종료하고 즉시 설치
+	autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on('error', (err) => {
+	console.error('업데이트 체크 중 오류 발생:', err);
+});
+// -----------------------
+
 // 창 ID와 파일 경로를 매핑하여 관리합니다.
 const windowFileMap = new Map<number, string>();
 // 앱이 준비되기 전에 열린 파일들을 보관합니다.
