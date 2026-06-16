@@ -82,6 +82,7 @@ jobs:
             dist/*.exe
             dist/*.dmg
             dist/*.zip
+            dist/*.yml
 
   create-release:
     needs: build-electron
@@ -101,6 +102,7 @@ jobs:
             release-files/*.exe
             release-files/*.dmg
             release-files/*.zip
+            release-files/*.yml
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}

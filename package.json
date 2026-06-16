@@ -1,7 +1,7 @@
 {
   "name": "cv-val",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3-beta",
   "description": "Computer Vision Validation Tool",
   "author": "underhand-lab <skysea001010@gmail.com>",
   "type": "module",
@@ -66,6 +66,7 @@
     "@shopify/react-native-skia": "^2.6.2",
     "@tensorflow/tfjs": "^4.22.0",
     "chart.js": "^4.5.1",
+    "electron-updater": "^6.8.9",
     "i18next": "^26.2.0",
     "i18next-browser-languagedetector": "^8.2.1",
     "mediabunny": "^1.40.0",

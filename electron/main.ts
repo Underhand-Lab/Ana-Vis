@@ -2,6 +2,27 @@ import { app, shell, BrowserWindow, ipcMain, Menu, dialog } from "electron";
 const path = require("node:path");
 const fs = require("node:fs");
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
+import { autoUpdater } from "electron-updater";
+
+// --- 자동 업데이트 설정 ---
+autoUpdater.autoDownload = false; // 알림만 띄우고 다운로드는 수동으로 시작
+
+autoUpdater.on('update-available', () => {
+	// 업데이트가 발견되면 모든 열린 창에 알림 전송
+	BrowserWindow.getAllWindows().forEach(win => {
+		win.webContents.send('update-available');
+	});
+});
+
+autoUpdater.on('update-downloaded', () => {
+	// 다운로드가 완료되면 앱을 종료하고 즉시 설치
+	autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on('error', (err) => {
+	console.error('업데이트 체크 중 오류 발생:', err);
+});
+// -----------------------
 
 // 창 ID와 파일 경로를 매핑하여 관리합니다.
 const windowFileMap = new Map<number, string>();
@@ -122,6 +143,16 @@ ipcMain.handle('save-file-dialog', async (_event, { content, suggestedName }) =>
 		}
 	}
 	return { success: false };
+});
+
+// 업데이트 체크 요청 처리
+ipcMain.on('check-for-updates', () => {
+	autoUpdater.checkForUpdatesAndNotify();
+});
+
+// 업데이트 다운로드 시작 요청 처리
+ipcMain.on('start-update', () => {
+	autoUpdater.downloadUpdate();
 });
 
 // 5. 렌더러로부터 메뉴 업데이트 요청 처리
