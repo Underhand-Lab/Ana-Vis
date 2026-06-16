@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { autoUpdater } from "electron-updater";
 
 // --- 자동 업데이트 설정 ---
+autoUpdater.logger = console; // 개발 콘솔에서 업데이트 로그 확인 가능
 autoUpdater.autoDownload = false; // 알림만 띄우고 다운로드는 수동으로 시작
 
 autoUpdater.on('update-available', () => {
@@ -147,6 +148,10 @@ ipcMain.handle('save-file-dialog', async (_event, { content, suggestedName }) =>
 
 // 업데이트 체크 요청 처리
 ipcMain.on('check-for-updates', () => {
+	if (is.dev) {
+		// 개발 모드에서는 실제 업데이트가 어려울 수 있으므로 로그를 남깁니다.
+		console.log('개발 모드에서 업데이트 체크를 시도합니다...');
+	}
 	autoUpdater.checkForUpdatesAndNotify();
 });
 

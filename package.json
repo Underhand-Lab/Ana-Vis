@@ -18,8 +18,15 @@
     "prebuild": "electron-vite build"
   },
   "build": {
-    "appId": "com.underland-lab.cvval",
-    "productName": "CV-Val",
+    "appId": "com.underlandlab.cvval",
+    "productName": "cv-val",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "underland-lab",
+        "repo": "cv-val"
+      }
+    ],
     "directories": {
       "output": "dist",
       "buildResources": "public"
@@ -59,6 +66,9 @@
     ]
   },
   "dependencies": {
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/ios": "^8.4.0",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@mediapipe/pose": "^0.5.1675469404",

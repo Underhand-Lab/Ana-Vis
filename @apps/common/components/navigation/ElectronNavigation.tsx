@@ -114,7 +114,6 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
         padding: '5px 0 2px',
         WebkitAppRegion: 'drag',
         overflow: 'hidden',
-        borderBottom: '1px solid #333',
     };
     navStyle.cursor = 'default'; // 드래그 가능한 영역은 기본 커서 유지
 
