@@ -36,6 +36,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const allOptions = sections.flatMap((s: SelectSection) => s.options || []); // 검색 및 선택값 확인을 위한 평탄화
   const activeLabel = allOptions.find(o => o?.value === value)?.label || value;
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditable, setIsEditable] = useState(false);
   const [searchTerm, setSearchTerm] = useState(activeLabel || '');
   const [hoveredValue, setHoveredValue] = useState<string | null>(null);
   const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
@@ -46,6 +47,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setSearchTerm(activeLabel);
+      setIsEditable(false);
     }
   }, [activeLabel, isOpen]);
 
@@ -78,6 +80,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       if (!isInsideInput && !isInsideMenu) {
         setIsOpen(false);
+        setIsEditable(false);
         setHoveredValue(null);
       }
     };
@@ -102,6 +105,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     setSearchTerm(label); 
     onChange(val);
     setIsOpen(false);
+    setIsEditable(false);
   };
 
   // 입력 중이 아니거나(초기 상태), 입력값이 현재 레이블과 동일할 경우 전체 목록을 보여줌
@@ -119,10 +123,15 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         type="text"
         placeholder={placeholder}
         value={searchTerm}
-        onFocus={(e) => {
-          setIsOpen(true);
-          e.target.select(); // 텍스트를 전체 선택하여 바로 삭제나 수정이 용이하게 함
+        onFocus={() => setIsOpen(true)}
+        onClick={(e) => {
+          // 메뉴가 이미 열려있을 때 클릭하면 입력 가능 모드로 전환
+          if (isOpen && !isEditable) {
+            setIsEditable(true);
+            (e.target as any).select();
+          }
         }}
+        readOnly={!isEditable}
         onChange={(e) => setSearchTerm(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && searchTerm) {
@@ -131,6 +140,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           }
         }}
         style={{
+            cursor: isEditable ? 'text' : 'pointer',
             ...inputStyle
         }}
       />
