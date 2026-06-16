@@ -13,6 +13,7 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
     const navigate = useNavigate();
     const location = useLocation();
     const [isFullScreen, setIsFullScreen] = useState(false); // 전체 화면 상태를 관리하는 새로운 state
+    const [updateAvailable, setUpdateAvailable] = useState(false); // 업데이트 가능 여부 상태
 
     // 마우스 드래그 스크롤을 위한 Ref 및 상태
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -52,9 +53,17 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
             };
             electron.ipcRenderer.on('fullscreen-status-changed', handleFullscreenChange);
 
+            // 업데이트 확인 이벤트 리스너
+            const handleUpdateAvailable = () => setUpdateAvailable(true);
+            electron.ipcRenderer.on('update-available', handleUpdateAvailable);
+            
+            // 앱 시작 시 혹은 주기적으로 업데이트 체크 요청 (메인 프로세스에서 처리)
+            electron.ipcRenderer.send('check-for-updates');
+
             return () => {
                 electron.ipcRenderer.removeAllListeners('menu-command');
                 electron.ipcRenderer.removeAllListeners('fullscreen-status-changed'); // 이벤트 리스너 정리
+                electron.ipcRenderer.removeAllListeners('update-available');
             };
         }
     }, [fileButtons, toolButtons, navigate, location.pathname]);
@@ -82,6 +91,12 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
 
     const handleFeatureChange = (e: ChangeEvent<HTMLSelectElement>) => {
         navigate(e.target.value);
+    };
+
+    // 업데이트 버튼 클릭 핸들러
+    const handleUpdateClick = () => {
+        const electron = (window as any).electron;
+        if (electron?.ipcRenderer) electron.ipcRenderer.send('start-update');
     };
 
     const navStyle: React.CSSProperties & { WebkitAppRegion?: string } = {
@@ -147,6 +162,26 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
 
                 {/* 중앙 여백 영역: 아무런 스타일이 없으므로 부모의 'drag' 속성을 유지하여 창 핸들 역할을 합니다. */}
                 <div style={{ flex: 1, minHeight: '30px' }} />
+
+                {/* 업데이트 버튼: 업데이트가 가능할 때만 표시 */}
+                {updateAvailable && (
+                    <button
+                        onClick={handleUpdateClick}
+                        style={{
+                            ...interactiveStyle,
+                            backgroundColor: '#e74c3c',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '4px 12px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Update Available
+                    </button>
+                )}
 
                 <div 
                     className="hide-scrollbar"
