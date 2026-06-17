@@ -11,8 +11,9 @@
     "dev:electron": "electron-vite dev --mode desktop",
     "build:web": "vite build --mode web",
     "build:electron": "vite build --mode desktop && electron-vite build --mode desktop",
-    "build:mobile": "vite build --mode mobile",
+    "build:mobile": "npx capacitor-assets generate & vite build --mode mobile",
     "build:ios": "npm run build:mobile && npx cap sync ios && npx cap open ios",
+    "build:android": "npm run build:mobile && npx cap sync android && npx cap open android",
     "dist": "electron-vite build --mode desktop && electron-builder",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -68,6 +69,8 @@
     ]
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.4.0",
     "@capacitor/core": "^8.4.0",
     "@capacitor/ios": "^8.4.0",
