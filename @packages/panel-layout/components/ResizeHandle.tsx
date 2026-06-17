@@ -33,7 +33,7 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({ direction, onDraggin
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000, // 탭 바(100)보다 높게 설정하여 터치 차단 방지
+        zIndex: 100, // 탭 바(100)보다 높게 설정하여 터치 차단 방지
         outline: 'none',
         touchAction: 'none', // 리사이즈 중 브라우저 스크롤 방지
         pointerEvents: 'auto'
