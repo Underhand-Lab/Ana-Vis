@@ -70,7 +70,11 @@ export function GenericPanelRowContent<T>({
       onPanelDragOver={onPanelDragOver}
       onPanelDrop={onPanelDrop}
       onPanelDragLeave={onPanelDragLeave}
-      onTabDragStart={(iIdx) => setDraggedPos({ cIdx, rIdx, iIdx })}
+      onTabDragStart={(iIdx, e) => {
+        // 폴리필 및 일부 브라우저에서 드래그 세션을 활성화하기 위해 데이터 설정 필요
+        e.dataTransfer.setData('text/plain', ''); 
+        setDraggedPos({ cIdx, rIdx, iIdx });
+      }}
       onDragEnd={handleDragEnd}
     />
   );

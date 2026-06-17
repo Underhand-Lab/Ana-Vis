@@ -76,6 +76,13 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
         setCursor('grabbing');
     };
 
+    const handleTouchStart = (e: React.TouchEvent) => {
+        isDragging.current = true;
+        lastX.current = e.touches[0].clientX;
+        dragDistance.current = 0;
+        setCursor('grabbing');
+    };
+
     const handleMouseLeaveOrUp = () => {
         isDragging.current = false;
         setCursor('pointer');
@@ -87,6 +94,14 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
         scrollRef.current.scrollLeft -= deltaX;
         lastX.current = e.clientX;
         dragDistance.current += Math.abs(deltaX); // 이동 거리 누적
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!isDragging.current || !scrollRef.current) return;
+        const deltaX = e.touches[0].clientX - lastX.current;
+        scrollRef.current.scrollLeft -= deltaX;
+        lastX.current = e.touches[0].clientX;
+        dragDistance.current += Math.abs(deltaX);
     };
 
     const handleFeatureChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -188,6 +203,10 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
                     onMouseDown={handleMouseDown}
                     onMouseLeave={handleMouseLeaveOrUp}
                     onMouseUp={handleMouseLeaveOrUp}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleMouseLeaveOrUp}
+                    onTouchCancel={handleMouseLeaveOrUp}
                     onMouseMove={handleMouseMove}
                     onWheel={(e) => {
                         // 세로 휠 입력을 가로 스크롤로 변환합니다.
@@ -208,7 +227,9 @@ const ElectronNavigation: React.FC<ElectronNavigationProps> = ({ fileButtons = [
                         padding: '0 10px', // 마진 음수 값 제거하여 드래그 영역과의 겹침 방지
                         cursor: cursor,
                         userSelect: 'none', // 드래그 중 텍스트 선택 방지
-                        WebkitUserSelect: 'none'
+                        WebkitUserSelect: 'none',
+                        WebkitOverflowScrolling: 'touch', // iOS 관성 스크롤
+                        touchAction: 'pan-x' // 가로 스크롤 허용, 세로 스크롤/확대 방지
                     }}
                 >
                     {/* 내부 리스트에도 명확하게 interactiveStyle 적용 */}

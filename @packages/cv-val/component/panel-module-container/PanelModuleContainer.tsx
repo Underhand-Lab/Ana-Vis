@@ -31,7 +31,8 @@ const PanelModuleContainer: React.FC<Props> = ({
   const { t } = useTranslation();
   const layoutRef = useRef<GenericPanelLayoutHandle<AnalysisModule<any>>>(null);
   const [settingsOpenMap, setSettingsOpenMap] = useState<Record<string, boolean>>({});
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const [isNarrow, setIsNarrow] = useState(() => typeof window !== 'undefined' && window.innerWidth < 500);
   
   // 패널 레이아웃 복원 및 저장 로직을 커스텀 훅으로 분리
   const { injectedLayout, handleLayoutChange, settingsMap, handleSettingsChange } = usePanelStorage(modules, moduleRegistry, onReorderModules, layoutRef);
@@ -56,15 +57,17 @@ const PanelModuleContainer: React.FC<Props> = ({
 
   // 반응형 분할 제한 설정을 위한 윈도우 리사이즈 감지
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => {
+      setIsNarrow(window.innerWidth < 500);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 모바일: 좌우 분할 불가(maxColumns: 1), 상하 분할 최대 1개선(즉, 2행, maxRows: 2)
-  // 데스크톱: 제한 없음 (undefined)
-  const maxColumns = isMobile ? 1 : undefined;
-  const maxRows = isMobile ? 2 : undefined;
+  // 폰 세로모드와 같이 극단적으로 가로가 좁은 환경(500px 미만)에서만 분할을 1로 제한합니다.
+  // 그 외의 환경(태블릿, 데스크탑 등)에서는 제약 없이 분할할 수 있도록 설정합니다.
+  const maxColumns = isNarrow ? 1 : undefined; 
+  const maxRows = isNarrow ? 1 : undefined;
 
   // 모듈 ID에서 타입을 추출하고 번역된 제목을 반환하는 헬퍼 함수
   const getModuleTitle = (module: AnalysisModule<any>) => {

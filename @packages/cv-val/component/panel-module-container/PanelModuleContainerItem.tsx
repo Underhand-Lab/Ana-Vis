@@ -70,6 +70,12 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
     return t(`analysisTools.${moduleType}`, module.title);
   }, [moduleType, module.title, t, localesLoaded]);
 
+  // 터치 디바이스 여부 판단 (단순 너비 체크 대신 기능 탐지 사용)
+  const isTouchDevice = useMemo(() => {
+    const isMobileDist = (import.meta as any).env?.VITE_DIST === 'mobile';
+    return isMobileDist || (typeof window !== 'undefined' && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0)));
+  }, []);
+
   return (
     <Div 
       ref={ref} 
@@ -80,11 +86,8 @@ const ModuleContainerItem = forwardRef<HTMLDivElement, Props>((props, ref) => {
         ...style 
       }}
       className={`${className} analysis-grid-item grid-item-card ${isSettingsOpen ? 'isSetting' : ''}`}
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-      onTouchEnd={onTouchEnd}
     >
-      <Div className="item-content no-drag" style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <Div className="item-content no-drag" style={{ width: '100%', height: '100%', position: 'relative', WebkitTouchCallout: 'none' }}>
         {/* 실제 시각화 결과물 */}
         <ModuleErrorBoundary title={displayTitle}>
           <View 
