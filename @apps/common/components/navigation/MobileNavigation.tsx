@@ -26,7 +26,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ fileButtons = [], t
         zIndex: 2000,
         transition: 'transform 0.5s ease',
         // iOS Safe Area 대응: 기기 상단 여백에 맞춰 패딩 자동 조절
-        padding: '20px 15px 0',
+        padding: '24px 4px 0',
         WebkitAppRegion: 'none',
         overflow: 'visible', // 버튼 터치 영역 확보를 위해 hidden 해제
         borderBottom: `1px solid ${vars.surface}`
