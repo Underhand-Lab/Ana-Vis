@@ -41,12 +41,15 @@
 ## 📂 프로젝트 구조
 
 ```text
-@packages/cv-val    # CV-Val Core Framework (분석 인터페이스 및 범용 엔진)
-@apps/              # Domain Applications (야구 분석 프로덕트 소스 및 UI)
-@shared/            # Shared Utilities (공통 컴포넌트, 비디오 유틸리티)
-electron/           # Desktop Native (메인 프로세스 및 데스크탑 설정)
-public/             # 정적 자원 (앱 아이콘, 가이드 마크다운 등)
+src/                # React bootstrap and legacy pages
+@apps/              # Product shell, feature orchestration, app-specific bridges
+@packages/          # Reusable analysis and panel-layout primitives
+@shared/            # Shared UI, utilities, and helpers
+public/             # Static assets, guides, and runtime model files
+ARCHITECTURE.md     # Current project structure guide
 ```
+
+구조와 책임 분리는 [`ARCHITECTURE.md`](./ARCHITECTURE.md)를 기준으로 확인하는 것이 가장 정확합니다.
 
 ## 🚀 시작하기
 

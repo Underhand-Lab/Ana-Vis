@@ -45,8 +45,12 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, style }
 
 // 인라인 스타일 (CSS 파일로 옮기셔도 됩니다)
 const overlayStyle: React.CSSProperties = {
-  position: 'fixed', top: 0, left: 0, right: 0, height: '100%',
-  display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100
+  position: 'fixed', 
+  top: 0, left: 0, right: 0, bottom: 0, // height: '100%' 대신 bottom: 0을 사용하여 키보드 대응
+  display: 'flex', 
+  justifyContent: 'center', 
+  alignItems: 'center', 
+  zIndex: 100
 };
 
 const modalStyle: React.CSSProperties = {

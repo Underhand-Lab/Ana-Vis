@@ -15,7 +15,7 @@ export const lightTheme: ThemeVars = {
     surface: '#f8f8f8',
     box: '#f0f0f0',
     text: '#1c244a',
-    font: "'KBO-Dia-Gothic_medium', Arial, sans-serif",
+    font: "'Default', Arial, sans-serif",
 };
 
 export const darkTheme: ThemeVars = {
@@ -25,7 +25,7 @@ export const darkTheme: ThemeVars = {
     surface: '#313131',
     box: '#212121',
     text: '#ddd',
-    font: "'KBO-Dia-Gothic_medium', Arial, sans-serif",
+    font: "'Default', Arial, sans-serif",
 };
 
 const FONT_STORAGE_KEY = 'cvval_font_preference';

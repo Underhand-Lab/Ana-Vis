@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useMemo } from 'react';
 import { Panel, Group, Layout } from 'react-resizable-panels';
 import { Div, vars } from "@shared/bridges/UIBridge";
 import { 
@@ -58,10 +58,32 @@ function GenericPanelLayoutComponent<T>(
     setColSizes,
     rowSizesMap,
     isColChanged,
+    isRowChanged, // 이 줄을 추가하여 isRowChanged를 layoutResult에서 가져옵니다.
     lastStructureRef,
     handleResizeEnd,
     setRowSizesMap,
   } = layoutResult;
+
+  // 리사이징 중 'defaultSize' prop이 변경되어 패널이 튀는(snapping) 현상을 방지하기 위해
+  // 레이아웃 구조가 변경될 때만 초기 사이즈 값을 계산하여 고정합니다.
+  const memoizedColDefaults = useMemo(() => {
+    const defaults: Record<number, number> = {};
+    groups.forEach((_, i) => {
+      defaults[i] = colSizes[`col-${i}`] ?? (100 / groups.length);
+    });
+    return defaults;
+    // colSizes를 의존성에 넣으면 리사이즈 중에도 계속 갱신되므로, 구조적 변화시에만 갱신합니다.
+  }, [groups.length, isColChanged]);
+
+  const memoizedRowDefaults = useMemo(() => {
+    const defaults: Record<string, number> = {};
+    groups.forEach((column, cIdx) => {
+      column.forEach(row => {
+        defaults[row.id] = rowSizesMap[cIdx]?.[row.id] ?? (100 / column.length);
+      });
+    });
+    return defaults;
+  }, [groups, isRowChanged]);
 
   return (
     <Div className="generic-panel-container" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', position: 'relative', backgroundColor: vars.background, boxSizing: 'border-box' }}>
@@ -70,31 +92,28 @@ function GenericPanelLayoutComponent<T>(
         key={`h-group-${groups.length}`}
         style={{ flex: 1 }} 
         onLayoutChange={setColSizes}
+        onLayoutChanged={() => handleResizeEnd()}
       >
         {groups.flatMap((column, cIdx) => {
-          const isRowChanged = column.length !== (lastStructureRef.current.rowCounts[cIdx] || 0);
-          const colDefaultSize = 100 / groups.length;
-          const savedColSize = colSizes[`col-${cIdx}`];
           const colElements: React.ReactNode[] = [
             <Panel 
               key={`col-${cIdx}`} 
               id={`col-${cIdx}`} 
-              defaultSize={isColChanged && !savedColSize ? colDefaultSize : (savedColSize ?? colDefaultSize)} 
+              defaultSize={memoizedColDefaults[cIdx]} 
               minSize={20}
             >
               <Group 
                 key={`v-group-${cIdx}-${column.length}`}
                 orientation="vertical" 
                 onLayoutChange={(sizes: Layout) => setRowSizesMap(prev => ({ ...prev, [cIdx]: sizes }))}
+                onLayoutChanged={() => handleResizeEnd()}
               >
                 {column.flatMap((row, rIdx) => {
-                  const savedRowSize = rowSizesMap[cIdx]?.[row.id];
-                  const pendingSize = rowSizesMap[cIdx]?.['pending-split-size'];
                   const rowElements: React.ReactNode[] = [
                     <Panel 
                       key={row.id} 
                       id={row.id} 
-                      defaultSize={isRowChanged && !savedRowSize ? (pendingSize ?? (100 / column.length)) : (savedRowSize ?? (100 / column.length))} 
+                      defaultSize={memoizedRowDefaults[row.id]} 
                       minSize={15}
                     >
                       <GenericPanelRowContent
@@ -111,13 +130,12 @@ function GenericPanelLayoutComponent<T>(
                       <ResizeHandle 
                         key={`sep-row-${row.id}`} 
                         direction="horizontal" 
-                        onDraggingChange={(isDragging) => !isDragging && handleResizeEnd()}
                       />
                     );
                   }
                   return rowElements;
                 })}
-              </Group>
+              </Group> 
             </Panel>
           ];
           if (cIdx < groups.length - 1) {
@@ -125,7 +143,6 @@ function GenericPanelLayoutComponent<T>(
               <ResizeHandle 
                 key={`sep-col-${cIdx}`} 
                 direction="vertical" 
-                onDraggingChange={(isDragging) => !isDragging && handleResizeEnd()}
               />
             );
           }

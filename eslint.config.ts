@@ -8,7 +8,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import type { Linter } from 'eslint';
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'android/**', 'ios/**']),
   {
     // 린트 대상을 TS 파일까지 확장합니다.
     files: ['**/*.{js,jsx,ts,tsx}'],

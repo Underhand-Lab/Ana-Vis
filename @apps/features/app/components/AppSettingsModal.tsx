@@ -21,7 +21,7 @@ const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ isOpen, onClose, th
   const [fontLoadingStatus, setFontLoadingStatus] = useState<'loading' | 'success' | 'error' | 'not-supported'>('loading');
   const [fontOptions, setFontOptions] = useState<any[][]>([
     [
-      { label: 'Default', value: 'KBO-Dia-Gothic_medium'},
+      { label: 'Default', value: 'Default'},
       { label: 'System UI', value: 'system-ui, -apple-system, sans-serif' },
       { label: 'Serif', value: 'serif' },
       { label: 'Sans-Serif', value: 'sans-serif' },
@@ -29,6 +29,8 @@ const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ isOpen, onClose, th
     ],
     []
   ]);
+
+  const languageOptions = [{ label: '한국어', value: 'ko' }, { label: 'English', value: 'en' }];
 
   useEffect(() => {
     const saved = localStorage.getItem(RECENT_FONTS_KEY);
@@ -75,7 +77,8 @@ const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ isOpen, onClose, th
           <span style={{ fontWeight: 'bold' }}>{t('settings.language')}</span>
           <SearchableSelect
             value={i18n.language}
-            sections={[{ options: [{ label: '한국어', value: 'ko' }, { label: 'English', value: 'en' }] }]}
+            sections={[{ options: languageOptions }]}
+            searchOptions={languageOptions}
             onChange={(val) => i18n.changeLanguage(val)}
             placeholder={t('settings.languagePlaceholder', '언어 검색...')}
             style={{ width: '180px' }}
@@ -90,6 +93,7 @@ const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ isOpen, onClose, th
               { label: t('settings.defaultFonts', '기본 글꼴'), options: fontOptions[0] },
               { label: t('settings.systemFonts', '시스템 글꼴'), options: fontOptions[1] }
             ]}
+            searchOptions={[...fontOptions[0], ...fontOptions[1]]}
             onChange={handleFontChange}
             placeholder={t('settings.fontPlaceholder', '글꼴 입력 또는 검색...')}
             renderOption={(opt, isSelected) => (

@@ -1,16 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Div, InputText, vars } from '@shared/bridges/UIBridge';
-
-interface Option {
-  label: string;
-  value: string;
-}
-
-interface SelectSection {
-  label?: string;
-  options: Option[];
-}
+import { useSearchableSelect, Option, SelectSection } from './useSearchableSelect';
 
 interface SearchableSelectProps {
   value: string;
@@ -21,6 +12,7 @@ interface SearchableSelectProps {
   style?: React.CSSProperties;
   inputStyle?: React.CSSProperties;
   searchResultsLabel?: string; // 검색 결과 섹션 라벨
+  searchOptions?: Option[]; // 검색 대상 그룹 (주입된 경우 이 그룹에서만 검색 실시)
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -31,133 +23,121 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   renderOption,
   style,
   inputStyle,
-  searchResultsLabel
+  searchResultsLabel,
+  searchOptions
 }) => {
-  const allOptions = sections.flatMap((s: SelectSection) => s.options || []); // 검색 및 선택값 확인을 위한 평탄화
-  const activeLabel = allOptions.find(o => o?.value === value)?.label || value;
-  const [isOpen, setIsOpen] = useState(false);
-  const [isEditable, setIsEditable] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(activeLabel || '');
-  const [hoveredValue, setHoveredValue] = useState<string | null>(null);
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
-  const containerRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const searchableSections = searchOptions ? [{ options: searchOptions }] : sections;
 
-  // 외부 value 변경 또는 드롭다운이 닫힐 때 searchTerm 동기화
+  const {
+    isOpen,
+    isEditable,
+    searchTerm,
+    setSearchTerm,
+    hoveredValue,
+    setHoveredValue,
+    menuStyle,
+    containerRef,
+    menuRef,
+    inputRef,
+    mobileInputRef,
+    filteredOptions,
+    isInitialState,
+    handleSelect,
+    handleActivation,
+  } = useSearchableSelect({ value, sections: searchableSections, onChange, placeholder });
+
+  // 모바일(터치 기반/가상 키보드 사용) 환경 여부 확인
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    if (!isOpen) {
-      setSearchTerm(activeLabel);
-      setIsEditable(false);
-    }
-  }, [activeLabel, isOpen]);
+    setIsMobile(window.matchMedia('(pointer: coarse)').matches);
+  }, []);
 
-  // 드롭다운 위치 계산 함수
-  const updateMenuPosition = () => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setMenuStyle({
-        position: 'fixed',
-        top: rect.bottom + 5,
-        left: rect.left,
-        width: rect.width,
-        zIndex: 10001, // Modal(100)보다 높게 설정
-        fontFamily: vars.font // 포털로 이동하므로 폰트 명시적 적용
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      updateMenuPosition();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      const isInsideInput = containerRef.current?.contains(target);
-      const isInsideMenu = menuRef.current?.contains(target);
-
-      if (!isInsideInput && !isInsideMenu) {
-        setIsOpen(false);
-        setIsEditable(false);
-        setHoveredValue(null);
+  const inputProps = {
+    placeholder,
+    value: searchTerm,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value),
+    onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter' && searchTerm) {
+        const matched = searchableSections.flatMap(s => s.options).find(o => o?.label?.toLowerCase() === searchTerm.toLowerCase());
+        handleSelect(matched ? matched.value : searchTerm);
       }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // 화면 크기 조정이나 스크롤 시 위치 재계산
-  useEffect(() => {
-    if (isOpen) {
-      window.addEventListener('resize', updateMenuPosition);
-      window.addEventListener('scroll', updateMenuPosition, true); // 캡처링 단계에서 스크롤 감지
     }
-    return () => {
-      window.removeEventListener('resize', updateMenuPosition);
-      window.removeEventListener('scroll', updateMenuPosition, true);
-    };
-  }, []);
-
-  const handleSelect = (val: string) => {
-    const label = allOptions.find(o => o.value === val)?.label || val;
-    setSearchTerm(label); 
-    onChange(val);
-    setIsOpen(false);
-    setIsEditable(false);
   };
 
-  // 입력 중이 아니거나(초기 상태), 입력값이 현재 레이블과 동일할 경우 전체 목록을 보여줌
-  const isInitialState = searchTerm === '' || searchTerm === activeLabel;
-
-  const filteredOptions = isInitialState
-    ? []
-    : allOptions.filter((o: Option) => 
-        o?.label?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  // 모바일 편집 모드 전환 시 포털 내의 입력창에 즉시 포커스
+  useEffect(() => {
+    if (isMobile && isEditable && mobileInputRef.current) { // isMobile 의존성 추가
+      const el = mobileInputRef.current;
+      el.focus({ preventScroll: true });
+      el.setSelectionRange(el.value.length, el.value.length);
+    }
+  }, [isEditable, isMobile]);
 
   return (
-    <Div ref={containerRef} style={{ position: 'relative', width: '100%', ...style }}>
-      <InputText 
+    <Div 
+      ref={containerRef} 
+      style={{ position: 'relative', width: '100%', opacity: (isMobile && isEditable) ? 0.5 : 1, ...style }}
+      onClick={handleActivation}
+      onTouchEnd={(e) => {
+        // 첫 터치 시 Input에 포커스가 가서 키보드가 뜨거나 입력 포인터(I-beam)가 생기는 것을 방지
+        if (isMobile && !isEditable) {
+          handleActivation();
+          e.preventDefault(); // Input의 기본 포커스 동작 방지
+        }
+      }}
+    >
+      <InputText
+        ref={inputRef}
         type="text"
-        placeholder={placeholder}
-        value={searchTerm}
-        onFocus={() => setIsOpen(true)}
-        onClick={(e) => {
-          // 메뉴가 이미 열려있을 때 클릭하면 입력 가능 모드로 전환
-          if (isOpen && !isEditable) {
-            setIsEditable(true);
-            (e.target as any).select();
-          }
-        }}
-        readOnly={!isEditable}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && searchTerm) {
-            const matched = allOptions.find(o => o?.label?.toLowerCase() === searchTerm.toLowerCase());
-            handleSelect(matched ? matched.value : searchTerm);
-          }
-        }}
+        {...inputProps}
+        readOnly={isMobile ? true : !isEditable}
+        inputMode={(!isMobile && isEditable) ? 'text' : 'none'} // 모바일에서는 메인 입력창의 가상 키보드 팝업 방지
         style={{
-            cursor: isEditable ? 'text' : 'pointer',
+            cursor: (isMobile || !isEditable) ? 'pointer' : 'text',
+            pointerEvents: (isMobile || !isEditable) ? 'none' : 'auto', // 모바일이거나 비활성일 때는 컨테이너가 클릭 처리
+            caretColor: isEditable ? 'auto' : 'transparent', // 비활성 상태일 때 입력 커서 숨김
             ...inputStyle
         }}
       />
       
       {isOpen && createPortal(
-        <Div ref={menuRef} style={{
-          ...menuStyle,
-          maxHeight: '220px',
-          overflowY: 'auto',
+        <Div 
+          ref={menuRef} 
+          onClick={(e) => e.stopPropagation()} 
+          onTouchEnd={(e) => e.stopPropagation()}
+          style={{
+          ...menuStyle, // 훅에서 계산된 기본 스타일 (모바일용 좌표 포함 가능)
+          // 데스크탑 환경에서는 검색 모드(isEditable)여도 위치가 고정되도록 좌표 강제 오버라이드
+          ...(!isMobile && {
+            position: 'absolute',
+            top: containerRef.current ? containerRef.current.getBoundingClientRect().bottom + window.scrollY : menuStyle.top,
+            left: containerRef.current ? containerRef.current.getBoundingClientRect().left + window.scrollX : menuStyle.left,
+            width: containerRef.current ? containerRef.current.offsetWidth : menuStyle.width,
+            bottom: 'auto',
+            height: 'auto',
+          }),
           background: vars.surface,
-          border: `1px solid ${vars.text}33`,
+          border: (isMobile && isEditable) ? 'none' : `1px solid ${vars.text}33`,
           borderRadius: '0px',
-          boxShadow: 'none', // 입체감 제거
-          display: 'flex',
-          flexDirection: 'column',
           padding: '4px 0'
         }}>
+          {isMobile && isEditable && (
+            <Div style={{ padding: '12px', background: vars.surface, borderTop: `1px solid ${vars.text}22` }}>
+              <InputText
+                ref={mobileInputRef}
+                type="text"
+                {...inputProps}
+                style={{ width: '100%', ...inputStyle }}
+              />
+            </Div>
+          )}
+          <Div style={{ 
+            maxHeight: (isMobile && isEditable) ? '40vh' : '220px', 
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%'
+          }}>
           {isInitialState && sections.map((section: SelectSection, sIdx: number) => (
             <React.Fragment key={`section-${sIdx}`}>
               {section.options.length > 0 && (
@@ -209,6 +189,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
               ))}
             </>
           )}
+          </Div>
         </Div>,
         document.body
       )}

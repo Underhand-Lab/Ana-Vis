@@ -9,7 +9,14 @@
     "analysisType": "분석 방식",
     "analysisModel": "분석 모델",
     "confThreshold": "임계값",
-    "analysisTool": "분석 도구"
+    "analysisTool": "분석 도구",
+    "fontNotSupported": "시스템 글꼴이 지원되지 않습니다.",
+    "font": "글꼴",
+    "recentFonts": "최근 사용",
+    "defaultFonts": "기본 글꼴",
+    "systemFonts": "시스템 글꼴",
+    "fontPlaceholder": "글꼴 입력 또는 검색...",
+    "loadingFonts": "시스템 글꼴 로드 중..."
   },
   "analysisTools": {
     "video": "동영상",

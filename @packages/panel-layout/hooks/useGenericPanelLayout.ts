@@ -97,6 +97,7 @@ export function useGenericPanelLayout<T>(
   // [요구사항 1] 구조 변경 감지 (key 전환 및 균등 배분용)
   const lastStructureRef = useRef({ colCount: groups.length, rowCounts: groups.map(g => g.length) });
   const isColChanged = groups.length !== lastStructureRef.current.colCount;
+  const isRowChanged = groups.some((g, i) => g.length !== (lastStructureRef.current.rowCounts[i] || 0));
 
   useEffect(() => {
     lastStructureRef.current = { colCount: groups.length, rowCounts: groups.map(g => g.length) };
@@ -173,6 +174,7 @@ export function useGenericPanelLayout<T>(
     rowSizesMap,
     setRowSizesMap,
     isColChanged,
+    isRowChanged,
     lastStructureRef,
     handleResizeEnd,
     handleRemoveItem,

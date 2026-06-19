@@ -162,22 +162,22 @@ const AppPage: React.FC = () => {
 				}}
 			/>
 			<FixedFooter><Box className="container"><Div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-				<Div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+				<Div style={{ display: 'flex', gap: '8px', alignItems: 'center'}}>
 					<Button
 						onClick={handlePrevFrame}
-						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center' }}
+						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center' , fontFamily: 'Default' }}
 					>
 						{'❮'}
 					</Button>
 					<Button
 						onClick={handleTogglePlay}
-						style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, alignItems: 'center' }}
+						style={{ fontSize: '12px', width: '30px', height: '30px', padding: 0, alignItems: 'center' , fontFamily: 'Default' }}
 					>
 						{isPlaying ? '⏸' : '▶'}
 					</Button>
 					<Button
 						onClick={handleNextFrame}
-						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center' }}
+						style={{ fontSize: '10px', width: '28px', height: '28px', padding: 0, alignItems: 'center' , fontFamily: 'Default' }}
 					>
 						{'❯'}
 					</Button>
