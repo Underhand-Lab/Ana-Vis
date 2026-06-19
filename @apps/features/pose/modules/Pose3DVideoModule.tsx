@@ -96,7 +96,7 @@ export const Pose3DVideoSettings: React.FC<AnalysisSettingsProps<Pose3DVideoSett
         <Div className="flex-view" style={{ flexDirection: 'column', gap: '15px' }}>
 
             <Div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {Object.entries(colorMap).map(([key, label]) => ( // eslint-disable-line react-hooks/exhaustive-deps
+                {Object.entries(colorMap).map(([key, label]) => (
                     <InputColor
                         key={key}
                         label={label}

@@ -2,36 +2,39 @@
 
 ## Goal
 
-* Make `npm run lint` ignore generated Android and iOS folders so linting stays focused on source code.
+* Restore and complete the project structure cleanup after merge loss.
 
 ## Plan
 
 * [x] Read the existing task instructions and capture project state.
-* [x] Inspect the lint configuration and generated platform folders.
-* [x] Add ignore rules for `android` and `ios` in ESLint config.
-* [x] Verify `npm run lint` no longer traverses generated platform output.
+* [x] Inspect the current app entry points, README, and legacy pages.
+* [x] Remove unused legacy page implementations under `src/_legacy`.
+* [x] Simplify `src/App.tsx` and `src/main.tsx` so bootstrap responsibilities are clear.
+* [x] Update README and architecture notes to reflect the real folder layout.
+* [x] Verify `npm run lint` still passes after the cleanup.
 
 ## Progress
 
-* Root `working.md` is being used to track task state.
-* The repository includes generated Android and iOS folders from Capacitor.
-* ESLint is configured through `eslint.config.ts`.
-* Added global ignore rules for `android/**` and `ios/**` so linting stays within source code.
-* The latest lint run no longer reported `android` or `ios` files, so the ignore rules are effective.
+* The repository currently has legacy page files under `src/_legacy/pages` that are no longer used by the active app shell.
+* `src/App.tsx` currently mixes routing with a mobile drag-and-drop polyfill.
+* `src/main.tsx` still contains i18n bootstrap only, so it is a good place to own runtime setup.
+* The unused legacy page implementations were deleted again.
+* The mobile drag-and-drop polyfill now lives in `src/main.tsx`.
+* README and architecture notes now reflect the actual folder roles instead of the older layout.
+* `npm run lint` passes with zero warnings and zero errors.
 
 ## Decisions
 
-* Ignore generated platform directories at the ESLint level instead of deleting them.
-* Keep the change limited to lint behavior and avoid altering build outputs.
+* Remove dead legacy page code instead of keeping it documented-only.
+* Move runtime bootstrap concerns into `src/main.tsx` and keep `src/App.tsx` focused on composition.
 
 ## Pending
 
-* Run `npm run lint` again to confirm the ignore rules resolve the heap issue.
+* None for this task.
 
 ## Issues
 
-* Generated platform folders are present in the repository and can overwhelm repo-wide tools if they are not ignored.
-* `npm run lint` still fails for unrelated existing ESLint/TypeScript parsing issues outside the ignored folders.
+* None currently noted for this cleanup.
 
 ## Change Log
 

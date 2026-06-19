@@ -1,9 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { polyfill } from 'mobile-drag-drop';
+import { scrollBehaviourDragImageTranslateOverride } from 'mobile-drag-drop/scroll-behaviour';
 
 import App from './App'
 import { I18nextProvider } from 'react-i18next';
-import i18n from '@shared/utils/i18n'; // i18n 설정 파일 임포트
+import i18n from '@shared/utils/i18n';
+
+polyfill({
+  holdToDrag: 50,
+  dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
+});
 
 const rootElement = document.getElementById('root');
 
@@ -17,4 +24,4 @@ createRoot(rootElement).render(
       <App />
     </I18nextProvider>
   </StrictMode>
-)
+);

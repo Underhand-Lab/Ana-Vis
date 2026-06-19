@@ -17,7 +17,7 @@
 - **공 추적 (Ball Tracking)**: 투구 또는 타구된 공의 궤적을 추적하고 데이터를 분석합니다.
 - **배트 궤적 (Bat Trajectory)**: 타격 시 배트의 이동 경로를 시각화합니다.
 - **커스텀 분석 대시보드**: 사용자가 분석 모듈을 자유롭게 배치하고 크기를 조절할 수 있는 유연한 대시보드를 제공합니다. (현재 `react-grid-layout` 기반)
-- **분리형 프레임워크 (Framework-First)**: 분석 엔진(`cv-val-core`)과 도메인 앱(`baseball-app`)을 분리하여 확장성을 확보합니다.
+- **모듈형 구조**: `@apps`, `@packages`, `@shared`로 역할을 나눠 기능을 조립합니다.
 - **플러그인 아키텍처**: 새로운 분석 모델(Pose, Ball, Bat 등)을 플러그인 형태로 손쉽게 추가할 수 있습니다.
 - **멀티 플랫폼 엔진**: Web, Electron 환경에서 동일한 데이터 처리 로직을 사용합니다.
 - **커스텀 대시보드**: `react-grid-layout` 기반의 유연한 분석 환경을 제공합니다.
@@ -28,11 +28,11 @@
 
 - **Web**: 웹 브라우저 기반의 간편한 접근성 제공
 - **Desktop (Electron)**: 로컬 파일 시스템 직접 접근 및 네이티브 메뉴 연동
-- **Mobile (In Development)**: 모바일 최적화 및 **React Native** 기반의 네이티브 환경 이주 고려 중
+- **Mobile (Capacitor)**: iOS/Android 프로젝트를 포함한 모바일 빌드 지원
 
 ## 🛠 기술 스택
 
-- **Core**: React 18, TypeScript
+- **Core**: React 19, TypeScript
 - **Build Tool**: Vite
 - **Desktop**: Electron
 - **Layout**: React-Grid-Layout (향후 플랫폼 확장에 따라 변경 가능)
@@ -41,32 +41,49 @@
 ## 📂 프로젝트 구조
 
 ```text
-src/                # React bootstrap and legacy pages
-@apps/              # Product shell, feature orchestration, app-specific bridges
-@packages/          # Reusable analysis and panel-layout primitives
-@shared/            # Shared UI, utilities, and helpers
-public/             # Static assets, guides, and runtime model files
-ARCHITECTURE.md     # Current project structure guide
+src/                    # React bootstrap and legacy pages
+@apps/pages             # App shell and top-level page composition
+@apps/features          # Domain features for app-specific flows
+@apps/common            # App-specific bridges and file handlers
+@packages/cv-val        # Core analysis data, hooks, modules, detectors
+@packages/panel-layout  # Generic panel layout primitives
+@shared                 # Shared UI, utilities, media helpers, and bridge code
+public/                 # Static assets, guides, and runtime model files
+android/                # Capacitor Android project
+ios/                    # Capacitor iOS project
+ARCHITECTURE.md         # Detailed project structure guide
 ```
 
 구조와 책임 분리는 [`ARCHITECTURE.md`](./ARCHITECTURE.md)를 기준으로 확인하는 것이 가장 정확합니다.
 
+## 📁 디렉터리 역할
+
+- `src/main.tsx`: React 진입점
+- `src/App.tsx`: 라우터와 앱 본체 연결
+- `@apps/pages/AppPage.tsx`: 현재 앱의 메인 조립 지점
+- `@apps/features/*`: 자세, 공, 배트 도메인별 기능
+- `@packages/cv-val/*`: 분석 데이터, 로더, 모듈, 공통 컨테이너
+- `@packages/panel-layout/*`: 재사용 가능한 패널 레이아웃 시스템
+- `@shared/*`: UI 브리지와 공통 유틸리티
+- `public/external/models/*`: 실행 시 로드되는 추론 모델 자산
+- `src/_legacy/pages/*`: 과거 페이지 구현체로, 현재 앱 셸에서는 사용하지 않음
+
 ## 🚀 시작하기
 
 ### 의존성 설치
-
 
 ```bash
 npm install
 ```
 
 ### 개발 서버 실행
+
 ```bash
 # Web 모드
 npm run dev
 
 # Electron 모드
-npm run electron:dev
+npm run dev:electron
 ```
 
 ---

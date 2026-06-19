@@ -18,7 +18,6 @@ export const useModuleLoader = (
         reader.onload = (event) => {
             try {
                 const content = event.target?.result as string;
-                // eslint-disable-next-line no-new-func
                 const plugin = new Function('React', 'AnalysisTools', `return ${content}`)(React, analysisTools);
 
                 if (plugin && plugin.View && plugin.title) {

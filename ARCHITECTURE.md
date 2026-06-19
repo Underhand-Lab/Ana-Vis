@@ -43,7 +43,7 @@ public/
 
 * `AppPage` is the current composition root for the main product UI.
 * `FeatureRegistry` acts as the feature wiring layer for detectors, analysis tools, and modules.
-* `src/_legacy/pages` should be treated as historical or fallback code unless a migration explicitly targets it.
+* `src/_legacy/pages` is historical code that is not used by the active app shell.
 * `public/external/models` is large by design because model assets are loaded at runtime by the browser/Electron app.
 
 ## Practical Guidance
@@ -52,4 +52,3 @@ public/
 * Add reusable analysis or layout primitives under `@packages`.
 * Add generic UI and utility code under `@shared`.
 * Prefer updating `FeatureRegistry` and the domain feature folder together when introducing a new analysis feature.
-

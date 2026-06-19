@@ -16,7 +16,6 @@ export function PanelItemLifecycleWrapper<T>({
   useEffect(() => {
     onInit?.(item, id);
     return () => onCleanup?.(item, id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, ...deps]);
 
   return <>{children}</>;
