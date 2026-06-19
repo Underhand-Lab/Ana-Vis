@@ -9,7 +9,14 @@
     "analysisType": "Analysis Type",
     "analysisModel": "Analysis Model",
     "confThreshold": "Threshold",
-    "analysisTool": "Analysis Tool"
+    "analysisTool": "Analysis Tool",
+    "fontNotSupported": "System fonts are not supported.",
+    "font": "Font",
+    "recentFonts": "Recent Fonts",
+    "defaultFonts": "Default Fonts",
+    "systemFonts": "System Fonts",
+    "fontPlaceholder": "Enter or search font...",
+    "loadingFonts": "Loading system fonts..."
   },
   "analysisTools": {
     "video": "Video",

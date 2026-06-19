@@ -12,6 +12,7 @@ interface SearchableSelectProps {
   style?: React.CSSProperties;
   inputStyle?: React.CSSProperties;
   searchResultsLabel?: string; // 검색 결과 섹션 라벨
+  searchOptions?: Option[]; // 검색 대상 그룹 (주입된 경우 이 그룹에서만 검색 실시)
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -22,8 +23,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   renderOption,
   style,
   inputStyle,
-  searchResultsLabel
+  searchResultsLabel,
+  searchOptions
 }) => {
+  const searchableSections = searchOptions ? [{ options: searchOptions }] : sections;
+
   const {
     isOpen,
     isEditable,
@@ -40,7 +44,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     isInitialState,
     handleSelect,
     handleActivation,
-  } = useSearchableSelect({ value, sections, onChange, placeholder });
+  } = useSearchableSelect({ value, sections: searchableSections, onChange, placeholder });
 
   // 모바일(터치 기반/가상 키보드 사용) 환경 여부 확인
   const [isMobile, setIsMobile] = useState(false);
@@ -54,7 +58,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value),
     onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter' && searchTerm) {
-        const matched = sections.flatMap(s => s.options).find(o => o?.label?.toLowerCase() === searchTerm.toLowerCase());
+        const matched = searchableSections.flatMap(s => s.options).find(o => o?.label?.toLowerCase() === searchTerm.toLowerCase());
         handleSelect(matched ? matched.value : searchTerm);
       }
     }
@@ -67,7 +71,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       el.focus({ preventScroll: true });
       el.setSelectionRange(el.value.length, el.value.length);
     }
-  }, [isEditable]);
+  }, [isEditable, isMobile]);
 
   return (
     <Div 
@@ -97,7 +101,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       />
       
       {isOpen && createPortal(
-        <Div ref={menuRef} style={{
+        <Div 
+          ref={menuRef} 
+          onClick={(e) => e.stopPropagation()} 
+          onTouchEnd={(e) => e.stopPropagation()}
+          style={{
           ...menuStyle, // 훅에서 계산된 기본 스타일 (모바일용 좌표 포함 가능)
           // 데스크탑 환경에서는 검색 모드(isEditable)여도 위치가 고정되도록 좌표 강제 오버라이드
           ...(!isMobile && {
