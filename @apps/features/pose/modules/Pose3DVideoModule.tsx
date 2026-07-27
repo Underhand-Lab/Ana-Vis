@@ -55,6 +55,7 @@ const defaultSettings: Pose3DVideoSettingsData = {
 export const Pose3DVideoView: React.FC<AnalysisViewProps<Pose3DVideoSettingsData>> = ({ data, currentFrame, settings }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const { setOptions, drawPose } = usePose3DFrame(data, canvasRef);
+    const hasPoseData = Boolean(data?.exist('pose'));
 
     // 설정값 동기화
     useEffect(() => {
@@ -65,10 +66,10 @@ export const Pose3DVideoView: React.FC<AnalysisViewProps<Pose3DVideoSettingsData
 
     // 실제 그리기
     useEffect(() => {
-        if (data) {
+        if (data && hasPoseData) {
             drawPose(currentFrame);
         }
-    }, [data, currentFrame, drawPose]);
+    }, [data, hasPoseData, currentFrame, drawPose]);
 
     return (
         <Div style={{ flex: 1, width: '100%', height: '100%', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
@@ -84,6 +85,22 @@ export const Pose3DVideoView: React.FC<AnalysisViewProps<Pose3DVideoSettingsData
                     left: 0
                 }}
             />
+            {!hasPoseData && (
+                <Div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'rgba(255,255,255,0.72)',
+                    fontSize: '14px',
+                    textAlign: 'center',
+                    padding: '16px',
+                    background: 'rgba(0,0,0,0.72)'
+                }}>
+                    자세 분석 데이터가 없습니다.
+                </Div>
+            )}
         </Div>
     );
 };

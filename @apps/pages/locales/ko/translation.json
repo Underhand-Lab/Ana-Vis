@@ -22,6 +22,7 @@
     "video": "동영상",
     "table": "표",
     "graph": "그래프",
+    "bat-analysis-tool": "배트 분석",
     "edittrackball": "볼 편집",
     "edittrackbat": "배트 편집"
   },
@@ -34,6 +35,7 @@
     "close": "닫기",
     "processing": "처리 중...",
     "startAnalysis": "분석 시작",
+    "cancel": "취소",
     "none": "없음",
     "loading": "불러오는 중..."
   },
@@ -51,10 +53,15 @@
   "status": {
     "label-video-loaded": "대기 중",
     "label-before-process": "대기 중",
+    "label-video-loading": "비디오 불러오는 중...",
+    "label-video-ready": "비디오 준비 완료",
     "label-model-loading": "모델 로드 중...",
-    "label-pn-process": "분석 중...",
+    "label-on-process": "분석 중...",
+    "label-after-process": "분석 결과 정리 중...",
+    "label-cancelled": "취소됨",
     "label-completed": "분석 완료",
-    "label-error": "오류"
+    "label-error": "오류",
+    "errorDetail": "오류 상세"
   },
   "analysisLabels": {}
 }

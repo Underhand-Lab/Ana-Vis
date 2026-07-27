@@ -19,8 +19,10 @@ export interface AppLogic {
   editingType: 'ball' | 'bat' | null;
   setEditingType: Dispatch<SetStateAction<'ball' | 'bat' | null>>;
   status: string;
+  errorMessage: string | null;
   progress: { current: number; total: number };
   isProcessing: boolean;
+  cancelProcessing: () => void;
   ballFrame: ReturnType<typeof useTrackBallFrame>;
   batFrame: ReturnType<typeof useTrackBatFrame>;
   loadData: (file: File) => Promise<string | undefined>;
@@ -46,7 +48,7 @@ export const useAppLogic = (): AppLogic => {
   const [confValue, setConfValue] = useState(0.5);
   const [editingType, setEditingType] = useState<'ball' | 'bat' | null>(null);
 
-  const { status, progress, isProcessing, loadVideo, runInference } = useProcessor();
+  const { status, progress, isProcessing, errorMessage, loadVideo, runInference, cancelProcessing } = useProcessor();
   const ballFrame = useTrackBallFrame(processedData);
   const batFrame = useTrackBatFrame(processedData);
 
@@ -163,8 +165,10 @@ export const useAppLogic = (): AppLogic => {
     editingType,
     setEditingType,
     status,
+    errorMessage,
     progress,
     isProcessing,
+    cancelProcessing,
     ballFrame,
     batFrame,
     loadData,

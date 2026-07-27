@@ -16,6 +16,7 @@ export class Processor {
     private detector: IDetector | null = null;
     private onProgressCallback: OnProgressCallback | null = null;
     private videoConverter: any; // MediaBunnyVideoConverter의 정확한 타입을 알 수 없는 경우 any 혹은 별도 정의
+    private cancelled = false;
 
     constructor() {
         this.videoConverter = new MediaBunnyVideoToImageList();
@@ -24,6 +25,17 @@ export class Processor {
     setting(detector: IDetector, onProgress: OnProgressCallback): void {
         this.detector = detector;
         this.onProgressCallback = onProgress;
+        this.cancelled = false;
+    }
+
+    cancel(): void {
+        this.cancelled = true;
+    }
+
+    private throwIfCancelled(): void {
+        if (this.cancelled) {
+            throw new Error("Processing cancelled");
+        }
     }
 
     /**
@@ -33,6 +45,7 @@ export class Processor {
         if (this.onProgressCallback) {
             this.onProgressCallback.onState("video-loading");
         }
+        this.throwIfCancelled();
         
         const videoFile = videoList[0];
         if (videoFile instanceof File) {
@@ -41,6 +54,7 @@ export class Processor {
 
         const { imageList, metadata } = 
             await this.videoConverter.convert(videoFile);
+        this.throwIfCancelled();
 
         cvval.setRawImgList(imageList, 0);
         cvval.setVideoMetadata([metadata]);
@@ -58,6 +72,7 @@ export class Processor {
         if (!this.detector) {
             throw new Error("Detector is not set. Call setting() before runInference().");
         }
+        this.throwIfCancelled();
         
         console.log(cvval);
 
@@ -72,6 +87,7 @@ export class Processor {
             this.onProgressCallback.onState("model-loading");
         }
         await this.detector.initialize();
+        this.throwIfCancelled();
 
         if (this.onProgressCallback) {
             this.onProgressCallback.onState("on-process");
@@ -81,6 +97,7 @@ export class Processor {
         data.initialize([metadata]);
 
         for (let i = 0; i < imageList.length; i++) {
+            this.throwIfCancelled();
             if (this.onProgressCallback) {
                 this.onProgressCallback.onProgress(
                     i + 1, 
@@ -90,6 +107,7 @@ export class Processor {
             
             const image = imageList[i];
             const frameData = await this.detector.process(image);
+            this.throwIfCancelled();
             data.addDataAt(0, image, frameData);
 
             await new Promise(resolve => setTimeout(resolve, 0));

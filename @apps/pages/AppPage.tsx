@@ -194,13 +194,19 @@ const AppPage: React.FC = () => {
 				isOpen={isProcessModalOpen}
 				onClose={() => setProcessModalOpen(false)}
 				analysisMap={ALL_DETECTORS}
+				onCancel={logic.cancelProcessing}
 				onProcess={async (type, model) => {
-					await logic.handleProcessVideo(type, model);
-					setProcessModalOpen(false);
+					try {
+						await logic.handleProcessVideo(type, model);
+						setProcessModalOpen(false);
+					} catch (error) {
+						console.error(error);
+					}
 				}}
 				isProcessing={logic.isProcessing}
 				progress={logic.progress}
 				statusKey={`label-${logic.status}`}
+				errorMessage={logic.errorMessage}
 			/>
 
 			<ToolAddModal

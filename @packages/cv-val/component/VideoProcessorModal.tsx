@@ -12,9 +12,11 @@ interface VideoProcessorModalProps {
 	title?: string;
 	analysisMap: Record<string, Record<string, any>>;
 	onProcess: (type: string, modelKey: string) => void;
+	onCancel?: () => void;
 	isProcessing: boolean;
 	progress: { current: number; total: number };
 	statusKey?: string;
+	errorMessage?: string | null;
 }
 
 const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
@@ -23,9 +25,11 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
 	title = "비디오 처리",
 	analysisMap = {},
 	onProcess,
+	onCancel,
 	isProcessing,
 	progress,
-	statusKey
+	statusKey,
+	errorMessage
 }) => {
 	const { t } = useTranslation();
 	const types = Object.keys(analysisMap);
@@ -50,7 +54,6 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
 
 	const handleStart = () => {
 		if (selectedType && selectedModel) {
-			progress.total = 0;
 			onProcess(selectedType, selectedModel);
 		}
 	};
@@ -104,12 +107,25 @@ const VideoProcessorModal: React.FC<VideoProcessorModalProps> = ({
 					>
 						{isProcessing ? t('shared.processing', '처리 중...') : t('shared.startAnalysis', '분석 시작')}
 					</Button>
+					{isProcessing && onCancel && (
+						<Button
+							style={{ width: '100%', margin: '8px 0 0', padding: '10px 24px', fontSize: '14px' }}
+							onClick={onCancel}
+						>
+							{t('shared.cancel', '취소')}
+						</Button>
+					)}
 
 					<Div id="status-section" style={{ marginTop: '15px' }}>
 						<p style={{ fontSize: '14px', color: '#666' }}>
 							{statusKey ? t(`status.${statusKey}`, statusKey) : ''}
 							{isProcessing && progress.total > 0 && ` : ${progress.current} / ${progress.total}`}
 						</p>
+						{errorMessage && (
+							<p style={{ fontSize: '13px', color: '#c0392b', marginTop: '6px' }}>
+								{t('status.errorDetail', 'Error detail')}: {errorMessage}
+							</p>
+						)}
 
 						<Div id="progress-bar-container" style={{
 							width: 'calc(100% - 20px)', height: '10px', background: vars.surface, borderRadius: '5px', overflow: 'hidden'

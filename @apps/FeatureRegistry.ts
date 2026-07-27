@@ -22,6 +22,7 @@ import { TrackBallVideoPlugin } from '@apps/features/track-ball/plugin/TrackBall
 // Bat 관련
 import { TrackBatData } from "@apps/features/track-bat/data/track-bat-data";
 import * as BatDetector from '@apps/features/track-bat/detector';
+import * as BatAnalysis from "@apps/features/track-bat/video-tool/analysis";
 import { TrackBatVideoPlugin } from '@apps/features/track-bat/video-plugin/TrackBatVideoPlugin';
 import { TrackBallEditorPlugin } from '@apps/features/track-ball/editor-plugin/TrackBallEditorPlugin';
 import { TrackBatEditorPlugin } from '@apps/features/track-bat/editor-plugin/TrackBatEditorPlugin';
@@ -70,7 +71,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureConfig> = {
             "YOLO11s Ball": new BallDetector.YOLOBallDetector("./external/models/yolo11/yolo11s_web_model/model.json", 32),
         },
         tools: [new BallAnalysis.BallAnalysisTool()],
-        hasEditor: false,
+        hasEditor: true,
     },
     bat: {
         label: '배트 추적',
@@ -84,8 +85,8 @@ export const FEATURE_REGISTRY: Record<string, FeatureConfig> = {
             "YOLO11n Bat": new BatDetector.YOLOBatDetector("./external/models/yolo11/yolo11n-seg_web_model/model.json", 34),
             "YOLO11s Bat": new BatDetector.YOLOBatDetector("./external/models/yolo11/yolo11s-seg_web_model/model.json", 34),
         },
-        tools: [],
-        hasEditor: false,
+        tools: [new BatAnalysis.BatAnalysisTool()],
+        hasEditor: true,
     }
 };
 

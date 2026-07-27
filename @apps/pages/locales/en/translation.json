@@ -22,6 +22,7 @@
     "video": "Video",
     "table": "Table",
     "graph": "Graph",
+    "bat-analysis-tool": "Bat Analysis",
     "edittrackball": "Edit Track Ball",
     "edittrackbat": "Edit Track Bat"
   },
@@ -34,6 +35,7 @@
     "close": "Close",
     "processing": "Processing...",
     "startAnalysis": "Start Analysis",
+    "cancel": "Cancel",
     "none": "None",
     "loading": "Loading..."
   },
@@ -50,11 +52,16 @@
   },
   "status": {
     "label-video-loaded": "Ready",
-    "label-idle": "Ready",
-    "label-loading": "Loading Model...",
+    "label-before-process": "Ready",
+    "label-video-loading": "Loading video...",
+    "label-video-ready": "Video ready",
+    "label-model-loading": "Loading model...",
     "label-on-process": "Analyzing...",
-    "label-done": "Analysis Complete",
-    "label-error": "Error"
+    "label-after-process": "Finalizing results...",
+    "label-cancelled": "Cancelled",
+    "label-completed": "Analysis complete",
+    "label-error": "Error",
+    "errorDetail": "Error detail"
   },
   "analysisLabels": {}
 }

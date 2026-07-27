@@ -8,6 +8,7 @@ export function useProcessor() {
     const [status, setStatus] = useState<string>("before-process");
     const [progress, setProgress] = useState({ current: 0, total: 0 });
     const [isProcessing, setIsProcessing] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const processor = useMemo(() => new Processor(), []);
 
@@ -19,6 +20,7 @@ export function useProcessor() {
         cvval: CVValData
     ): Promise<CVValData> => {
         setIsProcessing(true);
+        setErrorMessage(null);
         try {
             processor.setting(null as any, {
                 onState: (state) => setStatus(state),
@@ -31,7 +33,9 @@ export function useProcessor() {
             // React의 상태 변경 감지를 위해 객체 참조를 새로 생성하여 반환합니다.
             return Object.assign(Object.create(Object.getPrototypeOf(cvval)), cvval);
         } catch (error) {
-            setStatus("error");
+            const message = error instanceof Error ? error.message : String(error);
+            setStatus(message === "Processing cancelled" ? "cancelled" : "error");
+            setErrorMessage(message === "Processing cancelled" ? null : message);
             throw error;
         } finally {
             setIsProcessing(false);
@@ -48,6 +52,7 @@ export function useProcessor() {
         data: any
     ): Promise<CVValData> => {
         setIsProcessing(true);
+        setErrorMessage(null);
         try {
             processor.setting(detector, {
                 onState: (state) => setStatus(state),
@@ -59,7 +64,9 @@ export function useProcessor() {
             // React의 상태 변경 감지를 위해 객체 참조를 새로 생성하여 반환합니다.
             return Object.assign(Object.create(Object.getPrototypeOf(cvval)), cvval);
         } catch (error) {
-            setStatus("error");
+            const message = error instanceof Error ? error.message : String(error);
+            setStatus(message === "Processing cancelled" ? "cancelled" : "error");
+            setErrorMessage(message === "Processing cancelled" ? null : message);
             throw error;
         } finally {
             setIsProcessing(false);
@@ -70,7 +77,13 @@ export function useProcessor() {
         setStatus("before-process");
         setProgress({ current: 0, total: 0 });
         setIsProcessing(false);
+        setErrorMessage(null);
     }, []);
 
-    return { status, progress, isProcessing, loadVideo, runInference, reset };
+    const cancelProcessing = useCallback(() => {
+        processor.cancel();
+        setStatus("cancelled");
+    }, [processor]);
+
+    return { status, progress, isProcessing, errorMessage, loadVideo, runInference, cancelProcessing, reset };
 }

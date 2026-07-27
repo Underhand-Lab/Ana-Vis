@@ -2,33 +2,12 @@ import { app, shell, BrowserWindow, ipcMain, Menu, dialog } from "electron";
 const path = require("node:path");
 const fs = require("node:fs");
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
-import { autoUpdater } from "electron-updater";
-
-// --- 자동 업데이트 설정 ---
-autoUpdater.logger = console; // 개발 콘솔에서 업데이트 로그 확인 가능
-autoUpdater.autoDownload = false; // 알림만 띄우고 다운로드는 수동으로 시작
-
-autoUpdater.on('update-available', () => {
-	// 업데이트가 발견되면 모든 열린 창에 알림 전송
-	BrowserWindow.getAllWindows().forEach(win => {
-		win.webContents.send('update-available');
-	});
-});
-
-autoUpdater.on('update-downloaded', () => {
-	// 다운로드가 완료되면 앱을 종료하고 즉시 설치
-	autoUpdater.quitAndInstall();
-});
-
-autoUpdater.on('error', (err) => {
-	console.error('업데이트 체크 중 오류 발생:', err);
-});
-// -----------------------
-
 import updater from "electron-updater";
+
 const { autoUpdater } = updater;
 
 // --- 자동 업데이트 설정 ---
+autoUpdater.logger = console; // 개발 콘솔에서 업데이트 로그 확인 가능
 autoUpdater.autoDownload = false; // 알림만 띄우고 다운로드는 수동으로 시작
 
 autoUpdater.on('update-available', () => {
@@ -118,6 +97,14 @@ function createWindow(filePath?: string): void {
 		windowFileMap.delete(win.id);
 	});
 
+	const sendFullscreenStatus = () => {
+		if (!win.isDestroyed()) {
+			win.webContents.send('fullscreen-status-changed', win.isFullScreen());
+		}
+	};
+	win.on('enter-full-screen', sendFullscreenStatus);
+	win.on('leave-full-screen', sendFullscreenStatus);
+
 	win.webContents.setWindowOpenHandler((details) => {
 		shell.openExternal(details.url);
 		return { action: "deny" };
@@ -144,6 +131,11 @@ ipcMain.on("request-initial-file", (event) => {
 		// 이전의 파일 정보가 다시 전달되어 내비게이션을 방해하는 것을 막습니다.
 		windowFileMap.delete(win.id);
 	}
+});
+
+ipcMain.handle('get-fullscreen-status', (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender);
+	return win?.isFullScreen() ?? false;
 });
 
 // 6. 파일 저장 대화상자 처리 (Safari/Firefox 제약 해결용)
